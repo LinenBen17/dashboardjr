@@ -11,14 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('loans', function (Blueprint $table) {
+        Schema::create('installments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('employee_id')->constrained()->onDelete('cascade');
-            $table->date('start_date');
-            $table->decimal('amount_loan', 10, 2);
-            $table->integer('no_share');
-            $table->decimal('amount_share', 10, 2);
-            $table->string('comments');
+            $table->foreignId('loan_id')->constrained();
+            $table->integer('no_installment');
+            $table->decimal('amount', 10, 2);
+            $table->enum('status', ['pending', 'paid', 'overdue']);
+            $table->date('billing_date');
             $table->timestamps();
         });
     }
@@ -28,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('loans');
+        Schema::dropIfExists('installments');
     }
 };
