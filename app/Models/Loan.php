@@ -22,4 +22,8 @@ class Loan extends Model
     {
         return $this->belongsTo(Employee::class, 'employee_id');
     }
+    public function installments()
+    {
+        return $this->hasMany(Installments::class, 'loan_id');
+    }
 }

@@ -11,6 +11,9 @@ use App\Models\Loan;
 use ForestLynx\MoonShine\Fields\Decimal;
 use Illuminate\Support\Facades\Request;
 use MoonShine\ActionButtons\ActionButton;
+use MoonShine\Buttons\DeleteButton;
+use MoonShine\Buttons\EditButton;
+use MoonShine\Components\FlexibleRender;
 use MoonShine\Components\FormBuilder;
 use MoonShine\Components\Layout\Flash;
 use MoonShine\Resources\ModelResource;
@@ -18,9 +21,11 @@ use MoonShine\Decorations\Block;
 use MoonShine\Fields\ID;
 use MoonShine\Fields\Field;
 use MoonShine\Components\MoonShineComponent;
+use MoonShine\Contracts\MoonShineRenderable;
 use MoonShine\Decorations\Column;
 use MoonShine\Decorations\Grid;
 use MoonShine\Fields\Date;
+use MoonShine\Fields\Fields;
 use MoonShine\Fields\Json;
 use MoonShine\Fields\Number;
 use MoonShine\Fields\Relationships\BelongsTo;
@@ -62,6 +67,9 @@ class DiscountResource extends ModelResource
         return $referer ?: '/';
     }
 
+    protected array $assets = [
+        'assets/js/discountResource.js',
+    ];
     /**
      * @return list<MoonShineComponent|Field>
      */
@@ -111,7 +119,7 @@ class DiscountResource extends ModelResource
                 title: fn() => 'Ingreso de Préstamos',
                 content: fn() =>
                     FormBuilder::make()
-                        ->action(route('loan'))
+                        ->action(route('loans.store'))
                         ->method('POST')
                         ->fields([
                             Block::make([
@@ -128,10 +136,13 @@ class DiscountResource extends ModelResource
                                         )->searchable()
                                             ->nullable()
                                             ->required(),
-                                            Date::make('Fecha de inicio:', 'start_date')->required(),
-                                            Decimal::make('Monto del Préstamo', 'amount_loan')->required(),
-                                        Number::make('Número de cuotas', 'no_share')->required(),
-                                        Decimal::make('Monto en cada cuota', 'amount_share')->required(),
+                                        Date::make('Fecha de inicio:', 'start_date')->required(),
+                                        Number::make('Monto del Préstamo', 'amount_loan')->required()
+                                            ->step(0.01),
+                                        Number::make('Número de cuotas', 'no_share')
+                                            ->required(),
+                                        Number::make('Monto en cada cuota', 'amount_share')->required()
+                                            ->step(0.01),
                                         Textarea::make('Descripición', 'comments')->required(),
                                     ])
                                 ])
@@ -139,13 +150,14 @@ class DiscountResource extends ModelResource
                         ])
                         ->cast(ModelCast::make(Loan::class))
                         ->buttons([
-                            ActionButton::make('Delete', to_page(resource: new AgencyResource()))->secondary()
-                        ]),
+                            ActionButton::make('Modificaciones', to_page(resource: new LoanResource()))->secondary()
+                        ])
+                        ->submit(label: 'Save', attributes: ['class' => 'btn-primary']),
                 async: false
-            ),
+            )
+            ->async(callback: 'myFunction'),
         ];
     }
-
     /**
      * @param Discount $item
      *
@@ -158,7 +170,8 @@ class DiscountResource extends ModelResource
             Flash::make(key: 'successSave', type: 'success', withToast: true, removable: true),
             Flash::make(key: 'failSave', type: 'error', withToast: true, removable: false),
         ];
-	}
+	}   
+
     public function rules(Model $item): array
     {
         return [];

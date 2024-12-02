@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('loan_id')->constrained();
             $table->integer('no_installment');
             $table->decimal('amount', 10, 2);
-            $table->enum('status', ['pending', 'paid', 'overdue']);
+            $table->boolean('status')->default(false);
             $table->date('billing_date');
             $table->timestamps();
         });

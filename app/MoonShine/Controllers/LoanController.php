@@ -8,6 +8,7 @@ use App\Models\Installments;
 use App\Models\Loan;
 use Carbon\Carbon;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
 use MoonShine\MoonShineRequest;
@@ -16,7 +17,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 final class LoanController extends MoonShineController
 {
-    public function __invoke(MoonShineRequest $request): Response
+    public function store(MoonShineRequest $request): Response
     {
         $validator = Validator::make($request->all(), [
             'employee_id' => 'required|numeric',
@@ -49,17 +50,28 @@ final class LoanController extends MoonShineController
 
             // Iteramos para crear las cuotas
             for ($i = 1; $i <= $request->no_share; $i++) {
-                $billingDate = $startDate->copy()->addDays(15 * ($i - 1));
-                
-                Installments::create([
-                    'loan_id' => $loan_id,
-                    'no_installment' => $i,
-                    'amount' => $request->amount_loan / $request->no_share,
-                    'billing_date' => $billingDate->format('Y-m-d'),
-                ]);
+                $billingDate = $startDate;
+
+                if ($billingDate->day <= 15) {
+                    Installments::create([
+                        'loan_id' => $loan_id,
+                        'no_installment' => $i,
+                        'amount' => $request->amount_loan / $request->no_share,
+                        'billing_date' => $billingDate->addDays(15 - $billingDate->day),
+                    ]);
+                }elseif ($billingDate->day > 15) {
+                    Installments::create([
+                        'loan_id' => $loan_id,
+                        'no_installment' => $i,
+                        'amount' => $request->amount_loan / $request->no_share,
+                        'billing_date' => $billingDate->endOfMonth(),
+                    ]);
+                }
+
+                $billingDate->addDays(1);
             }
 
-            Session::flash('successSave', 'Registro guardado con éxito. Número de Prestámos $loan_id');
+            Session::flash('successSave', 'Registro guardado con éxito. Número de Prestámos ' . $loan_id);
             
         } catch (QueryException $e) {
             if ($e->getCode() === '23000') { // Código de error para violaciones de restricciones de integridad
@@ -71,5 +83,27 @@ final class LoanController extends MoonShineController
         }
 
         return back();
+    }
+    public function delete(MoonShineRequest $request, $id): Response
+    {
+        
+        try {
+            $loan = Loan::find($id);
+            
+            if ($loan) {
+                // Eliminar las cuotas asociadas
+                Installments::where('loan_id', $loan->id)->delete();
+
+                // Eliminar el préstamo
+                $loan->delete();
+                
+                Session::flash('success', 'Préstamo eliminado con éxito.');
+            } else {
+                Session::flash('fail', 'Préstamo no encontrado.');
+            }
+        } catch (\Exception $e) {
+            Session::flash('fail', 'Error al intentar eliminar el préstamo: ' . $e->getMessage());
+        }
+        return back(); // Redirigir a la lista de préstamos
     }
 }

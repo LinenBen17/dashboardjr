@@ -20,6 +20,7 @@ use App\MoonShine\Resources\DiscountResource;
 use App\MoonShine\Resources\DistrictResource;
 use App\MoonShine\Resources\EmployeeResource;
 use App\MoonShine\Resources\GenderResource;
+use App\MoonShine\Resources\InstallmentsResource;
 use App\MoonShine\Resources\LoanResource;
 use App\MoonShine\Resources\PayrollResource;
 use App\MoonShine\Resources\PostResource;
@@ -36,6 +37,7 @@ use MoonShine\Menu\MenuElement;
 use MoonShine\Pages\Page;
 use Closure;
 use MoonShine\Decorations\Block;
+use MoonShine\Exceptions\MenuException;
 use MoonShine\Menu\MenuDivider;
 
 class MoonShineServiceProvider extends MoonShineApplicationServiceProvider
@@ -45,7 +47,10 @@ class MoonShineServiceProvider extends MoonShineApplicationServiceProvider
      */
     protected function resources(): array
     {
-        return [];
+        return [
+            new InstallmentsResource,
+            new LoanResource
+        ];
     }
 
     /**
@@ -95,7 +100,6 @@ class MoonShineServiceProvider extends MoonShineApplicationServiceProvider
                     MenuItem::make('Detalle', new DetailPayrollResource),
                     MenuItem::make('Bonos', new BonusResource),
                     MenuItem::make('Descuentos', new DiscountResource),
-                    //MenuItem::make('Prestamos', new LoanResource),
                     MenuItem::make('Reportes', new ReportResource),
                 ])
             ]),
@@ -115,7 +119,7 @@ class MoonShineServiceProvider extends MoonShineApplicationServiceProvider
         parent::boot();
  
         moonShineAssets()->add([
-            'assets/main.js',
+            '/assets/js/main.js',
         ]); 
     }
 }
