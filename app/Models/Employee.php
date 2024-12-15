@@ -55,4 +55,8 @@ class Employee extends Model
     {
         return $this->hasMany(Loan::class, 'employee_id');
     }
+    public function reports()
+    {
+        return $this->hasMany(Loan::class, 'employee_id');
+    }
 }

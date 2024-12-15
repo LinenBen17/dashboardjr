@@ -13,4 +13,8 @@ class Report extends Model
     {
         return $this->belongsTo(Agency::class, 'id_agency');
     }
+    public function employees()
+    {
+        return $this->belongsTo(Employee::class, 'id_employee');
+    }
 }

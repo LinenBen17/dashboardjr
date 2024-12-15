@@ -15,6 +15,7 @@ use MoonShine\Pages\Crud\IndexPage;
 use MoonShine\Components\MoonShineComponent;
 use MoonShine\Components\Title;
 use MoonShine\Decorations\Block;
+use MoonShine\Decorations\Collapse;
 use MoonShine\Decorations\Column;
 use MoonShine\Decorations\Divider;
 use MoonShine\Decorations\Grid;
@@ -23,7 +24,9 @@ use MoonShine\Decorations\Tab;
 use MoonShine\Decorations\Tabs;
 use MoonShine\Decorations\TextBlock;
 use MoonShine\Fields\Date;
+use MoonShine\Fields\DateRange;
 use MoonShine\Fields\Field;
+use MoonShine\Fields\Hidden;
 use MoonShine\Fields\ID;
 use MoonShine\Fields\Preview;
 use MoonShine\Fields\Relationships\BelongsTo;
@@ -53,42 +56,92 @@ class ReportIndexPage extends IndexPage
         return [
             Block::make([
                 Tabs::make([ 
-                    Tab::make('Reporte Planilla', [
-                        Title::make('Ingrese el rango de fecha'),
+                    Tab::make('Planilla', [
                         LineBreak::make(),
                         Grid::make([
                             Column::make([
                                 Divider::make('Colaboradores Dentro de Planilla')
                                     ->centered(),
                                 LineBreak::make(),
-                                FormBuilder::make()
-                                    ->action(route('reports'))
-                                    ->method('POST')
-                                    ->fields([
+                                Collapse::make('Ingresa el Rango de Fecha', [
+                                    FormBuilder::make()
+                                        ->customAttributes(['target' => '_blank'])
+                                        ->action(route('reports.payroll'))
+                                        ->method('POST')
+                                        ->fields([
 
                                                 Date::make('Del:', 'from'),
-                                                Date::make('Al:', 'to')
+                                                Date::make('Al:', 'to'),
+                                                Hidden::make('payrrol', 'payroll')
+                                                    ->default('DENTRO DE PLANILLA')
 
-                                    ]),
+                                        ])
+                                ])->open()->persist(fn () => false)
                             ])->columnSpan(6),
                             Column::make([
                                 Divider::make('Colaboradores Fuera de Planilla')
                                     ->centered(),
                                 LineBreak::make(),
-                                FormBuilder::make()
-                                    ->action(route('reports'))
-                                    ->method('POST')
-                                    ->fields([
+                                Collapse::make('Ingresa el Rango de Fecha', [
+                                    FormBuilder::make()
+                                        ->customAttributes(['target' => '_blank'])
+                                        ->action(route('reports.payroll'))
+                                        ->method('POST')
+                                        ->fields([
+
                                                 Date::make('Del:', 'from'),
-                                                Date::make('Al:', 'to')
+                                                Date::make('Al:', 'to'),
+                                                Hidden::make('payrrol', 'payroll')
+                                                    ->default('FUERA DE PLANILLA')
+
                                         ])
+                                ])->persist(fn () => false)
                             ])->columnSpan(6),
                         ])
                     ]), 
-                    Tab::make('Categories', [
+                    Tab::make('Boletas de Pago', [
+                        LineBreak::make(),
+                        Grid::make([
+                            Column::make([
+                                Divider::make('Colaboradores Dentro de Planilla')
+                                    ->centered(),
+                                LineBreak::make(),
+                                Collapse::make('Ingresa el Rango de Fecha', [
+                                    FormBuilder::make()
+                                        ->customAttributes(['target' => '_blank'])
+                                        ->action(route('reports.payslips'))
+                                        ->method('POST')
+                                        ->fields([
+                                                Date::make('Del:', 'from'),
+                                                Date::make('Al:', 'to'),
+                                                Hidden::make('payrrol', 'payroll')
+                                                    ->default('DENTRO DE PLANILLA')
 
-                    ])
-                    ])
+                                        ])
+                                ])->open()->persist(fn () => false)
+                            ])->columnSpan(6),
+                            /* Column::make([
+                                Divider::make('Colaboradores Fuera de Planilla')
+                                    ->centered(),
+                                LineBreak::make(),
+                                Collapse::make('Ingresa el Rango de Fecha', [
+                                    FormBuilder::make()
+                                        ->customAttributes(['target' => '_blank'])
+                                        ->action(route('reports.payroll'))
+                                        ->method('POST')
+                                        ->fields([
+
+                                                Date::make('Del:', 'from'),
+                                                Date::make('Al:', 'to'),
+                                                Hidden::make('payrrol', 'payroll')
+                                                    ->default('FUERA DE PLANILLA')
+
+                                        ])
+                                ])->persist(fn () => false)
+                            ])->columnSpan(6), */
+                        ])
+                    ]),
+                ])
             ])
         ];
     }

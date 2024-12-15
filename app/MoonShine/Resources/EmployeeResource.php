@@ -46,6 +46,13 @@ class EmployeeResource extends ModelResource
     protected bool $withPolicy = false;
 
     protected int $itemsPerPage = 10;
+    
+    public function filters(): array
+    {
+        return [
+            BelongsTo::make('Estado Planilla', 'payrolls', 'state')
+        ];
+    }
 
     /**
      * @return list<MoonShineComponent|Field>
