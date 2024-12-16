@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace App\MoonShine\Pages\Report;
 
+use App\Models\Benefit;
+use App\Models\DetailPayroll;
 use App\MoonShine\Controllers\Report;
 use App\MoonShine\Resources\AgencyResource;
 use App\MoonShine\Resources\DateBenefitResource;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Log;
 use MoonShine\ActionButtons\ActionButton;
 use MoonShine\Components\Card;
@@ -32,6 +35,7 @@ use MoonShine\Fields\Preview;
 use MoonShine\Fields\Relationships\BelongsTo;
 use MoonShine\Fields\Select;
 use MoonShine\Fields\Text;
+use MoonShine\TypeCasts\ModelCast;
 use Throwable;
 
 class ReportIndexPage extends IndexPage
@@ -69,13 +73,17 @@ class ReportIndexPage extends IndexPage
                                         ->action(route('reports.payroll'))
                                         ->method('POST')
                                         ->fields([
-
                                                 Date::make('Del:', 'from'),
                                                 Date::make('Al:', 'to'),
                                                 Hidden::make('payrrol', 'payroll')
-                                                    ->default('DENTRO DE PLANILLA')
+                                                    ->default('DENTRO DE PLANILLA'),
+                                                Select::make('Tipo', 'benefit')
+                                                    ->options(Benefit::all()->pluck('name', 'id')->toArray())
+                                                    ->nullable()
+                                                    ->hint('Solo seleccionar en caso de ser necesario.')
 
                                         ])
+                                        ->submit(label: 'Imprimir', attributes: ['class' => 'btn-primary']),
                                 ])->open()->persist(fn () => false)
                             ])->columnSpan(6),
                             Column::make([
@@ -95,6 +103,7 @@ class ReportIndexPage extends IndexPage
                                                     ->default('FUERA DE PLANILLA')
 
                                         ])
+                                        ->submit(label: 'Imprimir', attributes: ['class' => 'btn-primary']),
                                 ])->persist(fn () => false)
                             ])->columnSpan(6),
                         ])
@@ -114,31 +123,52 @@ class ReportIndexPage extends IndexPage
                                         ->fields([
                                                 Date::make('Del:', 'from'),
                                                 Date::make('Al:', 'to'),
+                                                BelongsTo::make(
+                                                    'Empleado',
+                                                    'employees',
+                                                    fn($item) => "$item->name $item->last_name"
+                                                )->searchable()
+                                                ->nullable()
+                                                ->valuesQuery(fn(Builder $query, Field $field) => $query->where('id_payroll', 1))
+                                                ->withImage('photo', 'public', '')
+                                                ->hint('Solo seleccionar en caso de ser necesario.'),
                                                 Hidden::make('payrrol', 'payroll')
                                                     ->default('DENTRO DE PLANILLA')
 
                                         ])
+                                        ->cast(ModelCast::make(DetailPayroll::class))
+                                        ->submit(label: 'Imprimir', attributes: ['class' => 'btn-primary']),
                                 ])->open()->persist(fn () => false)
                             ])->columnSpan(6),
-                            /* Column::make([
+                            Column::make([
                                 Divider::make('Colaboradores Fuera de Planilla')
                                     ->centered(),
                                 LineBreak::make(),
                                 Collapse::make('Ingresa el Rango de Fecha', [
                                     FormBuilder::make()
                                         ->customAttributes(['target' => '_blank'])
-                                        ->action(route('reports.payroll'))
+                                        ->action(route('reports.payslips'))
                                         ->method('POST')
                                         ->fields([
-
                                                 Date::make('Del:', 'from'),
                                                 Date::make('Al:', 'to'),
+                                                BelongsTo::make(
+                                                    'Empleado',
+                                                    'employees',
+                                                    fn($item) => "$item->name $item->last_name"
+                                                )->searchable()
+                                                ->nullable()
+                                                ->valuesQuery(fn(Builder $query, Field $field) => $query->where('id_payroll', 2))
+                                                ->withImage('photo', 'public', '')
+                                                ->hint('Solo seleccionar en caso de ser necesario.'),
                                                 Hidden::make('payrrol', 'payroll')
                                                     ->default('FUERA DE PLANILLA')
 
                                         ])
+                                        ->cast(ModelCast::make(DetailPayroll::class))
+                                        ->submit(label: 'Imprimir', attributes: ['class' => 'btn-primary']),
                                 ])->persist(fn () => false)
-                            ])->columnSpan(6), */
+                            ])->columnSpan(6),
                         ])
                     ]),
                 ])

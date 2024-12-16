@@ -7,8 +7,9 @@ use Illuminate\Support\Facades\DB;
 
 class PayrollRepository
 {
-    public function getPayrollData(string $startDate, string $endDate, string $payroll)
+    public function getPayrollData(string $startDate, string $endDate, string $payroll, $employeeId)
     {
+        logger($employeeId);
         return DB::table('employees AS e')
             ->leftJoin('agencies AS a', 'e.id_agency', '=', 'a.id') 
             ->leftJoin('payrolls AS p', 'e.id_payroll', '=', 'p.id') 
@@ -29,6 +30,9 @@ class PayrollRepository
             })
             ->where('e.entry_date', '<=', now())
             ->whereRaw('p.state = ?', $payroll)
+            ->when($employeeId, function ($query) use ($employeeId) {
+                return $query->where('e.id', $employeeId);
+            })
             ->orderBy('e.name', 'ASC')
             ->select(
 			    'a.name AS agency',
@@ -69,10 +73,10 @@ class PayrollRepository
         return $agencies->toArray();
     }
 
-    public function getPayrollDataWithCalculations(string $startDate, string $endDate, string $payroll)
+    public function getPayrollDataWithCalculations(string $startDate, string $endDate, string $payroll, string $employeeId = null)
     {
         // Obtener los datos crudos
-        $rawData = $this->getPayrollData($startDate, $endDate, $payroll);
+        $rawData = $this->getPayrollData($startDate, $endDate, $payroll, $employeeId);
 
         // Inicializar las estructuras de datos
         $groupedData = [];
@@ -100,6 +104,7 @@ class PayrollRepository
                 $groupedData[$id] = [
                     "id" => $id,
                     "ctaBancaria" => $row->bank_account,
+                    "fechaIngreso" => $row->entry_date,
                     "empleado" => $row->name . " " . $row->last_name,
                     "cargo" => $row->charge,
                     "agencia" => $row->agency, // Puedes usar `agency_name` si está disponible
