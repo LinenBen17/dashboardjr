@@ -24,6 +24,10 @@ class ReportResource extends ModelResource
 
     protected ?PageType $pageType = PageType::FORM;
 
+    protected array $assets = [
+        'assets/js/reportResource.js',
+    ];
+
     /**
      * @return list<Page>
      */

@@ -6,11 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
     <link rel="stylesheet" href="{{ asset('assets/css/payroll-report.css') }}">
-    <title>Reporte Planilla</title>
-    <script>
-        //window.print();
-        
-    </script>
+    <title>PLANILLA DE {{ $payrollData['benefits'][$benefit] }}</title>
 </head>
 <body>
     <div class="page">
@@ -18,7 +14,7 @@
             <div class="headtop">
                 <div class="title">
                     <img src="{{asset('assets/images/jrico.png')}}">
-                    <h1>PLANILLA DE SUELDOS</h1>
+                    <h1>PLANILLA DE {{ $payrollData['benefits'][$benefit] }}</h1>
                 </div>
             </div>
             <hr>
@@ -30,9 +26,6 @@
                         <th colspan="14">
                             <h2 style="text-align: left;">Período planilla: Del {{ $from }} Al {{ $to }}</h2>
                         </th>
-                        <th colspan="2">
-                            
-                        </th>
                     </tr>
                 </thead>
                 <thead>
@@ -40,19 +33,7 @@
                         <th>No.</th>
                         <th>Cta. Bancaria</th>
                         <th>Nombre Empleado</th>
-                        {{-- <th>Puesto</th> --}}
-                        {{-- <th>Agencia</th> --}}
-                        <th>Sueldo</th>
-                        <th>Bonific. Ley</th>
-                        <th>Bono Incentivo</th>
-                        <th>Otros Ingresos</th>
-                        <th>Total Devengado</th>
-                        <th>IGSS</th>
-                        <th>Anticipo</th>
-                        <th>Ausencias</th>
-                        <th>Otros Descuentos</th>
-                        <th>Préstamos</th>
-                        <th>Total Descuento</th>
+                        <th>Días trabajados</th>
                         <th>Líquido a Recibir</th>
                     </tr>
                 </thead>
@@ -86,20 +67,8 @@
                                             <td> {{ $row['id'] }} </td>
                                             <td> {{ $row['ctaBancaria'] }} </td>
                                             <td> {{ $row['empleado'] }} </td>
-                                            {{-- <td> {{ $row['cargo'] }} </td> --}}
-                                            {{-- <td> {{ $row['agencia'] }} </td> --}}
-                                            <td> {{ number_format($row['sueldo'], 2) }} </td>
-                                            <td> {{ number_format($row['bonoLey'], 2) }} </td>
-                                            <td> {{ number_format($row['bonoIncentivo'], 2) }} </td>
-                                            <td> {{ number_format($row['bonoMonto'], 2) }} </td>
-                                            <td> {{ number_format($row['totalDevengado'], 2) }} </td>
-                                            <td> {{ number_format($row['igss'], 2) }} </td>
-                                            <td> {{ number_format($row['anticipos'], 2) }} </td>
-                                            <td> {{ number_format($row['ausencias'], 2) }} </td>
-                                            <td> {{ number_format($row['otros'], 2) }} </td>
-                                            <td> {{ number_format($row['installments'], 2) }} </td>
-                                            <td> {{ number_format($row['totalDescuento'], 2) }} </td>
-                                            <td> {{ number_format($row['liquido'], 2) }} </td>
+                                            <td> {{ date_diff(date_create($row['fechaIngreso']), date_create($to))->format('%a') > 365 ? 365 : date_diff(date_create($row['fechaIngreso']), date_create($to))->format('%a')}} </td>
+                                            <td class="liquido"> {{ date_diff(date_create($row['fechaIngreso']), date_create($to))->format('%a') > 365 ? number_format($row['sueldo'] * 2 , 2) : number_format($row['sueldo'] * 2 * date_diff(date_create($row['fechaIngreso']), date_create($to))->format('%a') / 365, 2) }}</td>
                                         </tr>
                                     @endforeach
                                 @endif
@@ -107,14 +76,22 @@
                         @endif
                     @endforeach
                     <tr class="totals">
-                        <td colspan="3">TOTAL</td>
-                        @foreach ($payrollData['totals'] as $total)
-                            <td>{{ number_format($total) }}</td>
-                        @endforeach
+                        <td colspan="4">TOTAL</td>
+                        <td class="totalLiquido"></td>
                     </tr>
                 </tbody>
             </table>
         </div>
     </div>
+    <script>
+        console.log(@json($payrollData));
+        var tdLiquido = document.querySelectorAll('.liquido');
+        var liquido = 0;
+        for (let i = 0; i < tdLiquido.length; i++) {
+            liquido = liquido + parseFloat(tdLiquido[i].textContent.replace(/,/g, ''));
+        }
+        
+        document.querySelector('.totalLiquido').textContent = liquido.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+    </script>
 </body>
 </html>

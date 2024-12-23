@@ -33,6 +33,7 @@ class PayrollRepository
             ->when($employeeId, function ($query) use ($employeeId) {
                 return $query->where('e.id', $employeeId);
             })
+            ->whereNotNull('dpe.id')
             ->orderBy('e.name', 'ASC')
             ->select(
 			    'a.name AS agency',
@@ -73,6 +74,12 @@ class PayrollRepository
         return $agencies->toArray();
     }
 
+    public function getBenefits()
+    {
+        $benefits = DB::table('benefits')->pluck('name', 'id');
+        return $benefits->toArray();
+    }
+
     public function getPayrollDataWithCalculations(string $startDate, string $endDate, string $payroll, string $employeeId = null)
     {
         // Obtener los datos crudos
@@ -107,7 +114,7 @@ class PayrollRepository
                     "fechaIngreso" => $row->entry_date,
                     "empleado" => $row->name . " " . $row->last_name,
                     "cargo" => $row->charge,
-                    "agencia" => $row->agency, // Puedes usar `agency_name` si está disponible
+                    "agencia" => $row->agency,
                     "sueldo" => round($row->regular_salaries / 2, 2),
                     "bonoLey" => round($row->bonus_of_law / 2, 2),
                     "bonoIncentivo" => round($row->incentive_bonus / 2, 2),
@@ -193,6 +200,7 @@ class PayrollRepository
         return [
             'charges' => $this->getCharges(),
             'agencies' => $this->getAgencies(),
+            'benefits' => $this->getBenefits(),
             'data' => array_values($groupedData),
             'totals' => $totals,
         ];

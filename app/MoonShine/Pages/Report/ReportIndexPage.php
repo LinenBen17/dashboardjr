@@ -69,7 +69,6 @@ class ReportIndexPage extends IndexPage
                                 LineBreak::make(),
                                 Collapse::make('Ingresa el Rango de Fecha', [
                                     FormBuilder::make()
-                                        ->customAttributes(['target' => '_blank'])
                                         ->action(route('reports.payroll'))
                                         ->method('POST')
                                         ->fields([
@@ -81,8 +80,9 @@ class ReportIndexPage extends IndexPage
                                                     ->options(Benefit::all()->pluck('name', 'id')->toArray())
                                                     ->nullable()
                                                     ->hint('Solo seleccionar en caso de ser necesario.')
-
+                                                    ->customAttributes(['class' => 'benefit-select']),
                                         ])
+                                        ->customAttributes(['class' => 'payroll-form', 'target' => '_blank'])
                                         ->submit(label: 'Imprimir', attributes: ['class' => 'btn-primary']),
                                 ])->open()->persist(fn () => false)
                             ])->columnSpan(6),
@@ -92,18 +92,21 @@ class ReportIndexPage extends IndexPage
                                 LineBreak::make(),
                                 Collapse::make('Ingresa el Rango de Fecha', [
                                     FormBuilder::make()
-                                        ->customAttributes(['target' => '_blank'])
-                                        ->action(route('reports.payroll'))
-                                        ->method('POST')
-                                        ->fields([
-
-                                                Date::make('Del:', 'from'),
-                                                Date::make('Al:', 'to'),
-                                                Hidden::make('payrrol', 'payroll')
-                                                    ->default('FUERA DE PLANILLA')
-
-                                        ])
-                                        ->submit(label: 'Imprimir', attributes: ['class' => 'btn-primary']),
+                                    ->action(route('reports.payroll'))
+                                    ->method('POST')
+                                    ->fields([
+                                            Date::make('Del:', 'from'),
+                                            Date::make('Al:', 'to'),
+                                            Hidden::make('payrrol', 'payroll')
+                                                ->default('FUERA DE PLANILLA'),
+                                            Select::make('Tipo', 'benefit')
+                                                ->options(Benefit::all()->pluck('name', 'id')->toArray())
+                                                ->nullable()
+                                                ->hint('Solo seleccionar en caso de ser necesario.')
+                                                ->customAttributes(['class' => 'benefit-select']),
+                                    ])
+                                    ->customAttributes(['class' => 'payroll-form', 'target' => '_blank'])
+                                    ->submit(label: 'Imprimir', attributes: ['class' => 'btn-primary']),
                                 ])->persist(fn () => false)
                             ])->columnSpan(6),
                         ])
