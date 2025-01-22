@@ -22,4 +22,5 @@ Route::post('/reports/benefit_payroll', [ControllerReport::class, 'getBenefitPay
 Route::post('/reports/benefit_payslips', [ControllerReport::class, 'getBenefitPayslips'])->name('reports.benefit_payslips');
 
 Route::post('/loans', [LoanController::class, 'store'])->name('loans.store');
+Route::get('/loans/{id}', [LoanController::class, 'getLoanFormat'])->name('loans.loan_format');
 Route::post('/loans/{id}', [LoanController::class, 'delete'])->name('loans.delete');

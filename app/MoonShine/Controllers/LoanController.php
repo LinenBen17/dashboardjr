@@ -8,6 +8,7 @@ use App\Models\Installments;
 use App\Models\Loan;
 use Carbon\Carbon;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
@@ -28,7 +29,7 @@ final class LoanController extends MoonShineController
             'comments' => 'required',
         ]);
 
-        if($validator->fails()){
+        if ($validator->fails()) {
             Session::flash('failSave', 'Verifica que todos los campos estén correctamente llenos.');
             return redirect()->back()->withErrors($validator)->withInput();
         }
@@ -59,7 +60,7 @@ final class LoanController extends MoonShineController
                         'amount' => $request->amount_loan / $request->no_share,
                         'billing_date' => $billingDate->addDays(15 - $billingDate->day),
                     ]);
-                }elseif ($billingDate->day > 15) {
+                } elseif ($billingDate->day > 15) {
                     Installments::create([
                         'loan_id' => $loan_id,
                         'no_installment' => $i,
@@ -72,7 +73,6 @@ final class LoanController extends MoonShineController
             }
 
             Session::flash('successSave', 'Registro guardado con éxito. Número de Prestámos ' . $loan_id);
-            
         } catch (QueryException $e) {
             if ($e->getCode() === '23000') { // Código de error para violaciones de restricciones de integridad
                 Session::flash('failSave', 'Verifica que todos los campos estén correctamente llenos.');
@@ -86,17 +86,17 @@ final class LoanController extends MoonShineController
     }
     public function delete(MoonShineRequest $request, $id): Response
     {
-        
+
         try {
             $loan = Loan::find($id);
-            
+
             if ($loan) {
                 // Eliminar las cuotas asociadas
                 Installments::where('loan_id', $loan->id)->delete();
 
                 // Eliminar el préstamo
                 $loan->delete();
-                
+
                 Session::flash('success', 'Préstamo eliminado con éxito.');
             } else {
                 Session::flash('fail', 'Préstamo no encontrado.');
@@ -105,5 +105,30 @@ final class LoanController extends MoonShineController
             Session::flash('fail', 'Error al intentar eliminar el préstamo: ' . $e->getMessage());
         }
         return back(); // Redirigir a la lista de préstamos
+    }
+    public function getLoanFormat(MoonShineRequest $request, $id): Response
+    {
+        Carbon::setLocale('es'); // Configura el idioma a español
+        // Unir datos de tabla vacations y vacations_histories, y de employees para obtener datos en base el id
+        try {
+            $loan = DB::table('loans')
+                ->join('employees', 'loans.employee_id', '=', 'employees.id')
+                ->select('loans.*', 'employees.name', 'employees.last_name', 'employees.dpi')
+                ->where('loans.id', $id)
+                ->first();
+        } catch (\Throwable $th) {
+            Logger($th);
+        }
+
+        return response()->view('loans.loan_format', [
+            'id' => $loan->id,
+            'employee_name' => $loan->name . ' ' . $loan->last_name,
+            'employee_dpi' => $loan->dpi,
+            'created_at' => Carbon::parse($loan->created_at)->translatedFormat('d \d\e F \d\e\l Y'),
+            'amount_loan' => $loan->amount_loan,
+            'no_share' => $loan->no_share,
+            'amount_share' => $loan->amount_share,
+            'comments' => $loan->comments,
+        ]);
     }
 }

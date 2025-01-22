@@ -29,22 +29,29 @@ class LoanResource extends ModelResource
 
     protected string $title = 'Loans';
 
-    protected bool $createInModal = true; 
-    protected bool $editInModal = true;  
+    protected bool $createInModal = true;
+    protected bool $editInModal = true;
     protected bool $detailInModal = true;
 
     protected bool $withPolicy = false;
 
     protected int $itemsPerPage = 10;
 
-    public function getActiveActions(): array 
+    public function getActiveActions(): array
     {
         return ['view'];
     }
 
-    public function indexButtons(): array 
+    public function indexButtons(): array
     {
         return [
+            ActionButton::make(
+                'PDF',
+                fn(Model $item) => route('loans.loan_format', $item->getKey())
+            )
+                ->blank()
+                ->icon('heroicons.document-text'),
+
             ActionButton::make(
                 '',
                 fn(Model $item) => route('loans.delete', $item->getKey())
@@ -55,14 +62,10 @@ class LoanResource extends ModelResource
                     'Sí, Eliminar.',
                 )
                 ->icon('heroicons.outline.trash')
-                ->error() 
-            /* ActionButton::make('Click me')
-                ->method(
-                    'delete',
-                    params: fn($item) => ['id' => $item->getKey()] 
-            ),  */
+                ->error()
+
         ];
-    } 
+    }
     /**
      * @return list<MoonShineComponent|Field>
      */
@@ -99,12 +102,12 @@ class LoanResource extends ModelResource
      * @see https://laravel.com/docs/validation#available-validation-rules
      */
     public function metrics(): array
-	{
+    {
         return [
             Flash::make(key: 'success', type: 'success', withToast: true, removable: true),
             Flash::make(key: 'fail', type: 'error', withToast: true, removable: false),
         ];
-	} 
+    }
     public function rules(Model $item): array
     {
         return [];

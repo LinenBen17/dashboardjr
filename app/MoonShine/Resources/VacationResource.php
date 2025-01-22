@@ -200,10 +200,7 @@ class VacationResource extends ModelResource
                             ]),
                         ])
                         ->cast(ModelCast::make(Vacation::class))
-                        ->buttons([
-                            ActionButton::make('Modificaciones', to_page(resource: new LoanResource()))->secondary()
-                        ])
-                        ->submit(label: 'Save', attributes: ['class' => 'btn-primary']),
+                        ->submit(label: 'Guardar', attributes: ['class' => 'btn-primary']),
                     //->customAttributes(['target' => '_blank']),
                     async: false
                 )

@@ -168,6 +168,25 @@ final class VacationController extends MoonShineController
 
         return back();
     }
+    public function delete(MoonShineRequest $request, $id): Response
+    {
+        try {
+            $vacation = Vacation::find($id);
+            $vacation_history = VacationHistory::find($vacation->vacation_history_id);
+
+            $vacation_history->days_used = $vacation_history->days_used - $vacation->days_requested;
+            $vacation_history->days_remaining = $vacation_history->days_remaining + $vacation->days_requested;
+
+            $vacation_history->save();
+            $vacation->delete();
+
+            $this->toast('Permiso de vacaciones eliminado correctamente.', 'success');
+        } catch (\Throwable $th) {
+            $this->toast('Hubo un error al eliminar el permiso de vacaciones.', 'error');
+        }
+
+        return back();
+    }
     public function getVacationFormat(MoonShineRequest $request, $id): Response
     {
         // Unir datos de tabla vacations y vacations_histories, y de employees para obtener datos en base el id
@@ -198,25 +217,5 @@ final class VacationController extends MoonShineController
             'comments' => $vacation->comments,
             'year' => $vacation->year,
         ]);
-    }
-
-    public function delete(MoonShineRequest $request, $id): Response
-    {
-        try {
-            $vacation = Vacation::find($id);
-            $vacation_history = VacationHistory::find($vacation->vacation_history_id);
-
-            $vacation_history->days_used = $vacation_history->days_used - $vacation->days_requested;
-            $vacation_history->days_remaining = $vacation_history->days_remaining + $vacation->days_requested;
-
-            $vacation_history->save();
-            $vacation->delete();
-
-            $this->toast('Permiso de vacaciones eliminado correctamente.', 'success');
-        } catch (\Throwable $th) {
-            $this->toast('Hubo un error al eliminar el permiso de vacaciones.', 'error');
-        }
-
-        return back();
     }
 }
