@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Models\Installments;
 use Illuminate\Log\Logger;
 use Illuminate\Support\Facades\DB;
 
@@ -11,20 +12,20 @@ class PayrollRepository
     {
         logger($employeeId);
         return DB::table('employees AS e')
-            ->leftJoin('agencies AS a', 'e.id_agency', '=', 'a.id') 
-            ->leftJoin('payrolls AS p', 'e.id_payroll', '=', 'p.id') 
+            ->leftJoin('agencies AS a', 'e.id_agency', '=', 'a.id')
+            ->leftJoin('payrolls AS p', 'e.id_payroll', '=', 'p.id')
             ->leftJoin('charges AS c', 'e.id_charge', '=', 'c.id')
             ->leftJoin('detail_payrolls AS dpe', 'e.id', '=', 'dpe.employee_id')
-            ->leftJoin('bonuses AS b', function($join) use ($startDate, $endDate) {
+            ->leftJoin('bonuses AS b', function ($join) use ($startDate, $endDate) {
                 $join->on('e.id', '=', 'b.employee_id')
                     ->whereBetween('b.date', [$startDate, $endDate]);
             })
-            ->leftJoin('discounts AS d', function($join) use ($startDate, $endDate) {
+            ->leftJoin('discounts AS d', function ($join) use ($startDate, $endDate) {
                 $join->on('e.id', '=', 'd.employee_id')
                     ->whereBetween('d.date', [$startDate, $endDate]);
             })
             ->leftJoin('loans AS l', 'e.id', '=', 'l.employee_id')
-            ->leftJoin('installments AS i', function($join) use ($startDate, $endDate) {
+            ->leftJoin('installments AS i', function ($join) use ($startDate, $endDate) {
                 $join->on('l.id', '=', 'i.loan_id')
                     ->whereBetween('i.billing_date', [$startDate, $endDate]);
             })
@@ -36,7 +37,7 @@ class PayrollRepository
             ->whereNotNull('dpe.id')
             ->orderBy('e.name', 'ASC')
             ->select(
-			    'a.name AS agency',
+                'a.name AS agency',
                 'c.name AS charge',
                 'e.id AS employee_id',
                 'e.name',
@@ -61,7 +62,14 @@ class PayrollRepository
             )
             ->get();
     }
-    
+    public function changeStatusInstallment($installmentId)
+    {
+        DB::table('installments')
+            ->where('id', $installmentId)
+            ->update([
+                'status' => 1
+            ]);
+    }
     public function getCharges()
     {
         $charges = DB::table('charges')->pluck('name');
@@ -164,9 +172,10 @@ class PayrollRepository
                 if (!in_array($row->installment_id, $groupedData[$id]['processed_installments'])) {
                     $groupedData[$id]['installments'] += floatval($row->installment_amount);
                     $groupedData[$id]['processed_installments'][] = $row->installment_id;
+
+                    $this->changeStatusInstallment($row->installment_id);
                 }
             }
-
         }
 
         // Calcular totales
