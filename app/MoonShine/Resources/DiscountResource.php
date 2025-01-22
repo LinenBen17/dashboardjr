@@ -45,8 +45,8 @@ class DiscountResource extends ModelResource
 
     protected string $title = 'Discounts';
 
-    protected bool $createInModal = true; 
-    protected bool $editInModal = true;  
+    protected bool $createInModal = true;
+    protected bool $editInModal = true;
     protected bool $detailInModal = true;
 
     protected int $itemsPerPage = 10;
@@ -54,7 +54,7 @@ class DiscountResource extends ModelResource
     public function import(): ?ImportHandler
     {
         return ImportHandler::make('Importar');
-    } 
+    }
 
     public function export(): ?ExportHandler
     {
@@ -109,15 +109,15 @@ class DiscountResource extends ModelResource
         ];
     }
 
-    public function actions(): array 
+    public function actions(): array
     {
         return [
             ActionButton::make(
                 label: 'Préstamos',
             )->success()
-            ->inModal(
-                title: fn() => 'Ingreso de Préstamos',
-                content: fn() =>
+                ->inModal(
+                    title: fn() => 'Ingreso de Préstamos',
+                    content: fn() =>
                     FormBuilder::make()
                         ->action(route('loans.store'))
                         ->method('POST')
@@ -153,9 +153,9 @@ class DiscountResource extends ModelResource
                             ActionButton::make('Modificaciones', to_page(resource: new LoanResource()))->secondary()
                         ])
                         ->submit(label: 'Save', attributes: ['class' => 'btn-primary']),
-                async: false
-            )
-            ->async(callback: 'myFunction'),
+                    async: false
+                )
+                ->async(callback: 'createLoan'),
         ];
     }
     /**
@@ -165,12 +165,12 @@ class DiscountResource extends ModelResource
      * @see https://laravel.com/docs/validation#available-validation-rules
      */
     public function metrics(): array
-	{
+    {
         return [
             Flash::make(key: 'successSave', type: 'success', withToast: true, removable: true),
             Flash::make(key: 'failSave', type: 'error', withToast: true, removable: false),
         ];
-	}   
+    }
 
     public function rules(Model $item): array
     {

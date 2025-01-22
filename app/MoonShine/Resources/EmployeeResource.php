@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace App\MoonShine\Resources;
 
+use App\Models\Departament;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Employee;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Facades\Request;
 use MoonShine\Resources\ModelResource;
@@ -20,6 +23,7 @@ use MoonShine\Decorations\Grid;
 use MoonShine\Decorations\LineBreak;
 use MoonShine\Fields\Date;
 use MoonShine\Fields\Email;
+use MoonShine\Fields\Fields;
 use MoonShine\Fields\File;
 use MoonShine\Fields\Image;
 use MoonShine\Fields\Number;
@@ -39,14 +43,18 @@ class EmployeeResource extends ModelResource
 
     protected string $title = 'Employees';
 
-    protected bool $createInModal = false; 
-    protected bool $editInModal = true;  
+    protected bool $createInModal = false;
+    protected bool $editInModal = true;
     protected bool $detailInModal = true;
 
     protected bool $withPolicy = false;
 
     protected int $itemsPerPage = 10;
-    
+
+    protected array $assets = [
+        'assets/js/employeeResource.js',
+    ];
+
     public function filters(): array
     {
         return [
@@ -67,17 +75,16 @@ class EmployeeResource extends ModelResource
                     Column::make([
                         ID::make()->sortable(),
                         Text::make('Nombres', 'name')
-                            ->customAttributes(['class' => 'AA']) 
                             ->required(),
                     ])->columnSpan(2),
                     Column::make([
                         Text::make('Apellidos', 'last_name')
-                        ->required(),
+                            ->required(),
                     ])->columnSpan(2),
                     Column::make([
                         BelongsTo::make('Género', 'genders', 'name')
-                        ->required()
-                        ->searchable(),
+                            ->required()
+                            ->nullable(),
                     ])->columnSpan(2),
                     Column::make([
                         Date::make('Fecha de nacimiento', 'birth_date')
@@ -86,7 +93,7 @@ class EmployeeResource extends ModelResource
                     Column::make([
                         BelongsTo::make('Estado Civil', 'civilStatus', 'name')
                             ->required()
-                            ->searchable(),
+                            ->nullable(),
                     ])->columnSpan(2),
                     Column::make([
                         Number::make('Edad', 'age')
@@ -100,14 +107,28 @@ class EmployeeResource extends ModelResource
                             ->required(),
                     ])->columnSpan(3),
                     Column::make([
-                        BelongsTo::make('Municipio', 'towns', 'name')
-                            ->required()
-                            ->searchable(),
-                    ])->columnSpan(2),
-                    Column::make([
                         BelongsTo::make('Departamento', 'departaments', 'name')
                             ->required()
-                            ->searchable(),
+                            ->reactive(function (Fields $fields, ?string $value, Field $field) {
+                                // Obtener el departamento seleccionado por su ID
+                                $departament = Departament::find($value);
+
+                                // Si se encuentra el departamento, establecer su 'prefix' en el campo correspondiente
+                                if ($departament) {
+                                    $fields->findByColumn('town_id')
+                                        ?->valuesQuery(fn(Builder $query, Field $field) => $query->where('departament_id', $departament->id));
+                                }
+
+                                return $fields;
+                            })
+                            ->nullable(),
+                    ])->columnSpan(2),
+                    Column::make([
+                        BelongsTo::make('Municipio', 'towns', 'name')
+                            ->required()
+                            ->reactive()
+                            ->searchable()
+                            ->nullable(),
                     ])->columnSpan(2),
                     Column::make([
                         Text::make('Zona', 'zone')
@@ -154,25 +175,28 @@ class EmployeeResource extends ModelResource
                 Title::make('Datos de Contratación'),
                 LineBreak::make(),
                 Grid::make([
-                    Column::make([      
+                    Column::make([
                         Date::make('Fecha Ingreso', 'entry_date')
-                            ->format('d/m/Y') 
+                            ->format('d/m/Y')
                             ->required(),
                     ])->columnSpan(2),
                     Column::make([
                         BelongsTo::make('Agencia', 'agencies', 'short')
                             ->required()
-                            ->searchable(),
+                            ->searchable()
+                            ->nullable(),
                     ])->columnSpan(2),
                     Column::make([
                         BelongsTo::make('Cargo', 'charges', 'name')
                             ->required()
-                            ->searchable(),
+                            ->searchable()
+                            ->nullable(),
                     ])->columnSpan(2),
                     Column::make([
                         BelongsTo::make('Estado Planilla', 'payrolls', 'state')
                             ->required()
-                            ->searchable(),
+                            ->searchable()
+                            ->nullable(),
                     ])->columnSpan(3),
                     Column::make([
                         Number::make('Cuenta Bancaria', 'bank_account')
@@ -188,7 +212,8 @@ class EmployeeResource extends ModelResource
                             ->required(),
                     ])->columnSpan(6),
                     Column::make([
-                        Textarea::make('Observaciones', 'comments'),
+                        Textarea::make('Observaciones', 'comments')
+                            ->required(),
                     ])->columnSpan(6)
                 ]),
 

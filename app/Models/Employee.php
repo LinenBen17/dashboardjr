@@ -18,7 +18,7 @@ class Employee extends Model
     {
         return $this->belongsTo(Payroll::class, 'id_payroll');
     }
-    
+
     public function charges()
     {
         return $this->belongsTo(Charge::class, 'id_charge');
@@ -54,5 +54,13 @@ class Employee extends Model
     public function loans()
     {
         return $this->hasMany(Loan::class, 'employee_id');
+    }
+    public function vacations()
+    {
+        return $this->hasMany(Vacation::class, 'employee_id');
+    }
+    public function vacationHistories()
+    {
+        return $this->hasMany(VacationHistory::class, 'employee_id');
     }
 }

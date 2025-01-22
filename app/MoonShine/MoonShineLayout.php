@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\MoonShine;
 
-use MoonShine\Components\Layout\{Content,
+use MoonShine\Components\Layout\{
+    Content,
     Flash,
     Footer,
     Header,
@@ -13,7 +14,8 @@ use MoonShine\Components\Layout\{Content,
     Menu,
     Profile,
     Search,
-    Sidebar};
+    Sidebar
+};
 use MoonShine\Components\When;
 use MoonShine\Contracts\MoonShineLayoutContract;
 
@@ -38,7 +40,7 @@ final class MoonShineLayout implements MoonShineLayoutContract
                 Footer::make()
                     ->copyright(fn(): string => sprintf(
                         <<<'HTML'
-                            &copy; 2021-%d Made with ❤️ by
+                            &copy; 2021-%d Made wasith ❤️ by
                             <a href="https://cutcode.dev"
                                 class="font-semibold text-primary hover:text-secondary"
                                 target="_blank"

@@ -4,10 +4,6 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Models\Agency;
-use App\Models\Charge;
-use App\Models\DetailPayroll;
-use App\Models\Payroll;
 use App\MoonShine\Resources\AgencyResource;
 use App\MoonShine\Resources\BenefitResource;
 use App\MoonShine\Resources\BonusResource;
@@ -26,6 +22,9 @@ use App\MoonShine\Resources\PayrollResource;
 use App\MoonShine\Resources\PostResource;
 use App\MoonShine\Resources\ReportResource;
 use App\MoonShine\Resources\TownResource;
+use App\MoonShine\Resources\VacationHistoryResource;
+use App\MoonShine\Resources\VacationResource;
+use App\MoonShine\Resources\VacationTypeResource;
 use MoonShine\Providers\MoonShineApplicationServiceProvider;
 use MoonShine\MoonShine;
 use MoonShine\Menu\MenuGroup;
@@ -49,7 +48,8 @@ class MoonShineServiceProvider extends MoonShineApplicationServiceProvider
     {
         return [
             new InstallmentsResource,
-            new LoanResource
+            new LoanResource,
+            new VacationHistoryResource,
         ];
     }
 
@@ -60,7 +60,7 @@ class MoonShineServiceProvider extends MoonShineApplicationServiceProvider
     {
         return [];
     }
-    
+
     /**
      * @return Closure|list<MenuElement>
      */
@@ -93,8 +93,10 @@ class MoonShineServiceProvider extends MoonShineApplicationServiceProvider
                     MenuItem::make('Género', new GenderResource),
                     MenuItem::make('Estados Planilla', new PayrollResource),
                     MenuItem::make('Circunscripciones', new DistrictResource),
+                    MenuItem::make('Vacaciones', new VacationResource),
+                    MenuItem::make('Tipo Vacaciones', new VacationTypeResource),
                 ]),
-                MenuDivider::make(), 
+                MenuDivider::make(),
                 MenuGroup::make('Planilla', [
                     MenuItem::make('Beneficios', new BenefitResource),
                     MenuItem::make('Detalle', new DetailPayrollResource),
@@ -117,9 +119,10 @@ class MoonShineServiceProvider extends MoonShineApplicationServiceProvider
     public function boot(): void
     {
         parent::boot();
- 
+
         moonShineAssets()->add([
             '/assets/js/main.js',
-        ]); 
+            '/assets/css/main.css',
+        ]);
     }
 }

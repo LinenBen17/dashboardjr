@@ -97,13 +97,13 @@ class ReportIndexPage extends IndexPage
                                     ->fields([
                                             Date::make('Del:', 'from'),
                                             Date::make('Al:', 'to'),
-                                            Hidden::make('payrrol', 'payroll')
-                                                ->default('FUERA DE PLANILLA'),
                                             Select::make('Tipo', 'benefit')
                                                 ->options(Benefit::all()->pluck('name', 'id')->toArray())
                                                 ->nullable()
                                                 ->hint('Solo seleccionar en caso de ser necesario.')
                                                 ->customAttributes(['class' => 'benefit-select']),
+                                            Hidden::make('payrrol', 'payroll')
+                                                ->default('FUERA DE PLANILLA'),
                                     ])
                                     ->customAttributes(['class' => 'payroll-form', 'target' => '_blank'])
                                     ->submit(label: 'Imprimir', attributes: ['class' => 'btn-primary']),
@@ -120,7 +120,6 @@ class ReportIndexPage extends IndexPage
                                 LineBreak::make(),
                                 Collapse::make('Ingresa el Rango de Fecha', [
                                     FormBuilder::make()
-                                        ->customAttributes(['target' => '_blank'])
                                         ->action(route('reports.payslips'))
                                         ->method('POST')
                                         ->fields([
@@ -131,14 +130,20 @@ class ReportIndexPage extends IndexPage
                                                     'employees',
                                                     fn($item) => "$item->name $item->last_name"
                                                 )->searchable()
-                                                ->nullable()
-                                                ->valuesQuery(fn(Builder $query, Field $field) => $query->where('id_payroll', 1))
-                                                ->withImage('photo', 'public', '')
-                                                ->hint('Solo seleccionar en caso de ser necesario.'),
+                                                    ->nullable()
+                                                    ->valuesQuery(fn(Builder $query, Field $field) => $query->where('id_payroll', 1))
+                                                    ->withImage('photo', 'public', '')
+                                                    ->hint('Solo seleccionar en caso de ser necesario.'),
+                                                Select::make('Tipo', 'benefit')
+                                                    ->options(Benefit::all()->pluck('name', 'id')->toArray())
+                                                    ->nullable()
+                                                    ->hint('Solo seleccionar en caso de ser necesario.')
+                                                    ->customAttributes(['class' => 'benefit-select']),
                                                 Hidden::make('payrrol', 'payroll')
                                                     ->default('DENTRO DE PLANILLA')
 
                                         ])
+                                        ->customAttributes(['class' => 'payslips-form', 'target' => '_blank'])
                                         ->cast(ModelCast::make(DetailPayroll::class))
                                         ->submit(label: 'Imprimir', attributes: ['class' => 'btn-primary']),
                                 ])->open()->persist(fn () => false)
@@ -149,7 +154,6 @@ class ReportIndexPage extends IndexPage
                                 LineBreak::make(),
                                 Collapse::make('Ingresa el Rango de Fecha', [
                                     FormBuilder::make()
-                                        ->customAttributes(['target' => '_blank'])
                                         ->action(route('reports.payslips'))
                                         ->method('POST')
                                         ->fields([
@@ -160,14 +164,20 @@ class ReportIndexPage extends IndexPage
                                                     'employees',
                                                     fn($item) => "$item->name $item->last_name"
                                                 )->searchable()
-                                                ->nullable()
-                                                ->valuesQuery(fn(Builder $query, Field $field) => $query->where('id_payroll', 2))
-                                                ->withImage('photo', 'public', '')
-                                                ->hint('Solo seleccionar en caso de ser necesario.'),
+                                                    ->nullable()
+                                                    ->valuesQuery(fn(Builder $query, Field $field) => $query->where('id_payroll', 2))
+                                                    ->withImage('photo', 'public', '')
+                                                    ->hint('Solo seleccionar en caso de ser necesario.'),
+                                                Select::make('Tipo', 'benefit')
+                                                    ->options(Benefit::all()->pluck('name', 'id')->toArray())
+                                                    ->nullable()
+                                                    ->hint('Solo seleccionar en caso de ser necesario.')
+                                                    ->customAttributes(['class' => 'benefit-select']),
                                                 Hidden::make('payrrol', 'payroll')
                                                     ->default('FUERA DE PLANILLA')
 
                                         ])
+                                        ->customAttributes(['class' => 'payslips-form', 'target' => '_blank'])
                                         ->cast(ModelCast::make(DetailPayroll::class))
                                         ->submit(label: 'Imprimir', attributes: ['class' => 'btn-primary']),
                                 ])->persist(fn () => false)

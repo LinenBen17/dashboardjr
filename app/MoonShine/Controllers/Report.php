@@ -38,7 +38,6 @@ final class Report extends MoonShineController
                     $validator->errors()->add('from', 'Las fechas deben estar en los rangos 1-15 o 16-último día del mes.');
                     $validator->errors()->add('to', 'Las fechas deben estar en los rangos 1-15 o 16-último día del mes.');
                 }
-
             } catch (\Exception $e) {
                 $validator->errors()->add('from', 'Formato de fecha inválido.');
                 $validator->errors()->add('to', 'Formato de fecha inválido.');
@@ -64,7 +63,6 @@ final class Report extends MoonShineController
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
-
         $payrollData = $this->payrollRepository->getPayrollDataWithCalculations($from->format('Y-m-d'), $to->format('Y-m-d'), $payroll);
 
         return response()->view('reports.payroll', [
@@ -81,7 +79,7 @@ final class Report extends MoonShineController
             'to' => 'required|date',
             'payroll' => 'required|string',
         ]);
-        
+
         $from = Carbon::parse($request->from);
         $to = Carbon::parse($request->to);
         $payroll = $request->payroll;
@@ -90,11 +88,13 @@ final class Report extends MoonShineController
         $this->validateDateRange($request, $validator);
 
         if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
+            $this->notification('Error');
+
+            return back();
         }
 
         $payrollData = $this->payrollRepository->getPayrollDataWithCalculations($from->format('Y-m-d'), $to->format('Y-m-d'), $payroll, $employeeId);
-        
+
         return response()->view('reports.payslips', [
             'payrollData' => $payrollData,
             'from' => $from->format('d-m-Y'),
@@ -125,9 +125,7 @@ final class Report extends MoonShineController
                 if ($from->diffInDays($to) < 365 || $from->diffInDays($to) > 365) {
                     $validator->errors()->add('from', 'El rango de fecha debe ser de un año.');
                     $validator->errors()->add('to', 'El rango de fechas debe ser de un año.');
-                    logger($from->diffInDays($to)); 
                 }
-
             } catch (\Exception $e) {
                 $validator->errors()->add('from', 'Formato de fecha inválido.');
                 $validator->errors()->add('to', 'Formato de fecha inválido.');
@@ -144,6 +142,51 @@ final class Report extends MoonShineController
             'payrollData' => $payrollData,
             'from' => $from->format('d-m-Y'),
             'to' => $to->format('d-m-Y'),
+            'benefit' => $benefit,
+        ]);
+    }
+
+    public function getBenefitPayslips(MoonShineRequest $request): Response
+    {
+        $validator = Validator::make($request->all(), [
+            'from' => 'required|date',
+            'to' => 'required|date',
+            'payroll' => 'required|string',
+            'benefit' => 'required|string',
+        ]);
+
+        $from = Carbon::parse($request->from);
+        $to = Carbon::parse($request->to);
+        $payroll = $request->payroll;
+        $employeeId = $request->employee_id ? $request->employee_id : null;
+        $benefit = $request->benefit;
+
+        $validator->after(function ($validator) use ($request) {
+            try {
+                $from = Carbon::parse($request->from);
+                $to = Carbon::parse($request->to);
+
+                if ($from->diffInDays($to) < 365 || $from->diffInDays($to) > 365) {
+                    $validator->errors()->add('from', 'El rango de fecha debe ser de un año.');
+                    $validator->errors()->add('to', 'El rango de fechas debe ser de un año.');
+                }
+            } catch (\Exception $e) {
+                $validator->errors()->add('from', 'Formato de fecha inválido.');
+                $validator->errors()->add('to', 'Formato de fecha inválido.');
+            }
+        });
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        $payrollData = $this->payrollRepository->getPayrollDataWithCalculations($from->format('Y-m-d'), $to->format('Y-m-d'), $payroll, $employeeId, $benefit);
+
+        return response()->view('reports.benefit_payslips', [
+            'payrollData' => $payrollData,
+            'from' => $from->format('d-m-Y'),
+            'to' => $to->format('d-m-Y'),
+            'employeeId' => $employeeId,
             'benefit' => $benefit,
         ]);
     }
