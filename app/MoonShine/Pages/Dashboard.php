@@ -4,11 +4,8 @@ declare(strict_types=1);
 
 namespace App\MoonShine\Pages;
 
-use App\Models\Post;
 use MoonShine\Pages\Page;
 use MoonShine\Components\MoonShineComponent;
-use MoonShine\Decorations\Grid;
-use MoonShine\Metrics\ValueMetric;
 
 class Dashboard extends Page
 {
@@ -32,13 +29,6 @@ class Dashboard extends Page
      */
     public function components(): array
 	{
-        $totalPost = Post::count();
-		return [
-            Grid::make([
-                ValueMetric::make('Post Count')
-                    ->value($totalPost)
-                    ->icon('heroicons.users'),
-            ])
-        ];
+		return [];
 	}
 }

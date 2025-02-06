@@ -19,18 +19,21 @@ use MoonShine\Fields\Switcher;
 use MoonShine\Fields\Text;
 use MoonShine\Handlers\ExportHandler;
 use MoonShine\Handlers\ImportHandler;
+use Sweet1s\MoonshineRBAC\Traits\WithRolePermissions;
 
 /**
  * @extends ModelResource<Departament>
  */
 class DepartamentResource extends ModelResource
 {
+    use WithRolePermissions;
+
     protected string $model = Departament::class;
 
     protected string $title = 'Departaments';
 
-    protected bool $createInModal = true; 
-    protected bool $editInModal = true;  
+    protected bool $createInModal = true;
+    protected bool $editInModal = true;
     protected bool $detailInModal = true;
 
     protected int $itemsPerPage = 10;
@@ -41,15 +44,15 @@ class DepartamentResource extends ModelResource
         return $referer ?: '/';
     }
 
-    public function import(): ?ImportHandler 
+    public function import(): ?ImportHandler
     {
         return ImportHandler::make('Importar');
-    } 
+    }
 
-    public function export(): ?ExportHandler 
+    public function export(): ?ExportHandler
     {
         return ExportHandler::make('Exportar');
-    } 
+    }
     /**
      * @return list<MoonShineComponent|Field>
      */

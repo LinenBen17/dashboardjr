@@ -19,12 +19,15 @@ use MoonShine\Fields\Number;
 use MoonShine\Fields\Relationships\BelongsTo;
 use MoonShine\Fields\Relationships\HasMany;
 use MoonShine\Fields\Textarea;
+use Sweet1s\MoonshineRBAC\Traits\WithRolePermissions;
 
 /**
  * @extends ModelResource<Loan>
  */
 class LoanResource extends ModelResource
 {
+    use WithRolePermissions;
+
     protected string $model = Loan::class;
 
     protected string $title = 'Loans';

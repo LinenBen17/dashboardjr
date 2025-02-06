@@ -5,7 +5,7 @@ use MoonShine\Forms\LoginForm;
 use MoonShine\Http\Middleware\Authenticate;
 use MoonShine\Http\Middleware\SecurityHeadersMiddleware;
 use MoonShine\Models\MoonshineUser;
-use App\MoonShine\MoonShineLayout;
+use MoonShine\MoonShineLayout;
 use MoonShine\Pages\ProfilePage;
 
 return [
@@ -85,7 +85,8 @@ return [
         'providers' => [
             'moonshine' => [
                 'driver' => 'eloquent',
-                'model' => MoonshineUser::class,
+                // 'model' => MoonshineUser::class,
+                'model' => \App\Models\User::class,
             ],
         ],
         'pipelines' => [],

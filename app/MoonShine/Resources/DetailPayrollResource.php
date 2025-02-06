@@ -22,18 +22,21 @@ use MoonShine\Fields\Relationships\HasOne;
 use MoonShine\Fields\Text;
 use MoonShine\Handlers\ExportHandler;
 use MoonShine\Handlers\ImportHandler;
+use Sweet1s\MoonshineRBAC\Traits\WithRolePermissions;
 
 /**
  * @extends ModelResource<DetailPayroll>
  */
 class DetailPayrollResource extends ModelResource
 {
+    use WithRolePermissions;
+
     protected string $model = DetailPayroll::class;
 
     protected string $title = 'DetailPayrolls';
 
-    protected bool $createInModal = true; 
-    protected bool $editInModal = true;  
+    protected bool $createInModal = true;
+    protected bool $editInModal = true;
     protected bool $detailInModal = true;
 
     protected int $itemsPerPage = 10;
@@ -41,9 +44,9 @@ class DetailPayrollResource extends ModelResource
     public function import(): ?ImportHandler
     {
         return ImportHandler::make('Importar');
-    } 
+    }
 
-    public function export(): ?ExportHandler 
+    public function export(): ?ExportHandler
     {
         return ExportHandler::make('Exportar');
     }
@@ -71,26 +74,26 @@ class DetailPayrollResource extends ModelResource
                     ->nullable()
                     ->useOnImport(fromRaw: static fn(string $raw, $ctx) => $raw)
                     ->showOnExport()
-                    ->reactive(function (Fields $fields, ?int $employeeId) : Fields {
+                    ->reactive(function (Fields $fields, ?int $employeeId): Fields {
                         if ($employeeId) {
                             $employee = Employee::find($employeeId);
                             $salary = District::where('year', now()->year)
                                 ->where('name', ($employee->id_agency == 2) ? 'CE1' : 'CE2')
                                 ->value('salary');
                             $district = District::where('year', now()->year)
-                            ->where('name', ($employee->id_agency == 2) ? 'CE1' : 'CE2')
-                            ->first();
+                                ->where('name', ($employee->id_agency == 2) ? 'CE1' : 'CE2')
+                                ->first();
                             return tap($fields, function ($fields) use ($salary, $district) {
                                 $fields->findByColumn('regular_salaries')?->setValue($salary); // Correcto para el campo relacionado
                                 $fields->findByColumn('district_id')?->setValue($district); // Relacionar el campo de distritos
                             });
                         }
-                
+
                         // Retornar los campos sin cambios si no se seleccionó un empleado.
                         return $fields;
                     }),
                 BelongsTo::make(
-                    'Circunscripción', 
+                    'Circunscripción',
                     'districts',
                     fn($item) => "$item->name $item->last_name"
                 )->searchable()

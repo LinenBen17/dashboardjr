@@ -35,12 +35,15 @@ use MoonShine\Fields\Textarea;
 use MoonShine\Handlers\ExportHandler;
 use MoonShine\Handlers\ImportHandler;
 use MoonShine\TypeCasts\ModelCast;
+use Sweet1s\MoonshineRBAC\Traits\WithRolePermissions;
 
 /**
  * @extends ModelResource<Discount>
  */
 class DiscountResource extends ModelResource
 {
+    use WithRolePermissions;
+
     protected string $model = Discount::class;
 
     protected string $title = 'Discounts';

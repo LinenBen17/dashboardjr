@@ -20,18 +20,21 @@ use MoonShine\Fields\Switcher;
 use MoonShine\Fields\Text;
 use MoonShine\Handlers\ExportHandler;
 use MoonShine\Handlers\ImportHandler;
+use Sweet1s\MoonshineRBAC\Traits\WithRolePermissions;
 
 /**
  * @extends ModelResource<Town>
  */
 class TownResource extends ModelResource
 {
+    use WithRolePermissions;
+
     protected string $model = Town::class;
 
     protected string $title = 'Towns';
 
-    protected bool $createInModal = true; 
-    protected bool $editInModal = true;  
+    protected bool $createInModal = true;
+    protected bool $editInModal = true;
     protected bool $detailInModal = true;
 
     protected int $itemsPerPage = 10;
@@ -41,15 +44,15 @@ class TownResource extends ModelResource
         $referer = Request::header('referer');
         return $referer ?: '/';
     }
-    public function import(): ?ImportHandler 
+    public function import(): ?ImportHandler
     {
         return ImportHandler::make('Importar');
-    } 
+    }
 
-    public function export(): ?ExportHandler 
+    public function export(): ?ExportHandler
     {
         return ExportHandler::make('Exportar');
-    } 
+    }
     /**
      * @return list<MoonShineComponent|Field>
      */
@@ -71,7 +74,7 @@ class TownResource extends ModelResource
                     ->reactive(function (Fields $fields, ?string $value, Field $field) {
                         // Obtener el departamento seleccionado por su ID
                         $departament = Departament::find($value);
-                        
+
                         // Si se encuentra el departamento, establecer su 'prefix' en el campo correspondiente
                         if ($departament) {
                             $fields->findByColumn('prefix')
@@ -80,7 +83,7 @@ class TownResource extends ModelResource
                             $fields->findByColumn('status')
                                 ?->setValue($departament->status);
                         }
-            
+
                         return $fields;
                     }),
                 Text::make('Prefijo', 'prefix')

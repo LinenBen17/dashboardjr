@@ -13,18 +13,21 @@ use MoonShine\Fields\ID;
 use MoonShine\Fields\Field;
 use MoonShine\Components\MoonShineComponent;
 use MoonShine\Fields\Text;
+use Sweet1s\MoonshineRBAC\Traits\WithRolePermissions;
 
 /**
  * @extends ModelResource<Charge>
  */
 class ChargeResource extends ModelResource
 {
+    use WithRolePermissions;
+
     protected string $model = Charge::class;
 
     protected string $title = 'Cargos Empleados';
 
-    protected bool $createInModal = true; 
-    protected bool $editInModal = true;  
+    protected bool $createInModal = true;
+    protected bool $editInModal = true;
     protected bool $detailInModal = true;
 
     protected bool $withPolicy = false;

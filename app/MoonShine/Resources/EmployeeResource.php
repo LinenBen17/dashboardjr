@@ -33,12 +33,15 @@ use MoonShine\Fields\Select;
 use MoonShine\Fields\Td;
 use MoonShine\Fields\Text;
 use MoonShine\Fields\Textarea;
+use Sweet1s\MoonshineRBAC\Traits\WithRolePermissions;
 
 /**
  * @extends ModelResource<Employee>
  */
 class EmployeeResource extends ModelResource
 {
+    use WithRolePermissions;
+
     protected string $model = Employee::class;
 
     protected string $title = 'Employees';

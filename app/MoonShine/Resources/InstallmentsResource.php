@@ -20,12 +20,15 @@ use MoonShine\Fields\Enum;
 use MoonShine\Fields\Number;
 use MoonShine\Fields\Relationships\BelongsTo;
 use MoonShine\Fields\Text;
+use Sweet1s\MoonshineRBAC\Traits\WithRolePermissions;
 
 /**
  * @extends ModelResource<Installments>
  */
 class InstallmentsResource extends ModelResource
 {
+    use WithRolePermissions;
+
     protected string $model = Installments::class;
 
     protected string $title = 'Installments';
@@ -33,7 +36,7 @@ class InstallmentsResource extends ModelResource
     protected bool $createInModal = true;
     protected bool $detailInModal = true;
 
-    public function getActiveActions(): array 
+    public function getActiveActions(): array
     {
         return ['view'];
     }
@@ -46,12 +49,12 @@ class InstallmentsResource extends ModelResource
         return [
             Block::make([
                 ID::make()
-                ->sortable(
-                    fn(Builder $query) => $query
-                ),
+                    ->sortable(
+                        fn(Builder $query) => $query
+                    ),
                 BelongsTo::make(
                     'No. Préstamo',
-                    'loan',  
+                    'loan',
                 ),
                 Number::make('No. Cuota', 'no_installment'),
                 Decimal::make('Monto de la Cuota', 'amount'),

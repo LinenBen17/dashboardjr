@@ -10,7 +10,8 @@
         "laravel/framework": "^11.9",
         "laravel/tinker": "^2.9",
         "lee-to/moonshine-tree-resource": "^1.0",
-        "prettus/l5-repository": "^2.9"
+        "prettus/l5-repository": "^2.9",
+        "sweet1s/moonshine-roles-permissions": "^2.3"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

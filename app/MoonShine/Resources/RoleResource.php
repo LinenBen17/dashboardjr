@@ -5,40 +5,27 @@ declare(strict_types=1);
 namespace App\MoonShine\Resources;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Benefit;
-use Illuminate\Support\Facades\Request;
+use App\Models\Role;
+
 use MoonShine\Resources\ModelResource;
 use MoonShine\Decorations\Block;
 use MoonShine\Fields\ID;
 use MoonShine\Fields\Field;
 use MoonShine\Components\MoonShineComponent;
-use MoonShine\Fields\Text;
+use Sweet1s\MoonshineRBAC\Traits\WithPermissionsFormComponent;
 use Sweet1s\MoonshineRBAC\Traits\WithRolePermissions;
 
 /**
- * @extends ModelResource<Benefit>
+ * @extends ModelResource<Role>
  */
-class BenefitResource extends ModelResource
+class RoleResource extends ModelResource
 {
     use WithRolePermissions;
+    use WithPermissionsFormComponent;
 
-    protected string $model = Benefit::class;
+    protected string $model = Role::class;
 
-    protected string $title = 'Benefits';
-
-    protected bool $createInModal = true;
-    protected bool $editInModal = true;
-    protected bool $detailInModal = true;
-
-    protected bool $withPolicy = false;
-
-    protected int $itemsPerPage = 10;
-
-    public function redirectAfterSave(): string
-    {
-        $referer = Request::header('referer');
-        return $referer ?: '/';
-    }
+    protected string $title = 'Roles';
 
     /**
      * @return list<MoonShineComponent|Field>
@@ -48,13 +35,12 @@ class BenefitResource extends ModelResource
         return [
             Block::make([
                 ID::make()->sortable(),
-                Text::make('Nombre del Beneficio', 'name')
             ]),
         ];
     }
 
     /**
-     * @param Benefit $item
+     * @param Role $item
      *
      * @return array<string, string[]|string>
      * @see https://laravel.com/docs/validation#available-validation-rules

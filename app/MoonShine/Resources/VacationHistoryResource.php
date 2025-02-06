@@ -12,12 +12,15 @@ use MoonShine\Decorations\Block;
 use MoonShine\Fields\ID;
 use MoonShine\Fields\Field;
 use MoonShine\Components\MoonShineComponent;
+use Sweet1s\MoonshineRBAC\Traits\WithRolePermissions;
 
 /**
  * @extends ModelResource<VacationHistory>
  */
 class VacationHistoryResource extends ModelResource
 {
+    use WithRolePermissions;
+
     protected string $model = VacationHistory::class;
 
     protected string $title = 'VacationHistories';

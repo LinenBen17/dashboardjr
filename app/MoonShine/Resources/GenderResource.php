@@ -15,18 +15,21 @@ use MoonShine\Components\MoonShineComponent;
 use MoonShine\Fields\Text;
 use MoonShine\Handlers\ExportHandler;
 use MoonShine\Handlers\ImportHandler;
+use Sweet1s\MoonshineRBAC\Traits\WithRolePermissions;
 
 /**
  * @extends ModelResource<Gender>
  */
 class GenderResource extends ModelResource
 {
+    use WithRolePermissions;
+
     protected string $model = Gender::class;
 
     protected string $title = 'Genders';
 
-    protected bool $createInModal = true; 
-    protected bool $editInModal = true;  
+    protected bool $createInModal = true;
+    protected bool $editInModal = true;
     protected bool $detailInModal = true;
 
     protected bool $withPolicy = false;
@@ -42,12 +45,12 @@ class GenderResource extends ModelResource
     public function import(): ?ImportHandler
     {
         return null;
-    } 
+    }
 
-    public function export(): ?ExportHandler 
+    public function export(): ?ExportHandler
     {
         return null;
-    } 
+    }
     /**
      * @return list<MoonShineComponent|Field>
      */

@@ -34,18 +34,21 @@ use MoonShine\Handlers\ImportHandler;
 use MoonShine\Metrics\ValueMetric;
 use MoonShine\MoonShineUI;
 use MoonShine\Support\AlpineJs;
+use Sweet1s\MoonshineRBAC\Traits\WithRolePermissions;
 
 /**
  * @extends ModelResource<Bonus>
  */
 class BonusResource extends ModelResource
 {
+    use WithRolePermissions;
+
     protected string $model = Bonus::class;
 
     protected string $title = 'Bonus';
 
-    protected bool $createInModal = true; 
-    protected bool $editInModal = true;  
+    protected bool $createInModal = true;
+    protected bool $editInModal = true;
     protected bool $detailInModal = true;
 
     protected int $itemsPerPage = 10;
@@ -53,9 +56,9 @@ class BonusResource extends ModelResource
     public function import(): ?ImportHandler
     {
         return ImportHandler::make('Importar');
-    } 
+    }
 
-    public function export(): ?ExportHandler 
+    public function export(): ?ExportHandler
     {
         return ExportHandler::make('Exportar');
     }
@@ -109,16 +112,16 @@ class BonusResource extends ModelResource
     {
         return [];
     }
-    
-    public function actions(): array 
+
+    public function actions(): array
     {
         return [
             ActionButton::make(
                 label: 'Bono 14',
             )->warning()
-            ->inModal(
-                title: fn() => 'Creación Planilla Bono 14',
-                content: fn() => 
+                ->inModal(
+                    title: fn() => 'Creación Planilla Bono 14',
+                    content: fn() =>
                     FormBuilder::make()
                         ->action(route('storeBono14'))
                         ->method('POST')
@@ -127,21 +130,21 @@ class BonusResource extends ModelResource
                                 Grid::make([
                                     Column::make([
                                         Date::make('Del:', 'date_from'),
-                                        Date::make('Al:', 'date_to') 
+                                        Date::make('Al:', 'date_to')
                                     ])
                                 ])
                             ])
                         ]),
-                async: false
-            ),
+                    async: false
+                ),
         ];
     }
 
     public function metrics(): array
-	{
+    {
         return [
             Flash::make(key: 'successSave', type: 'success', withToast: true, removable: true),
             Flash::make(key: 'failSave', type: 'error', withToast: true, removable: false),
         ];
-	}
+    }
 }

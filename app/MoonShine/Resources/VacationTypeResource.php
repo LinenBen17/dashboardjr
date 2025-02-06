@@ -15,12 +15,15 @@ use MoonShine\Components\MoonShineComponent;
 use MoonShine\Fields\Text;
 use MoonShine\Handlers\ExportHandler;
 use MoonShine\Handlers\ImportHandler;
+use Sweet1s\MoonshineRBAC\Traits\WithRolePermissions;
 
 /**
  * @extends ModelResource<VacationType>
  */
 class VacationTypeResource extends ModelResource
 {
+    use WithRolePermissions;
+
     protected string $model = VacationType::class;
 
     protected string $title = 'Tipos de vacaciones';

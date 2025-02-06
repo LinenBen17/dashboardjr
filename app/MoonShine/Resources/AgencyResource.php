@@ -13,24 +13,27 @@ use MoonShine\Fields\ID;
 use MoonShine\Fields\Field;
 use MoonShine\Components\MoonShineComponent;
 use MoonShine\Fields\Text;
+use Sweet1s\MoonshineRBAC\Traits\WithRolePermissions;
 
 /**
  * @extends ModelResource<Agency>
  */
 class AgencyResource extends ModelResource
 {
+    use WithRolePermissions;
+
     protected string $model = Agency::class;
 
     protected string $title = 'Agencias';
-    
-    protected bool $createInModal = true; 
-    protected bool $editInModal = true;  
+
+    protected bool $createInModal = true;
+    protected bool $editInModal = true;
     protected bool $detailInModal = true;
 
     protected bool $withPolicy = false;
 
     protected int $itemsPerPage = 10;
-    
+
     public function redirectAfterSave(): string
     {
         $referer = Request::header('referer');

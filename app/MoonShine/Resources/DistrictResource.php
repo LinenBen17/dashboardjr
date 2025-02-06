@@ -16,18 +16,21 @@ use MoonShine\Components\MoonShineComponent;
 use MoonShine\Fields\Number;
 use MoonShine\Fields\Select;
 use MoonShine\Fields\Text;
+use Sweet1s\MoonshineRBAC\Traits\WithRolePermissions;
 
 /**
  * @extends ModelResource<District>
  */
 class DistrictResource extends ModelResource
 {
+    use WithRolePermissions;
+
     protected string $model = District::class;
 
     protected string $title = 'Districts';
 
-    protected bool $createInModal = true; 
-    protected bool $editInModal = true;  
+    protected bool $createInModal = true;
+    protected bool $editInModal = true;
     protected bool $detailInModal = true;
 
     public function redirectAfterSave(): string
@@ -48,10 +51,10 @@ class DistrictResource extends ModelResource
                     ->options([
                         'CE1' => 'Circunscripción 1',
                         'CE2' => 'Circunscripción 2'
-                    ]) 
+                    ])
                     ->required(),
                 Decimal::make('Salario', 'salary')
-                    ->required(), 
+                    ->required(),
                 Number::make('Año', 'year')
                     ->required()
                     ->sortable(),

@@ -12,12 +12,15 @@ use App\MoonShine\Pages\Report\ReportDetailPage;
 use MoonShine\Enums\PageType;
 use MoonShine\Resources\ModelResource;
 use MoonShine\Pages\Page;
+use Sweet1s\MoonshineRBAC\Traits\WithRolePermissions;
 
 /**
  * @extends ModelResource<Report>
  */
 class ReportResource extends ModelResource
 {
+    use WithRolePermissions;
+
     protected string $model = Report::class;
 
     protected string $title = 'Creación de Reportes';
@@ -34,7 +37,7 @@ class ReportResource extends ModelResource
     public function pages(): array
     {
         return [
-            
+
             ReportIndexPage::make($this->title()),
             ReportFormPage::make(
                 $this->getItemID()
