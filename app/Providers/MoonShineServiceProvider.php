@@ -38,6 +38,7 @@ use Closure;
 use MoonShine\Decorations\Block;
 use MoonShine\Exceptions\MenuException;
 use MoonShine\Menu\MenuDivider;
+use Sweet1s\MoonshineRBAC\Components\MenuRBAC;
 
 class MoonShineServiceProvider extends MoonShineApplicationServiceProvider
 {
@@ -66,7 +67,7 @@ class MoonShineServiceProvider extends MoonShineApplicationServiceProvider
      */
     protected function menu(): array
     {
-        return [
+        return MenuRBAC::menu(
             /* MenuGroup::make(static fn() => __('moonshine::ui.resource.system'), [
                 MenuItem::make(
                     static fn() => __('moonshine::ui.resource.admins_title'),
@@ -113,7 +114,7 @@ class MoonShineServiceProvider extends MoonShineApplicationServiceProvider
                     MenuItem::make('Reportes', new ReportResource),
                 ])
             ]),
-        ];
+        );
     }
 
     /**
@@ -121,7 +122,47 @@ class MoonShineServiceProvider extends MoonShineApplicationServiceProvider
      */
     protected function theme(): array
     {
-        return [];
+        return [
+            'colors' => [
+                'primary' => '202, 111, 30', // ca6f1e
+                'secondary' => '245, 176, 65', // f5b041
+                'body' => '23, 32, 42', // 17202a
+                'dark' => [
+                    'DEFAULT' => '23, 32, 42', // 17202a
+                    50 => '52, 73, 94', // 34495e (search, toasts, progress bars)
+                    100 => '93, 109, 126', // 5d6d7e (dividers)
+                    200 => '93, 109, 126', // 5d6d7e (dividers)
+                    300 => '52, 73, 94', // 34495e (borders)
+                    400 => '52, 73, 94', // 34495e (dropdowns, buttons, pagination)
+                    500 => '52, 73, 94', // 34495e (buttons default bg)
+                    600 => '33, 47, 60', // 212f3c (table row)
+                    700 => '28, 40, 51', // 1c2833 (background content)
+                    800 => '23, 32, 42', // 17202a (background sidebar)
+                    900 => '23, 32, 42', // 17202a (background)
+                ],
+
+                'success-bg' => '17, 122, 101', // 117a65
+                'success-text' => '130, 224, 170', // 82e0aa
+                'warning-bg' => '183, 149, 11', // b7950b
+                'warning-text' => '247, 220, 111', // f7dc6f
+                'error-bg' => '123, 36, 28', // 7b241c
+                'error-text' => '245, 183, 177', // f5b7b1
+                'info-bg' => '33, 97, 140', // 21618c
+                'info-text' => '133, 193, 233', // 85c1e9
+            ],
+
+            'darkColors' => [
+                'body' => '23, 32, 42', // 17202a
+                'success-bg' => '30, 132, 73', // 1e8449
+                'success-text' => '130, 224, 170', // 82e0aa
+                'warning-bg' => '183, 149, 11', // b7950b
+                'warning-text' => '247, 220, 111', // f7dc6f
+                'error-bg' => '169, 50, 38', // a93226
+                'error-text' => '245, 183, 177', // f5b7b1
+                'info-bg' => '33, 97, 140', // 21618c
+                'info-text' => '133, 193, 233', // 85c1e9
+            ]
+        ];
     }
 
     public function boot(): void

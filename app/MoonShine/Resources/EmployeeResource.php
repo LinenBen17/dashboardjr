@@ -47,8 +47,8 @@ class EmployeeResource extends ModelResource
     protected string $title = 'Employees';
 
     protected bool $createInModal = false;
-    protected bool $editInModal = true;
-    protected bool $detailInModal = true;
+    protected bool $editInModal = false;
+    protected bool $detailInModal = false;
 
     protected bool $withPolicy = false;
 

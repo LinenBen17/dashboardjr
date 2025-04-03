@@ -115,29 +115,7 @@ class BonusResource extends ModelResource
 
     public function actions(): array
     {
-        return [
-            ActionButton::make(
-                label: 'Bono 14',
-            )->warning()
-                ->inModal(
-                    title: fn() => 'Creación Planilla Bono 14',
-                    content: fn() =>
-                    FormBuilder::make()
-                        ->action(route('storeBono14'))
-                        ->method('POST')
-                        ->fields([
-                            Block::make([
-                                Grid::make([
-                                    Column::make([
-                                        Date::make('Del:', 'date_from'),
-                                        Date::make('Al:', 'date_to')
-                                    ])
-                                ])
-                            ])
-                        ]),
-                    async: false
-                ),
-        ];
+        return [];
     }
 
     public function metrics(): array

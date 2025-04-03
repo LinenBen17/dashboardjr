@@ -6,9 +6,10 @@ use App\MoonShine\Controllers\LoanController;
 use App\MoonShine\Controllers\VacationController as ControllerVacation;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
+/* Route::get('/', function () {
     return redirect('/admin');
 });
+ */
 
 Route::post('/vacations', [ControllerVacation::class, 'store'])->name('vacations.store');
 Route::get('/vacations/{id}', [ControllerVacation::class, 'getVacationFormat'])->name('vacations.vacation_format');
