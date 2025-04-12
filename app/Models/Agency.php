@@ -19,11 +19,11 @@ class Agency extends Model
         return $this->hasMany(Town::class, 'agency_id');
     }
 
-    /* public function employees()
+    public function employees()
     {
         return $this->hasMany(Employee::class, 'id_agency');
     }
-    public function reports()
+    /* public function reports()
     {
         return $this->hasMany(Report::class, 'id_agency');
     } */

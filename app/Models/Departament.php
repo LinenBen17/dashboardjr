@@ -14,13 +14,8 @@ class Departament extends Model
     {
         return $this->hasMany(Agency::class, 'departament_id');
     }
-
-    /* public function towns()
-    {
-        return $this->hasMany(Town::class, 'departament_id');
-    }
     public function employees()
     {
         return $this->hasMany(Employee::class, 'departament_id');
-    } */
+    }
 }
