@@ -18,4 +18,8 @@ class Departament extends Model
     {
         return $this->hasMany(Employee::class, 'departament_id');
     }
+    public function warehouses()
+    {
+        return $this->hasMany(Warehouses::class, 'departament_id');
+    }
 }

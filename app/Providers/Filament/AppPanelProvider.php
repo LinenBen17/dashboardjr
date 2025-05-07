@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use Filament\Facades\Filament;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -26,6 +27,7 @@ class AppPanelProvider extends PanelProvider
         return $panel
             ->id('app')
             ->path('app')
+            ->login()
             ->colors([
                 'primary' => Color::Amber,
             ])
@@ -52,18 +54,6 @@ class AppPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ])
-            ->navigationGroups([
-                NavigationGroup::make()
-                    ->label('Shop')
-                    ->icon('heroicon-o-shopping-cart'),
-                NavigationGroup::make()
-                    ->label('Blog')
-                    ->icon('heroicon-o-pencil'),
-                NavigationGroup::make()
-                    ->label(fn(): string => __('navigation.settings'))
-                    ->icon('heroicon-o-cog-6-tooth')
-                    ->collapsed(),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
