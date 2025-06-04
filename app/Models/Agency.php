@@ -23,6 +23,10 @@ class Agency extends Model
     {
         return $this->hasMany(Employee::class, 'id_agency');
     }
+    public function routes()
+    {
+        return $this->hasMany(Route::class, 'agency_id');
+    }
     /* public function reports()
     {
         return $this->hasMany(Report::class, 'id_agency');

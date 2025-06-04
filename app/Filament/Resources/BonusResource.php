@@ -39,7 +39,7 @@ class BonusResource extends Resource
             ->schema([
                 Forms\Components\Select::make('employee_id')
                     ->label('Empleado')
-                    ->relationship('employees', 'name', fn(Builder $query) => $query->select('id', DB::raw("CONCAT(name, ' ', last_name) as name")))
+                    ->relationship('employees', 'name')
                     ->required(),
                 Forms\Components\DatePicker::make('date')
                     ->required(),

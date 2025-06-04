@@ -15,4 +15,8 @@ class Warehouses extends Model
     {
         return $this->belongsTo(Departament::class, 'departament_id');
     }
+    public function warehouseIncomes()
+    {
+        return $this->hasMany(WarehouseIncomes::class);
+    }
 }

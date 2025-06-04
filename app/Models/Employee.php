@@ -72,6 +72,14 @@ class Employee extends Model
     {
         return $this->belongsTo(Gender::class, 'gender_id');
     }
+    public function routes()
+    {
+        return $this->hasOne(Route::class, 'employee_id');
+    }
+    public function person_scans()
+    {
+        return $this->hasMany(Bonus::class, 'person_scans');
+    }
     /* public function detailPayrolls()
     {
         return $this->hasOne(DetailPayroll::class, 'employee_id');
