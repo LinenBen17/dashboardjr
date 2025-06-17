@@ -22,4 +22,8 @@ class Route extends Model
     {
         return $this->hasMany(WarehouseIncomes::class);
     }
+    public function warehouseOutgos()
+    {
+        return $this->hasMany(WarehouseOutgo::class);
+    }
 }

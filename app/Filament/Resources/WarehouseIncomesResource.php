@@ -39,8 +39,6 @@ class WarehouseIncomesResource extends Resource
     //Sort in the cluster
     protected static ?int $navigationSort = 2;
 
-    public $scannedGuides = []; // Propiedad para las guías escaneadas
-
     public static function form(Form $form): Form
     {
         return $form
@@ -49,11 +47,11 @@ class WarehouseIncomesResource extends Resource
                 Section::make('')
                     ->columns(3)
                     ->schema([
-                        Grid::make(4)
+                        Grid::make(3)
                             ->schema([
-                                Forms\Components\Checkbox::make('reincome')
+                                /* Forms\Components\Checkbox::make('reincome')
                                     ->label('Re-ingreso')
-                                    ->id('reincome'),
+                                    ->id('reincome'), */
                                 Forms\Components\TextInput::make('manifest_code')
                                     ->label('Manifiesto')
                                     ->unique(ignoreRecord: true)
@@ -67,6 +65,8 @@ class WarehouseIncomesResource extends Resource
                                 Forms\Components\Select::make('warehouse_id')
                                     ->label('Bodega')
                                     ->required()
+                                    ->id('warehouse_id')
+                                    ->disabledOn('edit')
                                     ->live(onBlur: true)
                                     ->afterStateUpdated(function ($state, callable $set) {
                                         $lastCode = DB::table('warehouse_incomes')

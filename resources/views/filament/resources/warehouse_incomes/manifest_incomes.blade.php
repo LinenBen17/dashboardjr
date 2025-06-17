@@ -43,19 +43,6 @@
         </div>
     </div>
 
-    <!-- Datos generales -->
-    <div class="grid grid-cols-2 text-xs gap-y-1 mb-3">
-        <p>Ruta ingreso: {{ $route['name'] }} </p>
-        <p>Total Madres: {{ $manifest_income['total_guides'] }} </p>
-        <p>No. manifiesto: {{ $manifest_income['manifest_code'] }}</p>
-        <p>Total Hijas: {{ $manifest_income['total_pieces'] - $manifest_income['total_guides'] }}</p>
-        <p>Responsable: {{ $manifest_income['driver'] }}</p>
-        <p>Total paquetes: {{ $manifest_income['total_pieces'] + $manifest_income['total_guides'] }}</p>
-        <p>Recibe: {{ $person_scans['name'] . ' ' . $person_scans['last_name'] }} </p>
-        <p>Hora inicio: {{ $hora_inicio }} Hora fin: {{ $hora_fin }}</p>
-    </div>
-    <hr>
-
     @php
         function splitIntoColumns($array, $rowsPerColumn)
         {
@@ -68,45 +55,101 @@
         }
 
         $rowsPerColumn = 45;
-        $motherColumns = splitIntoColumns($motherGuides, $rowsPerColumn);
-        $childColumns = splitIntoColumns($childGuides, $rowsPerColumn);
+        if (count($motherGuides) > 0 || count($childGuides) > 0) {
+            $motherColumns = splitIntoColumns($motherGuides, $rowsPerColumn);
+            $childColumns = splitIntoColumns($childGuides, $rowsPerColumn);
+        }
 
-        $maxMotherRows = max(array_map('count', $motherColumns));
-        $maxChildRows = max(array_map('count', $childColumns));
+        if (count($reentryMotherGuides) > 0 || count($reentryChildGuides) > 0) {
+            $reentryMotherColumns = splitIntoColumns($reentryMotherGuides, $rowsPerColumn);
+            $reentryChildColumns = splitIntoColumns($reentryChildGuides, $rowsPerColumn);
+        }
     @endphp
+
+    <!-- Datos generales -->
+    <div class="grid grid-cols-3 text-xs gap-y-1 mb-3">
+        <p>Ruta ingreso: {{ $route['name'] }} </p>
+        <p>Total Madres: {{ $manifest_income['total_guides'] }} </p>
+        <p>Total Re-ingresos Madres: {{ isset($reentryMotherColumns) ? count($reentryMotherColumns) : 0 }}</p>
+        <p>No. manifiesto: {{ $manifest_income['manifest_code'] }}</p>
+        <p>Total Hijas: {{ $manifest_income['total_pieces'] - $manifest_income['total_guides'] }}</p>
+        <p>Total Re-ingresos Hijas: {{ isset($reentryChildColumns) ? count($reentryChildColumns) : 0 }}</p>
+        <p>Responsable: {{ $manifest_income['driver'] }}</p>
+        <p>Total paquetes: {{ $manifest_income['total_pieces'] }}</p>
+        <p></p>
+        <p>Recibe: {{ $person_scans['name'] . ' ' . $person_scans['last_name'] }} </p>
+        <p>Hora inicio: {{ $hora_inicio }} Hora fin: {{ $hora_fin }}</p>
+        <p></p>
+    </div>
+    <hr>
 
     <!-- Guías Madres -->
     <div class="flex gap-8 mt-4">
         <!-- Guías Madres -->
-        <div class="w-1/2">
-            <h2 class="text-xs font-bold mb-1">Guías Madres</h2>
-            <div class="grid grid-cols-{{ count($motherColumns) }} gap-4 text-xs">
-                @foreach ($motherColumns as $column)
-                    <div class="flex flex-col space-y-0.5">
-                        @foreach ($column as $guide)
-                            <p>{{ $guide }}</p>
-                        @endforeach
-                    </div>
-                @endforeach
+        @isset($motherColumns)
+            <div class="w-1/2">
+                <h2 class="text-xs font-bold mb-1">Guías Madres</h2>
+                <div class="grid grid-cols-{{ isset($motherColumns) ? count($motherColumns) : 0 }} gap-4 text-xs">
+                    @foreach ($motherColumns as $column)
+                        <div class="flex flex-col space-y-0.5">
+                            @foreach ($column as $guide)
+                                <p>{{ $guide }}</p>
+                            @endforeach
+                        </div>
+                    @endforeach
+                </div>
             </div>
-        </div>
+        @endisset
 
         <!-- Guías Hijas -->
-        <div class="w-1/2">
-            <h2 class="text-xs font-bold mb-1">Guías Hijas</h2>
-            <div class="grid grid-cols-{{ count($childColumns) }} gap-4 text-xs">
-                @foreach ($childColumns as $column)
-                    <div class="flex flex-col space-y-0.5">
-                        @foreach ($column as $guide)
-                            <p>{{ $guide }}</p>
-                        @endforeach
-                    </div>
-                @endforeach
+        @isset($childColumns)
+            <div class="w-1/2">
+                <h2 class="text-xs font-bold mb-1">Guías Hijas</h2>
+                <div class="grid grid-cols-{{ isset($childColumns) ? count($childColumns) : 0 }} gap-4 text-xs">
+                    @foreach ($childColumns as $column)
+                        <div class="flex flex-col space-y-0.5">
+                            @foreach ($column as $guide)
+                                <p>{{ $guide }}</p>
+                            @endforeach
+                        </div>
+                    @endforeach
+                </div>
             </div>
-        </div>
-    </div>
+        @endisset
 
+        {{-- Guías Madres Re-ingresadas --}}
+        @isset($reentryMotherColumns)
+            <div class="w-1/2">
+                <h2 class="text-xs font-bold mb-1">Guías Madres Re-ingresadas</h2>
+                <div
+                    class="grid grid-cols-{{ isset($reentryMotherColumns) ? count($reentryMotherColumns) : 0 }} gap-4 text-xs">
+                    @foreach ($reentryMotherColumns as $column)
+                        <div class="flex flex-col space-y-0.5">
+                            @foreach ($column as $guide)
+                                <p>{{ $guide }}</p>
+                            @endforeach
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        @endisset
 
+        {{-- Guías Hijas Re-ingresadas --}}
+        @isset($reentryChildColumns)
+            <div class="w-1/2">
+                <h2 class="text-xs font-bold mb-1">Guías Hijas Re-ingresadas</h2>
+                <div
+                    class="grid grid-cols-{{ isset($reentryChildColumns) ? count($reentryChildColumns) : 0 }} gap-4 text-xs">
+                    @foreach ($reentryChildColumns as $column)
+                        <div class="flex flex-col space-y-0.5">
+                            @foreach ($column as $guide)
+                                <p>{{ $guide }}</p>
+                            @endforeach
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        @endisset
 </body>
 
 </html>

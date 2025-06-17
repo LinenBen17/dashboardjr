@@ -22,12 +22,27 @@ class WarehouseIncomesController extends Controller
 
         $motherGuides = WarehouseIncomeGuide::where('warehouse_income_id', $id)
             ->whereNotNull('mother_guide')
+            ->where('is_reentry', 0)
             ->pluck('mother_guide')
             ->toArray();
 
         $childGuides = WarehouseIncomeGuide::where('warehouse_income_id', $id)
             ->whereNotNull('child_guide')
+            ->where('is_reentry', 0)
             ->pluck('child_guide')
+            ->toArray();
+
+        // get guides that are reentry guides
+        $reentryMotherGuides = WarehouseIncomeGuide::where('warehouse_income_id', $id)
+            ->whereNotNull('mother_guide')
+            ->where('is_reentry', 1)
+            ->pluck('guide_number')
+            ->toArray();
+
+        $reentryChildGuides = WarehouseIncomeGuide::where('warehouse_income_id', $id)
+            ->whereNotNull('child_guide')
+            ->where('is_reentry', 1)
+            ->pluck('guide_number')
             ->toArray();
 
         // Get hour of the first and last guide
@@ -37,6 +52,6 @@ class WarehouseIncomesController extends Controller
             ->format('H:i:s');
 
 
-        return view('filament.resources.warehouse_incomes.manifest_incomes', compact('manifest_income', 'route', 'guides', 'motherGuides', 'childGuides', 'hora_inicio', 'hora_fin', 'person_scans'));
+        return view('filament.resources.warehouse_incomes.manifest_incomes', compact('manifest_income', 'route', 'guides', 'motherGuides', 'childGuides', 'reentryMotherGuides', 'reentryChildGuides', 'hora_inicio', 'hora_fin', 'person_scans'));
     }
 }

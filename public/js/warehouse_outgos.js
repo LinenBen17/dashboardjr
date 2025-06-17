@@ -1,23 +1,6 @@
-/* let scannedGuides = [];
-
-$(document).ready(function () {
-    const no_guide_input = $('#data\\.guideInput');
-
-    no_guide_input.on("keydown", function (event) {
-        if (event.which === 13) {
-            event.preventDefault();
-            const valor = $(this).val().trim();
-            if (valor) {
-                Livewire.find($('#your-component-id').data('id')).call('addGuide', valor);
-                $(this).val('');
-            }
-        }
-    });
-}); */
-
 document.addEventListener("DOMContentLoaded", function () {
     const input = document.getElementById('guideInput');
-    const warehouse = document.getElementById('warehouse_id');
+    // const checkbox = document.getElementById('reincome');
 
     let motherGuide = [];
     let childGuide = [];
@@ -27,10 +10,8 @@ document.addEventListener("DOMContentLoaded", function () {
             event.preventDefault();
 
             const valor = input.value.trim();
-            const warehouse_id = warehouse.value.trim();
-
-            console.log(warehouse_id);
-
+            // const reingreso = checkbox ? checkbox.checked : false;
+            // console.log(reingreso);
             input.value = ''; // Limpiar
 
             if (!valor) return;
@@ -41,10 +22,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
             if (componentId) {
                 if (valor.startsWith('GU')) {
-                    Livewire.find(componentId).call('addMotherGuide', valor, warehouse_id);
+                    Livewire.find(componentId).call('addMotherGuide', valor);
                     $('#last_mother_guide').val(valor);
                 } else if (valor.startsWith('H')) {
-                    Livewire.find(componentId).call('addChildGuide', valor, warehouse_id);
+                    Livewire.find(componentId).call('addChildGuide', valor);
                     $('#last_child_guide').val(valor);
                 }
                 else {

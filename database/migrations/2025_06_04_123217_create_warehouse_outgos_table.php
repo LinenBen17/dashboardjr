@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('manifest_code')->unique();
             $table->date('left_date');
+            $table->foreignId('origin_warehouse_id')->constrained('warehouses')->onDelete('cascade');
             $table->foreignId('warehouse_id')->constrained('warehouses')->onDelete('cascade');
             $table->foreignId('route_id')->constrained('routes')->onDelete('cascade');
             $table->string('driver');

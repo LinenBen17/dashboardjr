@@ -80,6 +80,10 @@ class Employee extends Model
     {
         return $this->hasMany(Bonus::class, 'person_scans');
     }
+    public function warehouseIncomes()
+    {
+        return $this->hasMany(WarehouseIncomes::class, 'person_scans');
+    }
     /* public function detailPayrolls()
     {
         return $this->hasOne(DetailPayroll::class, 'employee_id');
