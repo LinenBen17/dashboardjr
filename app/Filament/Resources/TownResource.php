@@ -45,6 +45,9 @@ class TownResource extends Resource
                 Select::make('agency_id')
                     ->required()
                     ->relationship(name: 'agency', titleAttribute: 'name'),
+                Select::make('route_id')
+                    ->relationship(name: 'route', titleAttribute: 'name')
+                    ->nullable(),
                 Forms\Components\TextInput::make('prefix')
                     ->required()
                     ->maxLength(3),
@@ -65,6 +68,8 @@ class TownResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('agency.name')
                     ->numeric()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('route.name')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('prefix')
                     ->searchable(),

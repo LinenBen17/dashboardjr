@@ -84,6 +84,10 @@ class Employee extends Model
     {
         return $this->hasMany(WarehouseIncomes::class, 'person_scans');
     }
+    public function customers()
+    {
+        return $this->hasMany(Customer::class, 'employee_id');
+    }
     /* public function detailPayrolls()
     {
         return $this->hasOne(DetailPayroll::class, 'employee_id');

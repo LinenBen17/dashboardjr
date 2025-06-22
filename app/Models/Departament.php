@@ -22,4 +22,8 @@ class Departament extends Model
     {
         return $this->hasMany(Warehouses::class, 'departament_id');
     }
+    public function customers()
+    {
+        return $this->hasMany(Customer::class, 'departament_id');
+    }
 }
