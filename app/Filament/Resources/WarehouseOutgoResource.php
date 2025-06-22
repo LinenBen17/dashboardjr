@@ -107,6 +107,7 @@ class WarehouseOutgoResource extends Resource
                                     ->options(function () {
                                         $employee = DB::table('employees')
                                             ->leftJoin('charges', 'employees.id_charge', '=', 'charges.id')
+                                            ->leftJoin('status_employees', 'employees.status_id', '=', 'status_employees.id')
                                             ->select('charges.name', 'employees.id', DB::raw("CONCAT(employees.name, ' ', employees.last_name) AS name"))
                                             ->where('charges.name', 'LIKE', '%Bodega%')
                                             ->pluck('name', 'id');

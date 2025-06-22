@@ -186,13 +186,19 @@ class EmployeeResource extends Resource
                                 ->label('Estado Planilla')
                                 ->relationship(name: 'payrolls', titleAttribute: 'state')
                                 ->required()
-                                ->columnSpan(3),
+                                ->columnSpan(2),
+
+                            Select::make('status_id')
+                                ->label('Estado del Empleado')
+                                ->relationship(name: 'status', titleAttribute: 'name')
+                                ->required()
+                                ->columnSpan(2),
 
                             TextInput::make('bank_account')
                                 ->label('Cuenta Bancaria')
                                 ->numeric()
                                 ->required()
-                                ->columnSpan(3),
+                                ->columnSpan(2),
                         ]),
                 ]),
 
@@ -224,9 +230,12 @@ class EmployeeResource extends Resource
                         return "{$record->name} {$record->last_name}";
                     })
                     ->searchable(['name', 'last_name']),
+                Tables\Columns\TextColumn::make('status.name')
+                    ->label('Estado')
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('entry_date')
                     ->date()
-
                     ->sortable(),
                 Tables\Columns\TextColumn::make('agencies.name')
                     ->numeric()

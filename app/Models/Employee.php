@@ -29,6 +29,7 @@ class Employee extends Model
         'cellphone',
         'comments',
         'entry_date',
+        'status_id',
         'zone',
         'age',
         'children',
@@ -87,6 +88,10 @@ class Employee extends Model
     public function customers()
     {
         return $this->hasMany(Customer::class, 'employee_id');
+    }
+    public function status()
+    {
+        return $this->belongsTo(StatusEmployee::class, 'status_id');
     }
     /* public function detailPayrolls()
     {
