@@ -68,16 +68,19 @@
         }
 
         $rowsPerColumn = 45;
-        $motherColumns = splitIntoColumns($motherGuides, $rowsPerColumn);
-        $childColumns = splitIntoColumns($childGuides, $rowsPerColumn);
 
-        $maxMotherRows = max(array_map('count', $motherColumns));
-        $maxChildRows = max(array_map('count', $childColumns));
+        if (count($motherGuides) > 0) {
+            $motherColumns = splitIntoColumns($motherGuides, $rowsPerColumn);
+        }
+
+        if (count($childGuides) > 0) {
+            $childColumns = splitIntoColumns($childGuides, $rowsPerColumn);
+        }
     @endphp
 
+<div class="flex gap-8 mt-4">
     <!-- Guías Madres -->
-    <div class="flex gap-8 mt-4">
-        <!-- Guías Madres -->
+    @isset($motherColumns)
         <div class="w-1/2">
             <h2 class="text-xs font-bold mb-1">Guías Madres</h2>
             <div class="grid grid-cols-{{ count($motherColumns) }} gap-4 text-xs">
@@ -90,8 +93,10 @@
                 @endforeach
             </div>
         </div>
+    @endisset
 
-        <!-- Guías Hijas -->
+    <!-- Guías Hijas -->
+    @isset($childColumns)
         <div class="w-1/2">
             <h2 class="text-xs font-bold mb-1">Guías Hijas</h2>
             <div class="grid grid-cols-{{ count($childColumns) }} gap-4 text-xs">
@@ -104,7 +109,8 @@
                 @endforeach
             </div>
         </div>
-    </div>
+    @endisset
+</div>
 
 
 </body>
