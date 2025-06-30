@@ -14,4 +14,8 @@ class PaymentMethod extends Model
     {
         return $this->hasMany(Customer::class, 'payment_method_id');
     }
+    public function shipmentEntries()
+    {
+        return $this->hasMany(ShipmentEntry::class, 'payment_method_id');
+    }
 }

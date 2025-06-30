@@ -1,0 +1,205 @@
+@import url(https://fonts.googleapis.com/css?family=Open+Sans:300,regular,500,600,700,800,300italic,italic,500italic,600italic,700italic,800italic);
+@import url(https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css);
+
+/* Body y head */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: sans-serif;
+
+}
+
+.canvas {
+    width: 21.5cm;
+    height: 7cm;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    background-image: url('e.jpg');
+}
+
+.guia {
+    width: 715px;
+    padding-top: 1.099cm;
+    padding-left: 1.2cm;
+}
+
+.formapago {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr;
+    gap: 0px 0px;
+    grid-template-areas:
+        ". formapagoP";
+}
+
+.datos {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr;
+    gap: 0px 0px;
+    grid-template-areas:
+        "datosRemitente datosDestinatario";
+    padding-top: 16px;
+}
+
+.datosRemitente {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+    gap: 0px 0px;
+    grid-template-areas:
+        "remitente remitente"
+        "dirRemitente dirRemitente"
+        "telRemitente origen";
+    grid-area: datosRemitente;
+}
+
+.remitente {
+    grid-area: remitente;
+}
+
+.dirRemitente {
+    grid-area: dirRemitente;
+}
+
+.telRemitente {
+    grid-area: telRemitente;
+}
+
+.origen {
+    grid-area: origen;
+}
+
+.datosDestinatario {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+    gap: 0px 0px;
+    grid-template-areas:
+        "destinatario destinatario"
+        "dirDestinatario dirDestinatario"
+        "telDestinatario destino";
+    grid-area: datosDestinatario;
+}
+
+.destinatario {
+    grid-area: destinatario;
+}
+
+.dirDestinatario {
+    grid-area: dirDestinatario;
+}
+
+.telDestinatario {
+    grid-area: telDestinatario;
+}
+
+.destino {
+    grid-area: destino;
+}
+
+.codigoCliente {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr;
+    gap: 0px 0px;
+    grid-template-areas:
+        ". codigo";
+}
+
+.codigoCliente p {
+    grid-area: codigo;
+}
+
+.formapago p {
+    grid-area: formapagoP;
+}
+
+.horario p {
+    padding-right: 15px;
+}
+
+.formapago p {
+    padding-top: 1cm;
+    padding-left: 4cm;
+    font-size: 12pt;
+}
+
+.codigoCliente p {
+    padding-top: 15px;
+    padding-left: 1.2cm;
+}
+
+.dirRemitente,
+.dirDestinatario {
+    margin-top: -9px;
+}
+
+.telRemitente,
+.telDestinatario,
+.origen,
+.destino {
+    padding-top: 3px;
+}
+
+.destino,
+.origen {
+    font-size: 13pt;
+    padding-left: 70px;
+}
+
+.codigoCliente p {
+    font-size: 11pt;
+}
+
+p {
+    margin: 0;
+    padding: 0;
+    text-transform: uppercase;
+    font-size: 9pt;
+}
+
+/*.guiaMadre {
+	position: absolute;
+	margin-top: .5cm;
+	margin-left: 2cm;
+}
+.fecha {
+	position: absolute;
+	margin-top: .5cm;
+	margin-left: 4.3cm;
+}
+.piezas {
+	position: absolute;
+	margin-top: 1.5cm;
+	margin-left: 2.3cm;
+}
+.de {
+	position: absolute;
+	margin-top: 1.5cm;
+	margin-left: 4.9cm;
+}
+.origen {
+	position: absolute;
+	margin-top: 3cm;
+	margin-left: 2cm;
+}
+.destino {
+	position: absolute;
+	margin-top: 3cm;
+	margin-left: 4.5cm;
+}*/
+@page {
+    margin: 0;
+}
+
+@media print {
+
+    /* indicamos el salto de pagina */
+    .break {
+        display: block;
+        page-break-before: always;
+    }
+}

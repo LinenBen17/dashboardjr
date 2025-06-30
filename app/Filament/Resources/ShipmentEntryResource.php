@@ -5,14 +5,28 @@ namespace App\Filament\Resources;
 use App\Filament\Clusters\Shipping;
 use App\Filament\Resources\ShipmentEntryResource\Pages;
 use App\Filament\Resources\ShipmentEntryResource\RelationManagers;
+use App\Models\Product;
 use App\Models\ShipmentEntry;
-use Filament\Forms;
+use Filament\Forms\Components\Actions\Action;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\View;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
 use Filament\Resources\Resource;
+use Filament\Support\Enums\Alignment;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Log\Logger;
+use Illuminate\Support\Facades\DB;
 
 class ShipmentEntryResource extends Resource
 {
@@ -20,11 +34,11 @@ class ShipmentEntryResource extends Resource
 
     protected static ?string $cluster = Shipping::class;
 
-    protected static ?string $navigationLabel = 'Digitación de envíos';
-    protected static ?string $modelLabel = 'Digitación';
+    protected static ?string $navigationLabel = 'Ingreso de Envíos';
+    protected static ?string $modelLabel = 'Ingreso de Envío';
 
     protected static ?string $navigationIcon = 'heroicon-o-computer-desktop';
-    protected static ?string $label = 'Digitación';
+    protected static ?string $label = 'Ingreso de Envíos';
 
     //Sort in the cluster
     protected static ?int $navigationSort = 3;
@@ -33,57 +47,243 @@ class ShipmentEntryResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('mother')
-                    ->required(),
-                /* Forms\Components\TextInput::make('mother_guide_id')
-                    ->maxLength(191), */
-                Forms\Components\TextInput::make('sender_code')
-                    ->numeric(),
-                Forms\Components\TextInput::make('sender_name')
-                    ->required(),
-                Forms\Components\TextInput::make('sender_address')
-                    ->required(),
-                Forms\Components\TextInput::make('sender_phone')
-                    ->tel()
-                    ->required(),
-                Forms\Components\TextInput::make('receiver_code')
-                    ->required(),
-                Forms\Components\TextInput::make('receiver_name')
-                    ->required(),
-                Forms\Components\TextInput::make('receiver_address')
-                    ->required(),
-                Forms\Components\TextInput::make('receiver_phone')
-                    ->tel()
-                    ->required(),
-                Forms\Components\TextInput::make('prefix_origin')
-                    ->required(),
-                Forms\Components\TextInput::make('prefix_destination')
-                    ->required(),
-                Forms\Components\TextInput::make('town_id')
-                    ->required()
-                    ->numeric(),
-                Forms\Components\TextInput::make('product_description')
-                    ->required(),
-                Forms\Components\TextInput::make('pieces')
-                    ->required()
-                    ->numeric(),
-                Forms\Components\TextInput::make('unit_price')
-                    ->required()
-                    ->numeric(),
-                Forms\Components\TextInput::make('sender_total')
-                    ->numeric(),
-                Forms\Components\TextInput::make('receiver_total')
-                    ->numeric(),
-                Forms\Components\TextInput::make('total')
-                    ->numeric(),
-                Forms\Components\DateTimePicker::make('date_guide')
-                    ->required(),
-                Forms\Components\TextInput::make('payment_method_id')
-                    ->required()
-                    ->numeric(),
-                Forms\Components\TextInput::make('no_manifest')
-                    ->numeric(),
+                View::make('filament.resources.shipment_entries.script'),
+                Grid::make()
+                    ->columns(5)
+                    ->schema([
+                        // LADO DERECHO: 2 secciones
+                        Grid::make()
+                            ->columns(1)
+                            ->columnSpan(1)
+                            ->schema([
+                                Section::make('')
+                                    ->columns(1)
+                                    ->schema([
+                                        Grid::make()
+                                            ->columns(1)
+                                            ->schema([
+                                                TextInput::make('mother')
+                                                    ->label('No. Guía')
+                                                    ->id('guia_madre')
+                                                    ->required()
+                                                    ->maxLength(191),
+                                                DatePicker::make('date_guide')
+                                                    ->label('Fecha')
+                                                    ->default(now())
+                                                    ->disabled()
+                                                    ->dehydrated()
+                                                    ->required(),
+                                                Select::make('payment_method_id')
+                                                    ->label('Forma de Pago')
+                                                    ->id('forma_pago')
+                                                    ->required()
+                                                    ->default(1)
+                                                    ->relationship(
+                                                        name: 'paymentMethod',
+                                                        titleAttribute: 'name',
+                                                        modifyQueryUsing: fn(Builder $query) => $query->orderBy('id'),
+                                                    ),
+                                                TextInput::make('no_manifest')
+                                                    ->label('No. Manifiesto')
+                                                    ->disabled()
+                                                    ->numeric(),
+                                            ]),
+                                    ]),
+                                Section::make('')
+                                    ->columns(1)
+                                    ->schema([
+                                        Grid::make()
+                                            ->columns(1)
+                                            ->schema([
+                                                TextInput::make('sender_total')
+                                                    ->label('Total Remitente')
+                                                    ->required()
+                                                    ->default(0)
+                                                    // ->disabled()
+                                                    ->dehydrated()
+                                                    ->numeric(),
+                                                TextInput::make('receiver_total')
+                                                    ->label('Total Destinatario')
+                                                    ->required()
+                                                    ->default(0)
+                                                    // ->disabled()
+                                                    ->dehydrated()
+                                                    ->numeric(),
+                                                TextInput::make('total')
+                                                    ->label('Monto Total')
+                                                    ->required()
+                                                    // ->disabled()
+                                                    ->dehydrated()
+                                                    ->numeric(),
+                                            ]),
+                                    ]),
+                            ]),
+                        // LADO IZQUIERDO: 3 secciones
+                        Grid::make()
+                            ->columns(1)
+                            ->columnSpan(4)
+                            ->schema([
+                                Section::make('')
+                                    ->columns(4)
+                                    ->schema([
+                                        Grid::make()
+                                            ->columns(4)
+                                            ->schema([
+                                                TextInput::make('sender_code')
+                                                    ->label('Código Remitente')
+                                                    ->id('codigo_remitente')
+                                                    ->numeric()
+                                                    ->extraAlpineAttributes([
+                                                        'x-ref' => 'codeSenderInput',
+                                                        // cuando llegue el evento, enfoca el input
+                                                        'x-on:focus-codeSender.window' => '$refs.codeSenderInput.focus()',
+                                                    ]),
+                                                TextInput::make('sender_name')
+                                                    ->label('Nombre Remitente')
+                                                    ->required(),
+                                                TextInput::make('sender_address')
+                                                    ->label('Dirección Remitente')
+                                                    ->required(),
+                                                TextInput::make('sender_phone')
+                                                    ->label('Teléfono Remitente')
+                                                    ->tel()
+                                                    ->required(),
+                                            ]),
+                                        Grid::make()
+                                            ->columns(4)
+                                            ->schema([
+                                                TextInput::make('receiver_code')
+                                                    ->label('Código Destinatario')
+                                                    ->id('codigo_destinatario')
+                                                    ->numeric(),
+                                                TextInput::make('receiver_name')
+                                                    ->label('Nombre Destinatario')
+                                                    ->required(),
+                                                TextInput::make('receiver_address')
+                                                    ->label('Dirección Destinatario')
+                                                    ->required(),
+                                                TextInput::make('receiver_phone')
+                                                    ->label('Teléfono Destinatario')
+                                                    ->tel()
+                                                    ->required(),
+                                            ]),
+                                    ]),
+
+                                Section::make('')
+                                    ->columns(4)
+                                    ->schema([
+                                        Grid::make()
+                                            ->columns(3)
+                                            ->schema([
+                                                TextInput::make('prefix_origin')
+                                                    ->label('Origen')
+                                                    ->required(),
+                                                TextInput::make('prefix_destination')
+                                                    ->label('Destino')
+                                                    ->required(),
+                                                Select::make('town_id')
+                                                    ->label('Municipio')
+                                                    ->relationship('towns', 'name')
+                                                    ->required(),
+                                            ]),
+                                    ]),
+
+                                Section::make('')
+                                    ->columns(1)
+                                    ->schema([
+                                        Repeater::make('products')
+                                            ->label('Productos')
+                                            ->reorderable(false)
+                                            ->columns(5)
+                                            ->minItems(1)
+                                            ->live(onBlur: true)
+                                            ->afterStateUpdated(
+                                                function (Get $get, Set $set) {
+                                                    self::recalcTotals($get, $set);
+                                                }
+                                            )
+                                            ->deleteAction(
+                                                function (Get $get, Set $set, Action $action) {
+                                                    self::recalcTotals($get, $set);
+                                                    $action->hidden(            // oculta el botón…
+                                                        fn(array $arguments, Repeater $component): bool =>
+                                                        // …cuando el ítem actual es el primero del arreglo
+                                                        $arguments['item'] === array_key_first($component->getState())
+                                                    );
+                                                }
+                                            )
+                                            ->schema([
+                                                // Consultar si es mejor un select o Input Text
+                                                TextInput::make('product_id')
+                                                    ->label('Código')
+                                                    ->required()
+                                                    ->afterStateUpdated(function (Get $get, Set $set, ?string $state) {
+                                                        $productDescription = DB::table('products')
+                                                            ->where('id', $state)
+                                                            ->value('name');
+
+                                                        if ($productDescription) {
+                                                            $set('product_description', $productDescription);
+                                                        } else {
+                                                            $set('product_description', '0');
+                                                        }
+                                                    }),
+                                                TextInput::make('pieces')
+                                                    ->label('Piezas')
+                                                    ->numeric()
+                                                    ->required()
+                                                    ->reactive(),
+                                                TextInput::make('product_description')
+                                                    ->label('Descripción')
+                                                    ->disabled()
+                                                    ->dehydrated()
+                                                    ->required(),
+                                                TextInput::make('unit_price')
+                                                    ->label('Precio Unitario')
+                                                    ->numeric()
+                                                    ->required()
+                                                    ->live(onBlur: true)
+                                                    ->afterStateUpdated(function (Get $get, Set $set, ?string $state) {
+                                                        $pieces = $get('pieces') ?: 0;
+                                                        $set('subtotal', $state * $pieces);
+                                                    }),
+
+                                                TextInput::make('subtotal')
+                                                    ->label('Subtotal')
+                                                    ->disabled()
+                                                    ->dehydrated()
+                                                    ->numeric(),
+                                            ]),
+                                    ]),
+                            ]),
+                    ]),
             ]);
+    }
+
+    protected static function recalcTotals(Get $get, Set $set): void
+    {
+        // Suma los subtotales válidos
+        $senderTotal = collect($get('products'))
+            ->pluck('subtotal')
+            ->filter()          // ignora nulos / vacíos
+            ->sum();
+
+        $paymentMethodID = intval(trim($get('payment_method_id')));
+
+        $paymentMethod = DB::table('payment_methods')
+            ->where('id', $paymentMethodID)
+            ->value('name');
+
+        if ($paymentMethod == 'Contado') {
+            $set('receiver_total', $senderTotal);
+            $set('sender_total',  0);
+        } else {
+            $set('sender_total', $senderTotal);
+            $set('receiver_total', 0);
+        }
+
+        // total = sender_total + receiver_total
+        $set('total', ($get('sender_total') ?? 0) + ($get('receiver_total') ?? 0));
     }
 
     public static function table(Table $table): Table

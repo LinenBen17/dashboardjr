@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\LoanController;
+use App\Http\Controllers\ShipmentEntryController;
 use App\Http\Controllers\VacationController;
 use App\Http\Controllers\WarehouseIncomesController;
 use App\Http\Controllers\WarehouseOutgosController;
@@ -16,3 +17,5 @@ Route::get('/loans/{id}', LoanController::class)->name('loan_format');
 
 Route::get('/manifest-incomes/{id}', WarehouseIncomesController::class)->name('manifest_income_format');
 Route::get('/manifest-outgos/{id}', WarehouseOutgosController::class)->name('manifest_outgo_format');
+
+Route::get('/shipment-entries/{id}/printMother', [ShipmentEntryController::class, 'printMother'])->name('shipment_entry.printMother');

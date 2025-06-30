@@ -31,4 +31,8 @@ class Town extends Model
     {
         return $this->hasMany(Customer::class, 'town_id');
     }
+    public function shipmentEntries()
+    {
+        return $this->hasMany(ShipmentEntry::class, 'town_id');
+    }
 }
