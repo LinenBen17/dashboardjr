@@ -39,4 +39,8 @@ class Customer extends Model
     {
         return $this->belongsTo(Employee::class, 'employee_id');
     }
+    public function shipment_entries()
+    {
+        return $this->hasMany(ShipmentEntry::class, 'customer_id');
+    }
 }

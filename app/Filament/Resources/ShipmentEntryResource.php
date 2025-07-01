@@ -68,9 +68,8 @@ class ShipmentEntryResource extends Resource
                                                     ->id('guia_madre')
                                                     ->required()
                                                     ->default(Filament::auth()->user()->custom_fields['serial_number'])
-                                                    ->dehydrated()
-                                                    ->disabled()
-                                                    ->maxLength(191),
+                                                    ->readOnly()
+                                                    ->unique(),
                                                 DatePicker::make('date_guide')
                                                     ->label('Fecha')
                                                     ->default(now())
@@ -196,7 +195,7 @@ class ShipmentEntryResource extends Resource
                                             ->reorderable(false)
                                             ->columns(5)
                                             ->minItems(1)
-                                            ->live(onBlur: true)
+                                            ->reactive()
                                             ->afterStateUpdated(
                                                 function (Get $get, Set $set) {
                                                     self::recalcTotals($get, $set);
@@ -217,6 +216,7 @@ class ShipmentEntryResource extends Resource
                                                 TextInput::make('product_id')
                                                     ->label('Código')
                                                     ->required()
+                                                    ->reactive()
                                                     ->afterStateUpdated(function (Get $get, Set $set, ?string $state) {
                                                         $productDescription = DB::table('products')
                                                             ->where('id', $state)
@@ -224,7 +224,6 @@ class ShipmentEntryResource extends Resource
 
                                                         if ($productDescription) {
                                                             $set('product_description', $productDescription);
-                                                            Logger(Filament::auth()->user()->custom_fields['serial_number']);
                                                         } else {
                                                             $set('product_description', '0');
                                                         }
@@ -232,8 +231,7 @@ class ShipmentEntryResource extends Resource
                                                 TextInput::make('pieces')
                                                     ->label('Piezas')
                                                     ->numeric()
-                                                    ->required()
-                                                    ->reactive(),
+                                                    ->required(),
                                                 TextInput::make('product_description')
                                                     ->label('Descripción')
                                                     ->disabled()

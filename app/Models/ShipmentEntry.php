@@ -48,4 +48,8 @@ class ShipmentEntry extends Model
     {
         return $this->belongsTo(Product::class, 'product_id');
     }
+    public function customers()
+    {
+        return $this->belongsTo(Customer::class, 'sender_code', 'code');
+    }
 }

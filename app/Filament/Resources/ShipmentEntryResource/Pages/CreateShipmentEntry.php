@@ -4,6 +4,7 @@ namespace App\Filament\Resources\ShipmentEntryResource\Pages;
 
 use App\Filament\Resources\ShipmentEntryResource;
 use App\Models\ShipmentEntry;
+use App\Models\User;
 use Filament\Actions;
 use Filament\Actions\Action;
 use Filament\Facades\Filament;
@@ -14,6 +15,7 @@ use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
 use Filament\Support\Enums\Alignment;
+use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Log\Logger;
 use Illuminate\Support\Facades\DB;
@@ -151,7 +153,6 @@ class CreateShipmentEntry extends CreateRecord
     public function handleSave($linkGuidesLater): void
     {
         $data = $this->form->getState();
-        $user = Auth::user();
 
         // Establecer descripcion completa del pedido si tuviese más de 1 pieza o no
         $arrayProductDescription = [];
@@ -227,14 +228,18 @@ class CreateShipmentEntry extends CreateRecord
             //Calcula el siguiente número de guía madre
             $nextMother = ((int) $data['mother']) + 1;
 
-            $user->update([
-                'custom_fields->serial_number' => $nextMother,
-            ]);
+            //Actualiza el numero de madre
+            $user       = Filament::auth()->user();
+            $custom     = $user->custom_fields ?? [];
+            $custom['serial_number'] = $nextMother;
+
+            $user->custom_fields = $custom;
+            $user->save();
 
             //Resetea todo y vuelve a llenar sólo mother
             $this->form->fill();
             $this->form->fill([
-                'mother'     => Filament::auth()->user()->custom_fields['serial_number'],
+                'mother'     => $nextMother,
                 'date_guide' => now(),
                 'products'   => [
                     [            // ← primer (y único) ítem vacío

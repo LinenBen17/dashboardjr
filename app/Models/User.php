@@ -42,6 +42,10 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
         'remember_token',
     ];
 
+    protected $casts = [
+        'custom_fields' => 'array', // o 'json'
+    ];
+
     /**
      * Get the attributes that should be cast.
      *

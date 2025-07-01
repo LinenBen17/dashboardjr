@@ -14,11 +14,11 @@ return new class extends Migration
         Schema::create('shipment_entries', function (Blueprint $table) {
             $table->id();
             $table->string('mother')->unique();
-            $table->integer('sender_code')->nullable();
+            $table->foreignId('sender_code')->nullable()->references('id')->on('customers');
             $table->string('sender_name');
             $table->string('sender_address');
             $table->string('sender_phone');
-            $table->integer('receiver_code')->nullable();
+            $table->foreignId('receiver_code')->nullable()->references('id')->on('customers');
             $table->string('receiver_name');
             $table->string('receiver_address');
             $table->string('receiver_phone');

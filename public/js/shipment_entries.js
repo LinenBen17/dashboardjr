@@ -69,6 +69,16 @@ $(window).on('load', function () {
         }, 1000)
         $("#codigo_remitente").focus();
     });
+
+    if (event.key === 'F1') {
+        event.preventDefault();
+
+        const valor = document.getElementById('codigo_remitente').value.trim();
+
+        input.value = ''; // Limpiar
+
+
+    }
 });
 function addGuide(event) {
     const input = document.getElementById('child');
