@@ -6,6 +6,7 @@ use App\Filament\Resources\ShipmentEntryResource;
 use App\Models\ShipmentEntry;
 use Filament\Actions;
 use Filament\Actions\Action;
+use Filament\Facades\Filament;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\TextInput;
@@ -150,6 +151,7 @@ class CreateShipmentEntry extends CreateRecord
     public function handleSave($linkGuidesLater): void
     {
         $data = $this->form->getState();
+        $user = Auth::user();
 
         // Establecer descripcion completa del pedido si tuviese más de 1 pieza o no
         $arrayProductDescription = [];
@@ -225,10 +227,14 @@ class CreateShipmentEntry extends CreateRecord
             //Calcula el siguiente número de guía madre
             $nextMother = ((int) $data['mother']) + 1;
 
+            $user->update([
+                'custom_fields->serial_number' => $nextMother,
+            ]);
+
             //Resetea todo y vuelve a llenar sólo mother
             $this->form->fill();
             $this->form->fill([
-                'mother'     => $nextMother,
+                'mother'     => Filament::auth()->user()->custom_fields['serial_number'],
                 'date_guide' => now(),
                 'products'   => [
                     [            // ← primer (y único) ítem vacío
@@ -249,41 +255,3 @@ class CreateShipmentEntry extends CreateRecord
         }
     }
 }
-
-/* Actions\CreateAction::make()
-    ->label('Crear Envío')
-    // ->icon('heroicon-o-plus')
-    ->color('primary')
-    ->using(function (array $data, string $model): Model {
-        if (1 == 1) { // Replace with actual condition to check if the shipment entry is valid
-            Notification::make()
-                ->title('Envío creado exitosamente')
-                ->success()
-                ->send();
-            exit();
-        }
-
-        return $model::create([
-            'mother' => $data['mother'],
-            'sender_code' => $data['sender_code'] ?? null,
-            'sender_name' => $data['sender_name'],
-            'sender_address' => $data['sender_address'],
-            'sender_phone' => $data['sender_phone'],
-            'receiver_code' => $data['receiver_code'] ?? null,
-            'receiver_name' => $data['receiver_name'],
-            'receiver_address' => $data['receiver_address'],
-            'receiver_phone' => $data['receiver_phone'],
-            'prefix_origin' => $data['prefix_origin'],
-            'prefix_destination' => $data['prefix_destination'],
-            'town_id' => $data['town_id'],
-            'product_description' => $data['product_description'],
-            'pieces' => $data['pieces'],
-            'unit_price' => $data['unit_price'],
-            'sender_total' => $data['sender_total'] ?? 0,
-            'receiver_total' => $data['receiver_total'] ?? 0,
-            'total' => $data['total'],
-            'date_guide' => $data['date_guide'],
-            'payment_method_id' => $data['payment_method'],
-            'no_manifest' => $data['no_manifest'] ?? null,
-        ]);
-    }) */

@@ -6,13 +6,15 @@ namespace App\Models;
 
 use BezhanSalleh\FilamentShield\Traits\HasPanelShield;
 use Filament\Models\Contracts\FilamentUser;
+use Filament\Models\Contracts\HasAvatar;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable implements FilamentUser
+class User extends Authenticatable implements FilamentUser, HasAvatar
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, HasRoles, HasPanelShield;
@@ -26,6 +28,8 @@ class User extends Authenticatable implements FilamentUser
         'name',
         'email',
         'password',
+        'avatar_url',
+        'custom_fields'
     ];
 
     /**
@@ -48,9 +52,16 @@ class User extends Authenticatable implements FilamentUser
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'custom_fields' => 'array'
         ];
     }
-    
+
+    public function getFilamentAvatarUrl(): ?string
+    {
+        $avatarColumn = config('filament-edit-profile.avatar_column', 'avatar_url');
+        return $this->$avatarColumn ? Storage::url($this->$avatarColumn) : null;
+    }
+
     public function canAccessPanel(Panel $panel): bool
     {
         return true;

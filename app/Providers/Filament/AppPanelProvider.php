@@ -22,6 +22,8 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Joaopaulolndev\FilamentEditProfile\FilamentEditProfilePlugin;
+use Joaopaulolndev\FilamentEditProfile\Pages\EditProfilePage;
 
 class AppPanelProvider extends PanelProvider
 {
@@ -31,14 +33,16 @@ class AppPanelProvider extends PanelProvider
             ->id('app')
             ->path('app')
             ->login()
+            // ->profile()
+            ->userMenuItems([
+                'profile' => MenuItem::make()
+                    // ->label(fn() => auth()->user()->name)
+                    ->url(fn(): string => EditProfilePage::getUrl())
+                    ->icon('heroicon-m-user-circle'),
+            ])
             ->sidebarCollapsibleOnDesktop()
             ->colors([
                 'primary' => '#12b732',
-            ])
-            ->userMenuItems([
-                MenuItem::make()
-                    ->label('Settings')
-                    ->icon('heroicon-o-cog-6-tooth'),
             ])
             ->discoverResources(in: app_path('Filament/App/Resources'), for: 'App\\Filament\\App\\Resources')
             ->discoverPages(in: app_path('Filament/App/Pages'), for: 'App\\Filament\\App\\Pages')
@@ -63,6 +67,15 @@ class AppPanelProvider extends PanelProvider
             ])
             ->plugins([
                 FilamentShieldPlugin::make(),
+                FilamentEditProfilePlugin::make()
+                    ->shouldShowAvatarForm(
+                        value: true,
+                        directory: 'avatars', // image will be stored in 'storage/app/public/avatars
+                        rules: 'mimes:jpeg,png|max:1024' //only accept jpeg and png files with a maximum size of 1MB
+                    )
+                    ->shouldShowDeleteAccountForm(false)
+                    ->shouldShowEditPasswordForm(false)
+                    ->shouldRegisterNavigation(false)
             ])
             ->authMiddleware([
                 Authenticate::class,
@@ -72,6 +85,6 @@ class AppPanelProvider extends PanelProvider
             ->discoverClusters(in: app_path('Filament/Clusters'), for: 'App\\Filament\\Clusters')
             ->brandLogo(asset('images/jrico.png'))
             ->brandLogoHeight('3rem')
-            ->favicon(asset('images/jrico.png'));;
+            ->favicon(asset('images/jrico.png'));
     }
 }

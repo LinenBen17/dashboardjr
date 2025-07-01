@@ -7,6 +7,7 @@ use App\Filament\Resources\ShipmentEntryResource\Pages;
 use App\Filament\Resources\ShipmentEntryResource\RelationManagers;
 use App\Models\Product;
 use App\Models\ShipmentEntry;
+use Filament\Facades\Filament;
 use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
@@ -66,6 +67,9 @@ class ShipmentEntryResource extends Resource
                                                     ->label('No. Guía')
                                                     ->id('guia_madre')
                                                     ->required()
+                                                    ->default(Filament::auth()->user()->custom_fields['serial_number'])
+                                                    ->dehydrated()
+                                                    ->disabled()
                                                     ->maxLength(191),
                                                 DatePicker::make('date_guide')
                                                     ->label('Fecha')
@@ -83,10 +87,6 @@ class ShipmentEntryResource extends Resource
                                                         titleAttribute: 'name',
                                                         modifyQueryUsing: fn(Builder $query) => $query->orderBy('id'),
                                                     ),
-                                                TextInput::make('no_manifest')
-                                                    ->label('No. Manifiesto')
-                                                    ->disabled()
-                                                    ->numeric(),
                                             ]),
                                     ]),
                                 Section::make('')
@@ -224,6 +224,7 @@ class ShipmentEntryResource extends Resource
 
                                                         if ($productDescription) {
                                                             $set('product_description', $productDescription);
+                                                            Logger(Filament::auth()->user()->custom_fields['serial_number']);
                                                         } else {
                                                             $set('product_description', '0');
                                                         }
