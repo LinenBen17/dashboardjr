@@ -29,12 +29,7 @@ return [
             'placeholder' => 'Seleccione el departamente de origen del usuario', // optional
             'id' => 'departament_id', // optional
             'required' => true, // optional
-            'options' => function () {
-                $departament = DB::table('departaments')
-                    ->select('name', 'id')
-                    ->pluck('name', 'id');
-                return $departament;
-            }, // optional
+            'options' => [], // optional
             'selectable_placeholder' => true, // optional
             'native' => true, // optional
             'preload' => true, // optional

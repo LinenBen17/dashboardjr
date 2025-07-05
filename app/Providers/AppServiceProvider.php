@@ -7,6 +7,7 @@ use Filament\Facades\Filament;
 use Filament\Navigation\NavigationGroup;
 use Filament\Support\Assets\Js;
 use Filament\Support\Facades\FilamentAsset;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 
@@ -26,6 +27,16 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Schema::defaultStringLength(191);
+
+        // Solo si aún no está seteado (por si haces seed + cache)
+        if (empty(config('filament-edit-profile.custom_fields.departament_id.options'))) {
+            config([
+                'filament-edit-profile.custom_fields.departament_id.options' =>
+                DB::table('departaments')
+                    ->pluck('name', 'id')
+                    ->toArray(),
+            ]);
+        }
 
         FilamentAsset::register([
             //agregar jquery
