@@ -14,7 +14,7 @@ class ProductSeeder extends Seeder
     public function run(): void
     {
         Product::create([
-            'name' => 'Caja Normal',
+            'name' => 'Bulto Normal',
             'description' => 'Caja Normal de 0 a 40 lb',
             'price' => 40,
         ]);

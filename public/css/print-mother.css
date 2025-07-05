@@ -1,6 +1,3 @@
-@import url(https://fonts.googleapis.com/css?family=Open+Sans:300,regular,500,600,700,800,300italic,italic,500italic,600italic,700italic,800italic);
-@import url(https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css);
-
 /* Body y head */
 * {
     margin: 0;
@@ -10,17 +7,8 @@
 
 }
 
-.canvas {
-    width: 21.5cm;
-    height: 7cm;
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: cover;
-    background-image: url('e.jpg');
-}
-
 .guia {
-    width: 715px;
+    width: 662px;
     padding-top: 1.099cm;
     padding-left: 1.2cm;
 }
@@ -41,20 +29,20 @@
     gap: 0px 0px;
     grid-template-areas:
         "datosRemitente datosDestinatario";
-    padding-top: 16px;
+    padding-top: 20px;
 }
 
-.datosRemitente {
+/* .datosRemitente {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr 1fr 1fr;
-    gap: 0px 0px;
+    grid-template-rows: 1fr 1fr 0fr;
+    gap: 15px 0px;
     grid-template-areas:
         "remitente remitente"
         "dirRemitente dirRemitente"
         "telRemitente origen";
     grid-area: datosRemitente;
-}
+} */
 
 .remitente {
     grid-area: remitente;
@@ -66,23 +54,25 @@
 
 .telRemitente {
     grid-area: telRemitente;
+    position: absolute;
+    top: 4.7cm;
 }
 
 .origen {
     grid-area: origen;
 }
 
-.datosDestinatario {
+/* .datosDestinatario {
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-template-rows: 1fr 1fr 1fr;
-    gap: 0px 0px;
+    gap: 15px 0px;
     grid-template-areas:
         "destinatario destinatario"
         "dirDestinatario dirDestinatario"
         "telDestinatario destino";
     grid-area: datosDestinatario;
-}
+} */
 
 .destinatario {
     grid-area: destinatario;
@@ -94,6 +84,8 @@
 
 .telDestinatario {
     grid-area: telDestinatario;
+    position: absolute;
+    top: 4.7cm;
 }
 
 .destino {
@@ -102,19 +94,33 @@
 
 .codigoCliente {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: .5fr 1fr 1fr;
     grid-template-rows: 1fr;
     gap: 0px 0px;
     grid-template-areas:
-        ". codigo";
+        "descripcionProducto tarifa codigo";
 }
 
-.codigoCliente p {
+.codigoCliente p.descripcionProducto {
+    grid-area: descripcionProducto;
+}
+
+.codigoCliente p.tarifa {
+    grid-area: tarifa;
+    text-align: center;
+    margin-left: 75px;
+}
+
+.codigoCliente p.codigo {
     grid-area: codigo;
 }
 
 .formapago p {
     grid-area: formapagoP;
+}
+
+.codigoCliente p {
+    font-size: 9pt;
 }
 
 .horario p {
@@ -123,13 +129,8 @@
 
 .formapago p {
     padding-top: 1cm;
-    padding-left: 4cm;
+    padding-left: 4.5cm;
     font-size: 12pt;
-}
-
-.codigoCliente p {
-    padding-top: 15px;
-    padding-left: 1.2cm;
 }
 
 .dirRemitente,
@@ -137,8 +138,6 @@
     margin-top: -9px;
 }
 
-.telRemitente,
-.telDestinatario,
 .origen,
 .destino {
     padding-top: 3px;
@@ -148,10 +147,43 @@
 .origen {
     font-size: 13pt;
     padding-left: 70px;
+    position: absolute;
 }
 
-.codigoCliente p {
-    font-size: 11pt;
+.origen {
+    left: 5.4cm;
+    top: 4.3cm;
+}
+
+.destino {
+    left: 13.5cm;
+    top: 4.3cm;
+}
+
+.inferiorGuia {
+    display: grid;
+    grid-template-columns: 1fr 1fr .5fr;
+    grid-template-rows: 1fr;
+    gap: 0px 0px;
+    grid-template-areas:
+        "piezas usuario fecha";
+}
+
+.inferiorGuia .piezas {
+    grid-area: piezas;
+    margin-left: 15px;
+}
+
+.inferiorGuia .usuario {
+    grid-area: usuario;
+    text-align: center;
+    margin-left: 45px;
+}
+
+.inferiorGuia .fecha {
+    display: flex;
+    grid-area: fecha;
+    gap: 15px;
 }
 
 p {
@@ -161,36 +193,11 @@ p {
     font-size: 9pt;
 }
 
-/*.guiaMadre {
-	position: absolute;
-	margin-top: .5cm;
-	margin-left: 2cm;
+p span {
+    display: block;
+    margin-bottom: 5px;
 }
-.fecha {
-	position: absolute;
-	margin-top: .5cm;
-	margin-left: 4.3cm;
-}
-.piezas {
-	position: absolute;
-	margin-top: 1.5cm;
-	margin-left: 2.3cm;
-}
-.de {
-	position: absolute;
-	margin-top: 1.5cm;
-	margin-left: 4.9cm;
-}
-.origen {
-	position: absolute;
-	margin-top: 3cm;
-	margin-left: 2cm;
-}
-.destino {
-	position: absolute;
-	margin-top: 3cm;
-	margin-left: 4.5cm;
-}*/
+
 @page {
     margin: 0;
 }

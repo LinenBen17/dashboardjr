@@ -4,7 +4,9 @@ namespace App\Filament\Resources\ShipmentEntryResource\Pages;
 
 use App\Filament\Resources\ShipmentEntryResource;
 use App\Models\ShipmentEntry;
+use App\Models\ShipmentEntryChild;
 use App\Models\User;
+use Carbon\Carbon;
 use Filament\Actions;
 use Filament\Actions\Action;
 use Filament\Facades\Filament;
@@ -114,9 +116,11 @@ class CreateShipmentEntry extends CreateRecord
                             ->warning()
                             ->send();
                         $this->childGuides = [];
-                        return;
                     }
-
+                    if (count($this->childGuides) == ($this->totalPieces - 1) && $data['linkLater'] == false) {
+                        $this->handleSave(false);
+                        $this->childGuides = [];
+                    }
                     return;
                 })
         ];
@@ -189,6 +193,17 @@ class CreateShipmentEntry extends CreateRecord
         $data['total_pieces'] = $this->totalPieces;
         $data['style'] = asset('css/print-mother.css');
 
+        //Dividiendo Día, Mes y Año
+        $dateGuide = Carbon::parse($data['date_guide']);
+        Logger($dateGuide);
+
+        $data['dia'] = $dateGuide->day;
+        $data['mes'] = $dateGuide->month;
+        $data['anio'] = $dateGuide->year;
+
+        //Asignando total de pieces al array
+        $data['pieces'] = $this->totalPieces;
+
         try {
             if ($linkGuidesLater) {
                 $this->record = ShipmentEntry::create([
@@ -215,6 +230,72 @@ class CreateShipmentEntry extends CreateRecord
                     'payment_method_id' => $data['payment_method_id'],
                     'no_manifest' => $data['no_manifest'] ?? null,
                 ]);
+            } else if ($linkGuidesLater == false) {
+                Logger($data);
+                Logger($this->childGuides);
+
+                $this->record = ShipmentEntry::create([
+                    'mother' => $data['mother'],
+                    'sender_code' => $data['sender_code'] ?? null,
+                    'sender_name' => $data['sender_name'],
+                    'sender_address' => $data['sender_address'],
+                    'sender_phone' => $data['sender_phone'],
+                    'receiver_code' => $data['receiver_code'] ?? null,
+                    'receiver_name' => $data['receiver_name'],
+                    'receiver_address' => $data['receiver_address'],
+                    'receiver_phone' => $data['receiver_phone'],
+                    'prefix_origin' => $data['prefix_origin'],
+                    'prefix_destination' => $data['prefix_destination'],
+                    'town_id' => $data['town_id'],
+                    'product_id' => $productId,
+                    'product_description' => $productDescription,
+                    'pieces' => $this->totalPieces,
+                    'unit_price' => ($this->totalPieces == 1) ? $data['total'] : 0,
+                    'sender_total' => $data['sender_total'] ?? 0,
+                    'receiver_total' => $data['receiver_total'] ?? 0,
+                    'total' => $data['total'],
+                    'date_guide' => $data['date_guide'],
+                    'payment_method_id' => $data['payment_method_id'],
+                    'no_manifest' => $data['no_manifest'] ?? null,
+                ]);
+
+                Logger("A");
+
+                // Recorrer los productos del envío
+                $productEntries = [];
+
+                foreach ($data['products'] as $product) {
+                    $pieces = (int) $product['pieces'];
+                    $unitPrice = (float) $product['unit_price'];
+                    $productId = $product['product_id'];
+
+                    for ($i = 0; $i < $pieces; $i++) {
+                        $productEntries[] = [
+                            'product_id' => $productId,
+                            'price' => $unitPrice,
+                        ];
+                    }
+                }
+                Logger("e");
+
+
+                // Como la guía madre cuenta como una pieza, eliminamos la primera
+                array_shift($productEntries);
+                Logger("i");
+                // Ahora creamos cada guía hija
+                foreach ($this->childGuides as $index => $childGuide) {
+                    $entry = $productEntries[$index] ?? null;
+
+                    if ($entry) {
+                        ShipmentEntryChild::create([
+                            'shipment_entry_id' => $this->record->id,
+                            'child_guide' => $childGuide,
+                            'product_id' => $entry['product_id'],
+                            'price' => $entry['price'],
+                        ]);
+                    }
+                }
+                Logger("o");
             }
             Notification::make()
                 ->title('Envío creado exitosamente')
@@ -241,6 +322,8 @@ class CreateShipmentEntry extends CreateRecord
             $this->form->fill([
                 'mother'     => $nextMother,
                 'date_guide' => now(),
+                'payment_method_id' => 1,
+                'prefix_origin' => $data['prefix_origin'],
                 'products'   => [
                     [            // ← primer (y único) ítem vacío
                         'product_id'          => null,

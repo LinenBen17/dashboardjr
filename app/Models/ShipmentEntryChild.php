@@ -12,7 +12,7 @@ class ShipmentEntryChild extends Model
     protected $fillable = [
         'shipment_entry_id',
         'product_id',
-        'quantity',
+        'child_guide',
         'price',
     ];
 

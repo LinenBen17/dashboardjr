@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Support\Facades\DB;
+
 return [
     'avatar_column' => 'avatar_url',
     'disk' => env('FILESYSTEM_DISK', 'public'),
@@ -20,6 +22,29 @@ return [
             'default' => '', // optional
             'column_span' => 'full', // optional
             'autocomplete' => false, // optional
+        ],
+        'departament_id' => [
+            'type' => 'select', // required
+            'label' => 'Departamento Origen', // required
+            'placeholder' => 'Seleccione el departamente de origen del usuario', // optional
+            'id' => 'departament_id', // optional
+            'required' => true, // optional
+            'options' => function () {
+                $departament = DB::table('departaments')
+                    ->select('name', 'id')
+                    ->pluck('name', 'id');
+                return $departament;
+            }, // optional
+            'selectable_placeholder' => true, // optional
+            'native' => true, // optional
+            'preload' => true, // optional
+            'suffix_icon' => '', // optional
+            'default' => '', // optional
+            'searchable' => false, // optional
+            'column_span' => 'full', // optional
+            'rules' => [], // optional
+            'hint_icon' => '', // optional
+            'hint' => '', // optional
         ],
     ]
 ];

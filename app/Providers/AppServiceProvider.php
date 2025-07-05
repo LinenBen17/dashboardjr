@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Dvarilek\FilamentTableSelect\Components\Form\TableSelect;
 use Filament\Facades\Filament;
 use Filament\Navigation\NavigationGroup;
 use Filament\Support\Assets\Js;

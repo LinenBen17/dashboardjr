@@ -38,6 +38,15 @@ class ShipmentEntry extends Model
     {
         return $this->belongsTo(Town::class, 'town_id');
     }
+    public function agency()
+    {
+        return $this->belongsTo(Agency::class);
+    }
+
+    public function departament()
+    {
+        return $this->belongsTo(Departament::class);
+    }
 
     public function paymentMethod()
     {
@@ -48,8 +57,12 @@ class ShipmentEntry extends Model
     {
         return $this->belongsTo(Product::class, 'product_id');
     }
-    public function customers()
+    public function sender()
     {
-        return $this->belongsTo(Customer::class, 'sender_code', 'code');
+        return $this->belongsTo(Customer::class, 'sender_code');
+    }
+    public function receiver()
+    {
+        return $this->belongsTo(Customer::class, 'receiver_code');
     }
 }

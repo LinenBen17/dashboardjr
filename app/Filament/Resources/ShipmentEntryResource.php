@@ -7,6 +7,8 @@ use App\Filament\Resources\ShipmentEntryResource\Pages;
 use App\Filament\Resources\ShipmentEntryResource\RelationManagers;
 use App\Models\Product;
 use App\Models\ShipmentEntry;
+use App\Models\Town;
+use Dvarilek\FilamentTableSelect\Components\Form\TableSelect;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\DatePicker;
@@ -23,6 +25,7 @@ use Filament\Forms\Set;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\Alignment;
 use Filament\Tables;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -128,7 +131,7 @@ class ShipmentEntryResource extends Resource
                                         Grid::make()
                                             ->columns(4)
                                             ->schema([
-                                                TextInput::make('sender_code')
+                                                /* TextInput::make('sender_code')
                                                     ->label('Código Remitente')
                                                     ->id('codigo_remitente')
                                                     ->numeric()
@@ -136,33 +139,116 @@ class ShipmentEntryResource extends Resource
                                                         'x-ref' => 'codeSenderInput',
                                                         // cuando llegue el evento, enfoca el input
                                                         'x-on:focus-codeSender.window' => '$refs.codeSenderInput.focus()',
-                                                    ]),
+                                                    ]), */
+                                                TableSelect::make('sender_code')
+                                                    ->label('Codigo Remitente')
+                                                    ->placeholder('')
+                                                    ->id('codigo_remitente')
+                                                    ->relationship('sender', 'code')
+                                                    ->selectionTable(function (Table $table) {
+                                                        return $table
+                                                            ->heading('Selecciona el Destinatario')
+                                                            ->columns([
+                                                                TextColumn::make('code')
+                                                                    ->searchable(),
+                                                                TextColumn::make('name')
+                                                                    ->searchable(),
+                                                                TextColumn::make('address')
+                                                                    ->searchable(),
+                                                                TextColumn::make('phone')
+                                                                    ->searchable(),
+                                                            ]);
+                                                        // ->modifyQueryUsing(fn(Builder $query) => $query->where('status', 'active'));
+                                                    })
+                                                    ->selectionAction(function (Action $action) {
+                                                        return $action
+                                                            ->modalHeading('')
+                                                            ->slideOver(false);
+                                                    })
+                                                    ->triggerSelectionActionOnInputClick()
+                                                    ->afterStateUpdated(
+                                                        function (Get $get, Set $set, $state) {
+                                                            $dataCustomer = DB::table('customers')
+                                                                ->where('id', $state[0])
+                                                                ->get(['name', 'address', 'phone'])
+                                                                ->toArray();
+
+                                                            Logger($dataCustomer[0]->name);
+                                                            $set('sender_name', $dataCustomer[0]->name);
+                                                            $set('sender_address', $dataCustomer[0]->address);
+                                                            $set('sender_phone', $dataCustomer[0]->phone);
+                                                        }
+                                                    ),
                                                 TextInput::make('sender_name')
                                                     ->label('Nombre Remitente')
+                                                    ->autocomplete(false)
                                                     ->required(),
                                                 TextInput::make('sender_address')
                                                     ->label('Dirección Remitente')
+                                                    ->autocomplete(false)
                                                     ->required(),
                                                 TextInput::make('sender_phone')
                                                     ->label('Teléfono Remitente')
+                                                    ->autocomplete(false)
                                                     ->tel()
                                                     ->required(),
                                             ]),
                                         Grid::make()
                                             ->columns(4)
                                             ->schema([
-                                                TextInput::make('receiver_code')
+                                                /* TextInput::make('receiver_code')
                                                     ->label('Código Destinatario')
                                                     ->id('codigo_destinatario')
-                                                    ->numeric(),
+                                                    ->numeric(), */
+                                                TableSelect::make('receiver_code')
+                                                    ->label('Codigo Destinatario')
+                                                    ->placeholder('')
+                                                    ->id('codigo_destinatario')
+                                                    ->relationship('receiver', 'code')
+                                                    ->selectionTable(function (Table $table) {
+                                                        return $table
+                                                            ->heading('Selecciona el Destinatario')
+                                                            ->columns([
+                                                                TextColumn::make('code')
+                                                                    ->searchable(),
+                                                                TextColumn::make('name')
+                                                                    ->searchable(),
+                                                                TextColumn::make('address')
+                                                                    ->searchable(),
+                                                                TextColumn::make('phone')
+                                                                    ->searchable(),
+                                                            ]);
+                                                        // ->modifyQueryUsing(fn(Builder $query) => $query->where('status', 'active'));
+                                                    })
+                                                    ->selectionAction(function (Action $action) {
+                                                        return $action
+                                                            ->modalHeading('')
+                                                            ->slideOver(false);
+                                                    })
+                                                    ->triggerSelectionActionOnInputClick()
+                                                    ->afterStateUpdated(
+                                                        function (Get $get, Set $set, $state) {
+                                                            $dataCustomer = DB::table('customers')
+                                                                ->where('id', $state[0])
+                                                                ->get(['name', 'address', 'phone'])
+                                                                ->toArray();
+
+                                                            $set('receiver_name', $dataCustomer[0]->name);
+                                                            $set('receiver_address', $dataCustomer[0]->address);
+                                                            $set('receiver_phone', $dataCustomer[0]->phone);
+                                                        }
+                                                    ),
                                                 TextInput::make('receiver_name')
                                                     ->label('Nombre Destinatario')
+                                                    ->autocomplete(false)
                                                     ->required(),
                                                 TextInput::make('receiver_address')
                                                     ->label('Dirección Destinatario')
+                                                    ->autocomplete(false)
                                                     ->required(),
                                                 TextInput::make('receiver_phone')
                                                     ->label('Teléfono Destinatario')
+                                                    ->autocomplete(false)
                                                     ->tel()
                                                     ->required(),
                                             ]),
@@ -176,14 +262,41 @@ class ShipmentEntryResource extends Resource
                                             ->schema([
                                                 TextInput::make('prefix_origin')
                                                     ->label('Origen')
+                                                    ->id('prefix_origen')
+                                                    ->readOnly()
+                                                    ->default(function () {
+                                                        $getPrefix = DB::table('departaments')
+                                                            ->where('id', Filament::auth()->user()->custom_fields['departament_id'])
+                                                            ->value('prefix');
+                                                        return $getPrefix;
+                                                    })
                                                     ->required(),
                                                 TextInput::make('prefix_destination')
                                                     ->label('Destino')
+                                                    ->autocomplete(false)
+                                                    ->id('prefix_destino')
+                                                    ->live()
+                                                    ->debounce(500)
                                                     ->required(),
                                                 Select::make('town_id')
                                                     ->label('Municipio')
-                                                    ->relationship('towns', 'name')
+                                                    ->options(function (Get $get): array {
+                                                        $prefix = $get('prefix_destination');
+
+                                                        // Si no hay prefijo aún, devuelvo arreglo vacío para que el select quede “en gris”
+                                                        if (blank($prefix)) {
+                                                            return [];
+                                                        }
+
+                                                        return Town::query()
+                                                            ->whereHas('agency.departament', fn(Builder $q) =>
+                                                            $q->where('prefix', $prefix))   // ← relación encadenada
+                                                            ->orderBy('name')
+                                                            ->pluck('name', 'id')
+                                                            ->toArray();
+                                                    })
                                                     ->required(),
+
                                             ]),
                                     ]),
 
@@ -221,9 +334,13 @@ class ShipmentEntryResource extends Resource
                                                         $productDescription = DB::table('products')
                                                             ->where('id', $state)
                                                             ->value('name');
+                                                        $productPrice = DB::table('products')
+                                                            ->where('id', $state)
+                                                            ->value('price');
 
                                                         if ($productDescription) {
                                                             $set('product_description', $productDescription);
+                                                            $set('unit_price', intval($productPrice));
                                                         } else {
                                                             $set('product_description', '0');
                                                         }
@@ -231,7 +348,11 @@ class ShipmentEntryResource extends Resource
                                                 TextInput::make('pieces')
                                                     ->label('Piezas')
                                                     ->numeric()
-                                                    ->required(),
+                                                    ->required()
+                                                    ->afterStateUpdated(function (Get $get, Set $set, ?string $state) {
+                                                        $price = $get('unit_price') ?: 0;
+                                                        $set('subtotal', $price * $state);
+                                                    }),
                                                 TextInput::make('product_description')
                                                     ->label('Descripción')
                                                     ->disabled()
