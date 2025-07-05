@@ -78,7 +78,7 @@ class CustomerResource extends Resource
                         $employee = DB::table('employees')
                             ->leftJoin('charges', 'employees.id_charge', '=', 'charges.id')
                             ->select('charges.name', 'employees.id', DB::raw("CONCAT(employees.name, ' ', employees.last_name) AS name"))
-                            ->where('charges.name', 'LIKE', '%Ventas%')
+                            ->where('charges.name', 'LIKE', '%Vendedor%')
                             ->pluck('name', 'id');
                         return $employee;
                     }),
