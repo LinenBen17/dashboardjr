@@ -21,6 +21,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Log\Logger;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Mockery\Matcher\Not;
 
 class CreateShipmentEntry extends CreateRecord
@@ -332,7 +333,8 @@ class CreateShipmentEntry extends CreateRecord
                     ],
                 ],
             ]);
-            $this->dispatch('print-guide', $data);
+            $this->dispatch('print-guide', $data); // Aqui instanciamos el evento para imprimir la guía
+
             $this->dispatch('focus-codeSender');
         } catch (\Throwable $th) {
             Notification::make()

@@ -39,66 +39,26 @@ $(window).on('load', function () {
         }
     });
     document.addEventListener('print-guide', function (e) {
-        console.log(e.detail);
-        var ventana = window.open(' ', 'popimpr');
-        ventana.document.write('<html><head><title>' + document.title + '</title>');
-        ventana.document.write('<link rel="stylesheet" href="' + e.detail[0]['style'] + '">'); //Aquí agregué la hoja de estilos
-        ventana.document.write('</head><body >');
-        //ventana.document.write('<div class="canvas"></div>')
-        ventana.document.write(
-            `
-                <div class="guia">
-                    <div class="formapago">
-                        <p class="">${e.detail[0]['payment_method']}</p>
-                    </div>
-                    <div class="datos">
-                        <div class="datosRemitente">
-                            <p class="remitente">${e.detail[0]['sender_name']}</p><br>
-                            <p class="dirRemitente" id="dirRemitente">${e.detail[0]['sender_address']}</p>
-                            <p class="telRemitente">${e.detail[0]['sender_phone']}</p>
-                            <p class="origen">${e.detail[0]['prefix_origin']}</p>
-                        </div>
-                        <div class="datosDestinatario">
-                            <p class="destinatario">${e.detail[0]['receiver_name']}</p><br>
-                            <p class="dirDestinatario" id="dirDestinatario">${e.detail[0]['receiver_address']}</p>
-                            <p class="telDestinatario">${e.detail[0]['receiver_phone']}</p>
-                            <p class="destino">${e.detail[0]['prefix_destination']}</p>
-                        </div>
-                    </div><br><br>
-                    <div class="codigoCliente">
-                        <p class="descripcionProducto">${e.detail[0]['product_description']}</p>
-                        <p class="tarifa">${e.detail[0]['total']}</p>
-                        <p class="codigo">${((e.detail[0]['sender_code'] ?? 0) + ' - ' + (e.detail[0]['sender_code'] ?? 0))}</p>
-                    </div><br>
-                    <div class="inferiorGuia">
-                        <p class="piezas">${e.detail[0]['pieces']}</p>
-                        <p class="usuario"></p>
-                        <div class="fecha">
-                            <p>${e.detail[0]['dia']}</p>
-                            <p>${e.detail[0]['mes']}</p>
-                            <p>${e.detail[0]['anio']}</p>
-                        </div>
-                    </div>
-                </div>
-                <script>
-                    const text = document.getElementById('dirDestinatario').textContent;
-                    const truncated = text.length > 75 ? text.slice(0, 75) + '...' : text;
+        const datos = e.detail[0];
 
-                    const textRemitente = document.getElementById('dirRemitente').textContent;
-                    const truncatedRemitente = textRemitente.length > 75 ? textRemitente.slice(0, 75) + '...' : textRemitente;
+        console.log('Datos a imprimir:', datos);
 
-                    document.getElementById('dirDestinatario').textContent = truncated;
-                    document.getElementById('dirRemitente').textContent = truncatedRemitente;
-                </script>
-            `
-        );
-        ventana.document.write('</body></html>');
-        ventana.document.close();
-        setTimeout(() => {
-            ventana.print();
-            ventana.close();
-        }, 1500)
-        $("#codigo_remitente").focus();
+        fetch('http://localhost:9000/print', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(datos)
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Respuesta de impresión:', data);
+                alert('Guía enviada a la impresora.');
+            })
+            .catch(error => {
+                console.error('Error al conectar con el servidor local:', error);
+                alert('No se pudo imprimir. Asegúrate de tener el servidor local corriendo.');
+            });
     });
 });
 function addGuide(event) {
