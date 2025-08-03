@@ -32,6 +32,31 @@ class OrdencompraResource extends Resource
         return $table
             ->columns([
                 //
+                Tables\Columns\TextColumn::make('numero_orden')
+                ->label('N° Orden')
+                ->numeric()
+                ->sortable(),
+
+            Tables\Columns\TextColumn::make('fecha')
+                ->date()
+                ->sortable(),
+
+            Tables\Columns\TextColumn::make('proveedor')
+                ->searchable(),
+
+            Tables\Columns\TextColumn::make('items_count')
+                ->label('Ítems')
+                ->getStateUsing(fn ($record) => count($record->items ?? [])),
+
+            Tables\Columns\TextColumn::make('total_general')
+                ->label('Total')
+                ->money('GTQ') // Quetzales
+                ->sortable(),
+
+            Tables\Columns\TextColumn::make('created_at')
+                ->dateTime()
+                ->sortable()
+                ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 //
