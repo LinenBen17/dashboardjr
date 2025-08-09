@@ -181,7 +181,8 @@ $(document).on('keydown', '#codigo_remitente', function (e) {
             if (!$.fn.DataTable.isDataTable('#tablaClientes')) {
                 tablaCustomers = $('#tablaClientes').DataTable({
                     dom: 'f',
-                    paging: false,
+                    paging: true,
+                    pageLength: 10,
                     info: false,
                     ordering: false,
                     select: {
@@ -236,7 +237,7 @@ $(document).on('keydown', '#codigo_remitente', function (e) {
             } else {
                 tablaCustomers.ajax.reload();
             }
-        }, 800);
+        }, 1200);
     }
 });
 
