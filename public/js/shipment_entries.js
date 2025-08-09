@@ -145,11 +145,16 @@ $(document).on('blur', '#codigo_remitente', function () {
             .then(res => res.json())
             .then(data => {
                 if (Object.keys(data).length !== 0) {
-                    $('#sender_name').val(data.name);
-                    $('#sender_address').val(data.address);
-                    $('#sender_phone').val(data.phone);
-
-                    $('#codigo_destinatario').focus();
+                    if (Object.keys(data).length !== 0) {
+                        $('#sender_name').val(data.name);
+                        $('#sender_address').val(data.address);
+                        $('#sender_phone').val(data.phone);
+                        $('#codigo_destinatario').focus();
+                    } else {
+                        $('#sender_name').val('');
+                        $('#sender_address').val('');
+                        $('#sender_phone').val('');
+                    }
                 }
 
             })
@@ -316,9 +321,19 @@ $(document).on('blur', '#codigo_destinatario', function () {
         fetch(`/shipment-entries/buscar-cliente?code=${codigo}`)
             .then(res => res.json())
             .then(data => {
-                $('#receiver_name').val(data.name);
-                $('#receiver_address').val(data.address);
-                $('#receiver_phone').val(data.phone);
+
+
+                if (Object.keys(data).length !== 0) {
+                    if (Object.keys(data).length !== 0) {
+                        $('#receiver_name').val(data.name);
+                        $('#receiver_address').val(data.address);
+                        $('#receiver_phone').val(data.phone);
+                    } else {
+                        $('#sender_name').val('');
+                        $('#sender_address').val('');
+                        $('#sender_phone').val('');
+                    }
+                }
             })
             .catch(err => {
                 console.error('Error al buscar cliente:', err);
