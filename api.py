@@ -94,6 +94,9 @@ def print_job():
     if (len(lineasDireccionRem) > 1) or (len(lineasDireccionDes) > 1):
         raw_data += LF
 
+    if (len(lineasDireccionRem) == 1) and (len(lineasDireccionDes) == 1):
+        raw_data += LF
+
     if len(lineasDireccionRem) > 1:
         lineaRem2 = truncar_con_puntos(lineasDireccionRem[1])
         raw_data += ESC + b'$' + bytes([nL, nH]) + lineaRem2.encode('latin1')
@@ -128,8 +131,11 @@ def print_job():
             raw_data += set_position(31 - len(numero_destinatario), 0) + destino.encode('latin1')
     
     # DESCRIPCIÓN DEL ENVIO
-    raw_data += LF
-    raw_data += LF
+    if len(lineasDireccionRem) > 1 or len(lineasDireccionDes) > 1:
+        raw_data += LF  # Solo una línea si ambas tienen dos líneas
+    else:
+        raw_data += LF * 2  # Dos líneas si al menos una tiene una sola línea
+
     raw_data += ESC + b'$' + bytes([nL, nH]) + truncar_con_puntos(descripcion_producto, 33).encode('latin1')
 
     # TARIFA DEL ENVIO
@@ -153,6 +159,8 @@ def print_job():
     # AVANZA A LA SIGUIENTE PAGINA
     raw_data += LF * 4
     raw_data += ESC + b'J' + bytes([18])  # Avanza 0.5 líneas (2.115 mm ≈ 15/180 pulgadas)
+
+    # raw_data += b'\x0C'
 
     # Enviar a impresora
     printer_name = win32print.GetDefaultPrinter()

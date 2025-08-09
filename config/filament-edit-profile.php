@@ -41,5 +41,20 @@ return [
             'hint_icon' => '', // optional
             'hint' => '', // optional
         ],
+        'user_name' => [
+            'type' => 'text', // required
+            'label' => 'Nombre de Usuario', // required
+            'placeholder' => 'Ej. AQUEVEDO, DRODAS, KREVOLORIO', // optional
+            'id' => 'user_name', // optional
+            'required' => true, // optional
+            'rules' => [], // optional
+            'hint_icon' => '', // optional
+            'hint' => '', // optional
+            'suffix_icon' => '', // optional
+            'prefix_icon' => '', // optional
+            'default' => '', // optional
+            'column_span' => 'full', // optional
+            'autocomplete' => false, // optional
+        ],
     ]
 ];

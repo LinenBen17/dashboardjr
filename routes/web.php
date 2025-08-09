@@ -19,3 +19,8 @@ Route::get('/manifest-incomes/{id}', WarehouseIncomesController::class)->name('m
 Route::get('/manifest-outgos/{id}', WarehouseOutgosController::class)->name('manifest_outgo_format');
 
 Route::get('/shipment-entries/{id}/printMother', [ShipmentEntryController::class, 'printMother'])->name('shipment_entry.printMother');
+Route::get('/shipment-entries/buscar-municipios', [ShipmentEntryController::class, 'searchTown'])->name('buscar_municipios');
+Route::get('/shipment-entries/buscar-producto', [ShipmentEntryController::class, 'searchProductDetail'])->name('buscar_producto');
+Route::get('/shipment-entries/buscar-ruta', [ShipmentEntryController::class, 'searchRoute'])->name('buscar_ruta');
+Route::get('/shipment-entries/buscar-cliente', [ShipmentEntryController::class, 'getCustomerData'])->name('buscar_cliente');
+Route::get('/shipment-entries/listar-clientes', [ShipmentEntryController::class, 'getCustomers'])->name('listar_clientes');

@@ -495,7 +495,7 @@ class ShipmentEntryResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListShipmentEntries::route('/'),
+            'index' => Pages\CreateShipment::route('/'),
             'create' => Pages\CreateShipmentEntry::route('/create'),
             'edit' => Pages\EditShipmentEntry::route('/{record}/edit'),
         ];
