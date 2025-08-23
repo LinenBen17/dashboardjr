@@ -6,6 +6,7 @@ use App\Models\ShipmentEntry;
 use App\Models\Town;
 use Illuminate\Http\Request;
 use Illuminate\Log\Logger;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class ShipmentEntryController extends Controller
@@ -19,14 +20,19 @@ class ShipmentEntryController extends Controller
     {
         $prefix = $request->get('prefix');
 
-        $municipios = Town::query()
-            ->whereHas(
-                'agency.departament',
-                fn($q) =>
-                $q->where('prefix', $prefix)
-            )
-            ->orderBy('name')
-            ->pluck('name', 'id');
+        // clave de cache única por cada prefix
+        $cacheKey = "municipios_prefix_$prefix";
+
+        $municipios = Cache::remember($cacheKey, now()->addMinutes(60), function () use ($prefix) {
+            return Town::query()
+                ->join('routes', 'towns.route_id', '=', 'routes.id')
+                ->join('agencies', 'routes.agency_id', '=', 'agencies.id')
+                ->join('departaments', 'agencies.departament_id', '=', 'departaments.id')
+                ->where('departaments.prefix', $prefix)
+                ->orderBy('towns.name')
+                ->pluck('towns.name', 'towns.id');
+        });
+
 
         return response()->json($municipios);
     }

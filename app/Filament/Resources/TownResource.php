@@ -42,15 +42,9 @@ class TownResource extends Resource
                 Forms\Components\TextInput::make('name')
                     ->required()
                     ->maxLength(191),
-                Select::make('agency_id')
-                    ->required()
-                    ->relationship(name: 'agency', titleAttribute: 'name'),
                 Select::make('route_id')
                     ->relationship(name: 'route', titleAttribute: 'name')
                     ->nullable(),
-                Forms\Components\TextInput::make('prefix')
-                    ->required()
-                    ->maxLength(3),
                 Forms\Components\Toggle::make('status')
                     ->required(),
             ]);
@@ -66,13 +60,8 @@ class TownResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('agency.name')
-                    ->numeric()
-                    ->sortable(),
                 Tables\Columns\TextColumn::make('route.name')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('prefix')
-                    ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -82,6 +71,7 @@ class TownResource extends Resource
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\IconColumn::make('status')
+                    ->sortable()
                     ->boolean(),
             ])
             ->filters([

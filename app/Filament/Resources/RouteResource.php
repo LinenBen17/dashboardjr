@@ -74,7 +74,7 @@ class RouteResource extends Resource
                 Tables\Columns\TextColumn::make('employee_id')
                     ->numeric()
                     ->getStateUsing(function (Route $record) {
-                        return $record->employees->name . ' ' . $record->employees->last_name;
+                        return $record->employees?->name . ' ' . $record->employees?->last_name;
                     })
                     ->sortable(),
                 Tables\Columns\TextColumn::make('agency_id')

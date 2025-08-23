@@ -9,12 +9,8 @@ class Town extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'departament_id', 'status', 'prefix', 'agency_id', 'route_id'];
+    protected $fillable = ['name', 'departament_id', 'status', 'prefix', 'route_id'];
 
-    public function agency()
-    {
-        return $this->belongsTo(Agency::class, 'agency_id');
-    }
     public function route()
     {
         return $this->belongsTo(Route::class, 'route_id');
