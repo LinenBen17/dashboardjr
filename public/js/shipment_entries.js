@@ -530,3 +530,32 @@ function addingSubtotal() {
 
     totalMount.value = (parseFloat(sender_total.value) + parseFloat(receiver_total.value)).toFixed(2);
 }
+
+// Obtener información de guía en Consulta de Guías
+$(document).on('click', '#searchGuideBtn', function () {
+    const guide = document.getElementById('search_guide').value.trim();
+
+    if (!guide) return;
+
+    fetch(`/shipment-entries/buscar-guia?guide=${guide}`)
+        .then(res => res.json())
+        .then(data => {
+            console.log(data);
+            $('#sender_name_consult').text(data.sender_name);
+            $('#sender_address_consult').text(data.sender_address);
+            $('#sender_phone_consult').text(data.sender_phone);
+            $('#receiver_name_consult').text(data.receiver_name);
+            $('#receiver_address_consult').text(data.receiver_address);
+            $('#receiver_phone_consult').text(data.receiver_phone);
+            $('#product_consult').text(data.product_description);
+            $('#pieces_consult').text(data.pieces);
+            $('#unit_price_consult').text(data.unit_price);
+            $('#total_consult').text(data.total);
+            $('#date_guide_consult').text(data.date_guide);
+            $('#payment_method_consult').text(data.payment_method);
+            $('#manifest_no_consult').text(data.no_manifest);
+        })
+        .catch(err => {
+            console.error('Error al buscar guía:', err);
+        });
+})

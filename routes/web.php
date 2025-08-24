@@ -24,3 +24,4 @@ Route::get('/shipment-entries/buscar-producto', [ShipmentEntryController::class,
 Route::get('/shipment-entries/buscar-ruta', [ShipmentEntryController::class, 'searchRoute'])->name('buscar_ruta');
 Route::get('/shipment-entries/buscar-cliente', [ShipmentEntryController::class, 'getCustomerData'])->name('buscar_cliente');
 Route::get('/shipment-entries/listar-clientes', [ShipmentEntryController::class, 'getCustomers'])->name('listar_clientes');
+Route::get('/shipment-entries/buscar-guia', [ShipmentEntryController::class, 'getGuideData'])->name('buscar_guia');

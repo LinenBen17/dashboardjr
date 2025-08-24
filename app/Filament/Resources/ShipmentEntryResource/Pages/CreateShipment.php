@@ -27,6 +27,8 @@ class CreateShipment extends Page
 
     protected static string $view = 'filament.resources.shipment-entry-resource.pages.create-shipment';
 
+    protected static ?string $title = 'Creación de Envíos';
+
     protected static ?string $navigationLabel = 'Ingreso de Envíos';
     protected static ?string $modelLabel = 'Ingreso de Envío';
 
@@ -92,6 +94,11 @@ class CreateShipment extends Page
     public function openCustomersModal()
     {
         $this->dispatch('open-modal', id: 'customersModal');
+    }
+
+    public function openConsultGuides()
+    {
+        $this->dispatch('open-modal', id: 'consultGuides');
     }
 
     public function closeCustomersModal()

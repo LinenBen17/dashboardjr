@@ -93,4 +93,25 @@ class ShipmentEntryController extends Controller
 
         return response()->json($customers);
     }
+
+    public function getGuideData(Request $request)
+    {
+        $guide = $request->get('guide');
+
+        $guide_data = DB::table('shipment_entries')
+            ->where('mother', $guide)
+            ->join('payment_methods', 'shipment_entries.payment_method_id', '=', 'payment_methods.id')
+            ->select(
+                'shipment_entries.*',
+                'payment_methods.name as payment_method' // Traemos el nombre
+            )
+            ->first();
+
+        // Formatear solo la fecha de date_guide
+        if ($guide_data) {
+            $guide_data->date_guide = \Carbon\Carbon::parse($guide_data->date_guide)->format('d/m/Y');
+        }
+
+        return response()->json($guide_data);
+    }
 }

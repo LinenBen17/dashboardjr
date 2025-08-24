@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/keytable/2.11.0/css/keyTable.dataTables.min.css">
 
     <link rel="stylesheet" href="https://cdn.datatables.net/2.3.2/css/dataTables.dataTables.min.css">
+
     <x-filament::grid class="gap-4" style="--cols-default: repeat(5, minmax(0, 1fr));">
         {{-- COLUMNA IZQUIERDA --}}
         <x-filament::grid.column style="--col-span-default: span 1 / span 1;">
@@ -335,12 +336,26 @@
                 </div>
             </x-filament::section>
         </x-filament::grid.column>
-        <div class="">
-            <x-filament::button type="button" class="saveShipment" wire:click="confirmSave" color="primary">
-                Guardar Envío
-            </x-filament::button>
-        </div>
+        {{-- FILA INFERIOR BOTONES --}}
+        <x-filament::grid.column style="--col-span-default: span 5 / span 5;">
+            <div class="flex justify-between items-center mb-4">
+                {{-- Botón izquierdo --}}
+                <div>
+                    <x-filament::button type="button" class="saveShipment" wire:click="confirmSave"
+                        color="primary">
+                        Guardar Envío
+                    </x-filament::button>
+                </div>
 
+                {{-- Botones derechos --}}
+                <div class="flex space-x-2">
+                    <x-filament::button type="button" class="consultGuideButton" wire:click="openConsultGuides"
+                        color="info">
+                        Consultar Guía
+                    </x-filament::button>
+                </div>
+            </div>
+        </x-filament::grid.column>
     </x-filament::grid>
 
     {{-- MODAL GUIAS HIJAS --}}
@@ -411,6 +426,67 @@
             </x-filament::button>
         </div>
     </x-filament::modal>
+
+    {{-- MODAL CONSULTA DE GUÍAS --}}
+    <x-filament::modal id="consultGuides" width="4xl">
+        <x-slot name="heading">
+            Consulta de Guías
+        </x-slot>
+
+        {{-- Input de búsqueda --}}
+        <div class="mb-0">
+            <label for="search_guide"
+                class="fi-fo-field-wrp-label mb-2 inline-flex items-center gap-x-3 text-sm font-medium leading-6 text-gray-950 dark:text-white">
+                No. Guía
+                <span class="text-danger-600 dark:text-danger-400 font-medium">*</span>
+            </label>
+
+            <div class="flex gap-2 items-center">
+                <x-filament::input.wrapper class="flex-1">
+                    <x-filament::input type="text" placeholder="Guía Madre: 1234567, Guía Hija: H0001234"
+                        name="guide" id="search_guide" />
+                </x-filament::input.wrapper>
+
+                <x-filament::button id="searchGuideBtn" color="primary">
+                    Buscar
+                </x-filament::button>
+            </div>
+        </div>
+
+        {{-- Información de la guía --}}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-0">
+            {{-- Remitente --}}
+            <div class="p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
+                <h3 class="text-lg font-semibold mb-2">Remitente</h3>
+                <p><span class="font-medium">Nombre:</span> <span id="sender_name_consult">-</span></p>
+                <p><span class="font-medium">Dirección:</span> <span id="sender_address_consult">-</span></p>
+                <p><span class="font-medium">Teléfono:</span> <span id="sender_phone_consult">-</span></p>
+            </div>
+
+            {{-- Destinatario --}}
+            <div class="p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
+                <h3 class="text-lg font-semibold mb-2">Destinatario</h3>
+                <p><span class="font-medium">Nombre:</span> <span id="receiver_name_consult">-</span></p>
+                <p><span class="font-medium">Dirección:</span> <span id="receiver_address_consult">-</span></p>
+                <p><span class="font-medium">Teléfono:</span> <span id="receiver_phone_consult">-</span></p>
+            </div>
+
+            {{-- Detalles del envío --}}
+            <div class="p-4 border rounded-lg bg-gray-50 dark:bg-gray-800 md:col-span-2">
+                <h3 class="text-lg font-semibold mb-2">Detalles del Envío</h3>
+                <div class="grid grid-cols-2 gap-4">
+                    <p><span class="font-medium">Producto:</span> <span id="product_consult">-</span></p>
+                    <p><span class="font-medium">Piezas:</span> <span id="pieces_consult">-</span></p>
+                    <p><span class="font-medium">Precio Unitario:</span> Q.<span id="unit_price_consult">-</span></p>
+                    <p><span class="font-medium">Total:</span> Q.<span id="total_consult">-</span></p>
+                    <p><span class="font-medium">Fecha de Guía:</span> <span id="date_guide_consult">-</span></p>
+                    <p><span class="font-medium">Forma de Pago:</span> <span id="payment_method_consult">-</span></p>
+                    <p><span class="font-medium">No. Manifiesto:</span> <span id="manifest_no_consult">-</span></p>
+                </div>
+            </div>
+        </div>
+    </x-filament::modal>
+
 
     {{-- MODAL CLIENTES TABLE --}}
     <x-filament::modal id="customersModal" width="4xl" :close-button="true" :close-by-escaping="false" :close-by-clicking-away="false">

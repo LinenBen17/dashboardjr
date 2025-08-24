@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ShipmentEntryResource\Pages;
 
+use App\Filament\Clusters\Shipping;
 use App\Filament\Resources\ShipmentEntryResource;
 use App\Models\ShipmentEntry;
 use App\Models\ShipmentEntryChild;
