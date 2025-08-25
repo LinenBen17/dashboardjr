@@ -63,6 +63,7 @@ def print_job():
     raw_data += ESC + b'\x4D' + ESC + b'E'  # Fuente B + Negrita
 
     # Forma de pago y nombre destinatario
+    raw_data += LF
     raw_data += set_position(65, 3) + forma_pago.encode('latin1')
     if len(lineasNombreDes) > 0:
         raw_data += set_position(42, 2) + lineasNombreDes[0].encode('latin1')
