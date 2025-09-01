@@ -77,7 +77,7 @@
         <p>Responsable: {{ $manifest_income['driver'] }}</p>
         <p>Total paquetes: {{ $manifest_income['total_pieces'] }}</p>
         <p></p>
-        <p>Recibe: {{ $person_scans['name'] . ' ' . $person_scans['last_name'] }} </p>
+        <p>Recibe: {{ $person_scans['name'] }} </p>
         <p>Hora inicio: {{ $hora_inicio }} Hora fin: {{ $hora_fin }}</p>
         <p></p>
     </div>

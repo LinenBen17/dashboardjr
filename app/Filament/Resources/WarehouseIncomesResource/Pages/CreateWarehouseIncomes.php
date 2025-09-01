@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\WarehouseIncomesResource\Pages;
 
+use App\Filament\Clusters\Warehouse;
 use App\Filament\Resources\WarehouseIncomesResource;
 use App\Models\WarehouseIncomeGuide;
 use App\Models\WarehouseOutgoGuide;
@@ -14,6 +15,7 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
 use Filament\Support\Enums\MaxWidth;
 use Illuminate\Log\Logger;
+use Illuminate\Support\Facades\DB;
 
 class CreateWarehouseIncomes extends CreateRecord
 {
@@ -26,6 +28,8 @@ class CreateWarehouseIncomes extends CreateRecord
     public array $scannedGuidesTimes = [];
     public array $motherGuidesTimes = [];
     public array $childGuidesTimes = [];
+
+    public string $bodegaGuiaAlojada = '';
 
     public function validarGuiaParaIngreso(string $guide, int $currentWarehouseId): string
     {
@@ -54,6 +58,7 @@ class CreateWarehouseIncomes extends CreateRecord
                 }
             } else {
                 if (!$tieneSalida) {
+                    $this->bodegaGuiaAlojada = DB::table('warehouses')->where('id', $bodegaIngreso)->value('name');
                     return 'INGRESO_OTRA_NO_SALIO';
                 } else {
                     return 'OK'; // Ya salió de otra bodega, ingreso válido aquí
@@ -97,7 +102,7 @@ class CreateWarehouseIncomes extends CreateRecord
         if ($estado === 'INGRESO_OTRA_NO_SALIO') {
             Notification::make()
                 ->title('Ingreso no permitido')
-                ->body("La guía $guide fue ingresada en otra bodega y no ha salido de allí.")
+                ->body("La guía $guide fue ingresada en $this->bodegaGuiaAlojada y no ha salido de allí.")
                 ->danger()
                 ->persistent()
                 ->send();

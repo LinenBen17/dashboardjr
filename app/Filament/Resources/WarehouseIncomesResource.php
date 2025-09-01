@@ -7,7 +7,10 @@ use App\Filament\Resources\WarehouseIncomesResource\Pages;
 use App\Filament\Resources\WarehouseIncomesResource\RelationManagers;
 use App\Livewire\WarehouseGuides;
 use App\Models\Employee;
+use App\Models\Route;
 use App\Models\WarehouseIncomes;
+use App\Models\Warehouses;
+use Filament\Facades\Filament;
 use Filament\Forms;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Placeholder;
@@ -68,6 +71,15 @@ class WarehouseIncomesResource extends Resource
                                     ->id('warehouse_id')
                                     ->disabledOn('edit')
                                     ->live(onBlur: true)
+                                    ->options(function () {
+                                        $warehouses = DB::table('warehouses')
+                                            ->where('departament_id', Filament::auth()->user()->custom_fields['departament_id']);
+
+                                        if (Filament::auth()->user()->name == 'Super Admin') {
+                                            $warehouses = DB::table('warehouses');
+                                        }
+                                        return $warehouses->pluck('name', 'id');
+                                    })
                                     ->afterStateUpdated(function ($state, callable $set) {
                                         $lastCode = DB::table('warehouse_incomes')
                                             ->where('warehouse_id', $state)
@@ -80,14 +92,29 @@ class WarehouseIncomesResource extends Resource
 
                                         $newCode = $lastCode ? substr($lastCode, 4) + 1 : 1;
                                         $set('manifest_code', $prefix . '-' . $newCode);
-                                    })
-                                    ->relationship('warehouses', 'name'),
+                                    }),
                             ]),
                         Grid::make(3)
                             ->schema([
                                 Forms\Components\Select::make('route_id')
                                     ->label('Ruta Que Ingresa')
                                     ->live(onBlur: true)
+                                    ->options(function () {
+                                        $routes =  Route::query()
+                                            ->join('agencies', 'routes.agency_id', '=', 'agencies.id')
+                                            ->join('departaments', 'agencies.departament_id', '=', 'departaments.id')
+                                            ->where('departaments.id', Filament::auth()->user()->custom_fields['departament_id'])
+                                            ->orderBy('routes.name')
+                                            ->pluck('routes.name', 'routes.id');
+
+                                        if (Filament::auth()->user()->name == 'Super Admin') {
+                                            $routes =  Route::query()
+                                                ->orderBy('routes.name')
+                                                ->pluck('routes.name', 'routes.id');
+                                        }
+
+                                        return $routes;
+                                    })
                                     ->afterStateUpdated(function ($state, callable $set) {
                                         $nameDriver = DB::table('routes')
                                             ->leftJoin('employees', 'routes.employee_id', '=', 'employees.id')
@@ -97,8 +124,7 @@ class WarehouseIncomesResource extends Resource
 
                                         $set('driver', $nameDriver->name . ' ' . $nameDriver->last_name);
                                     })
-                                    ->required()
-                                    ->relationship('routes', 'name'),
+                                    ->required(),
                                 Forms\Components\TextInput::make('driver')
                                     ->label('Piloto Que Ingresa')
                                     ->required()
@@ -106,16 +132,14 @@ class WarehouseIncomesResource extends Resource
                                 Forms\Components\Select::make('person_scans')
                                     ->label('Persona Que Escanea')
                                     ->required()
+                                    ->disabled()
+                                    ->dehydrated()
                                     ->options(function () {
-                                        $employee = DB::table('employees')
-                                            ->leftJoin('charges', 'employees.id_charge', '=', 'charges.id')
-                                            ->leftJoin('status_employees', 'employees.status_id', '=', 'status_employees.id')
-                                            ->select('charges.name', 'employees.id', DB::raw("CONCAT(employees.name, ' ', employees.last_name) AS name"))
-                                            ->where('charges.name', 'LIKE', '%Bodega%')
-                                            ->where('status_employees.name', '=', 'Activo')
-                                            ->pluck('name', 'id');
-                                        return $employee;
-                                    }),
+                                        return [
+                                            Filament::auth()->user()->id => Filament::auth()->user()->name,
+                                        ];
+                                    })
+                                    ->default(Filament::auth()->user()->id),
                             ]),
                     ]),
                 Section::make('')
@@ -141,17 +165,23 @@ class WarehouseIncomesResource extends Resource
                         Grid::make(2)
                             ->schema([
                                 Section::make('')
-                                    ->columns(2)
+                                    ->columns(3)
                                     ->schema([
+                                        Placeholder::make('total_piezas')
+                                            ->content(fn($livewire) => count($livewire->motherGuides) + count($livewire->childGuides))
+                                            ->label('Total Piezas')
+                                            ->extraAttributes([
+                                                'style' => 'font-size: 24pt;',
+                                            ]),
                                         Placeholder::make('total_guias')
                                             ->content(fn($livewire) => count($livewire->motherGuides))
                                             ->label('Total Guías')
                                             ->extraAttributes([
                                                 'style' => 'font-size: 24pt;',
                                             ]),
-                                        Placeholder::make('total_piezas')
-                                            ->content(fn($livewire) => count($livewire->motherGuides) + count($livewire->childGuides))
-                                            ->label('Total Piezas')
+                                        Placeholder::make('total_hijas')
+                                            ->content(fn($livewire) => count($livewire->childGuides))
+                                            ->label('Total Hijas')
                                             ->extraAttributes([
                                                 'style' => 'font-size: 24pt;',
                                             ]),

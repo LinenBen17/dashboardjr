@@ -5,7 +5,9 @@ namespace App\Filament\Resources;
 use App\Filament\Clusters\Warehouse;
 use App\Filament\Resources\WarehouseOutgoResource\Pages;
 use App\Filament\Resources\WarehouseOutgoResource\RelationManagers;
+use App\Models\Route;
 use App\Models\WarehouseOutgo;
+use Filament\Facades\Filament;
 use Filament\Forms;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Placeholder;
@@ -61,6 +63,15 @@ class WarehouseOutgoResource extends Resource
                                     // ->disabledOn('edit')
                                     ->required()
                                     ->live(onBlur: true)
+                                    ->options(function () {
+                                        $warehouses = DB::table('warehouses')
+                                            ->where('departament_id', Filament::auth()->user()->custom_fields['departament_id']);
+
+                                        /* if (Filament::auth()->user()->name == 'Super Admin') {
+                                            $warehouses = DB::table('warehouses');
+                                        } */
+                                        return $warehouses->pluck('name', 'id');
+                                    })
                                     ->afterStateUpdated(function ($state, callable $set) {
                                         $lastCode = DB::table('warehouse_outgos')
                                             ->where('origin_warehouse_id', $state)
@@ -73,8 +84,7 @@ class WarehouseOutgoResource extends Resource
 
                                         $newCode = $lastCode ? substr($lastCode, 4) + 1 : 1;
                                         $set('manifest_code', $prefix . '-' . $newCode);
-                                    })
-                                    ->relationship('warehouses', 'name'),
+                                    }),
                                 Forms\Components\Select::make('warehouse_id')
                                     ->label('Bodega de Destino')
                                     ->disabledOn('edit')
@@ -86,6 +96,22 @@ class WarehouseOutgoResource extends Resource
                                 Forms\Components\Select::make('route_id')
                                     ->label('Ruta Que Sale')
                                     ->live(onBlur: true)
+                                    ->options(function () {
+                                        $routes =  Route::query()
+                                            ->join('agencies', 'routes.agency_id', '=', 'agencies.id')
+                                            ->join('departaments', 'agencies.departament_id', '=', 'departaments.id')
+                                            ->where('departaments.id', Filament::auth()->user()->custom_fields['departament_id'])
+                                            ->orderBy('routes.name')
+                                            ->pluck('routes.name', 'routes.id');
+
+                                        /* if (Filament::auth()->user()->name == 'Super Admin') {
+                                            $routes =  Route::query()
+                                                ->orderBy('routes.name')
+                                                ->pluck('routes.name', 'routes.id');
+                                        } */
+
+                                        return $routes;
+                                    })
                                     ->afterStateUpdated(function ($state, callable $set) {
                                         $nameDriver = DB::table('routes')
                                             ->leftJoin('employees', 'routes.employee_id', '=', 'employees.id')
@@ -95,8 +121,7 @@ class WarehouseOutgoResource extends Resource
 
                                         $set('driver', $nameDriver->name . ' ' . $nameDriver->last_name);
                                     })
-                                    ->required()
-                                    ->relationship('routes', 'name'),
+                                    ->required(),
                                 Forms\Components\TextInput::make('driver')
                                     ->label('Piloto Que Sale')
                                     ->required()
@@ -104,15 +129,14 @@ class WarehouseOutgoResource extends Resource
                                 Forms\Components\Select::make('person_scans')
                                     ->label('Persona Que Escanea')
                                     ->required()
+                                    ->disabled()
+                                    ->dehydrated()
                                     ->options(function () {
-                                        $employee = DB::table('employees')
-                                            ->leftJoin('charges', 'employees.id_charge', '=', 'charges.id')
-                                            ->leftJoin('status_employees', 'employees.status_id', '=', 'status_employees.id')
-                                            ->select('charges.name', 'employees.id', DB::raw("CONCAT(employees.name, ' ', employees.last_name) AS name"))
-                                            ->where('charges.name', 'LIKE', '%Bodega%')
-                                            ->pluck('name', 'id');
-                                        return $employee;
-                                    }),
+                                        return [
+                                            Filament::auth()->user()->id => Filament::auth()->user()->name,
+                                        ];
+                                    })
+                                    ->default(Filament::auth()->user()->id),
                             ]),
                     ]),
                 Section::make('')
@@ -138,17 +162,23 @@ class WarehouseOutgoResource extends Resource
                         Grid::make(2)
                             ->schema([
                                 Section::make('')
-                                    ->columns(2)
+                                    ->columns(3)
                                     ->schema([
+                                        Placeholder::make('total_piezas')
+                                            ->content(fn($livewire) => count($livewire->motherGuides) + count($livewire->childGuides))
+                                            ->label('Total Piezas')
+                                            ->extraAttributes([
+                                                'style' => 'font-size: 24pt;',
+                                            ]),
                                         Placeholder::make('total_guias')
                                             ->content(fn($livewire) => count($livewire->motherGuides))
                                             ->label('Total Guías')
                                             ->extraAttributes([
                                                 'style' => 'font-size: 24pt;',
                                             ]),
-                                        Placeholder::make('total_piezas')
-                                            ->content(fn($livewire) => count($livewire->motherGuides) + count($livewire->childGuides))
-                                            ->label('Total Piezas')
+                                        Placeholder::make('total_hijas')
+                                            ->content(fn($livewire) => count($livewire->childGuides))
+                                            ->label('Total Hijas')
                                             ->extraAttributes([
                                                 'style' => 'font-size: 24pt;',
                                             ]),
@@ -171,7 +201,7 @@ class WarehouseOutgoResource extends Resource
                             ]),
                         Grid::make(3)
                             ->schema([
-                                Placeholder::make('total_piezas')
+                                Placeholder::make('blank_space')
                                     ->content('')
                                     ->label('')
                                     ->extraAttributes([
