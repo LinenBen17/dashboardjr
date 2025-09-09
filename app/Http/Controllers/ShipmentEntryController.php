@@ -98,20 +98,68 @@ class ShipmentEntryController extends Controller
     {
         $guide = $request->get('guide');
 
+        // Obtener datos generales de la guía
         $guide_data = DB::table('shipment_entries')
             ->where('mother', $guide)
             ->join('payment_methods', 'shipment_entries.payment_method_id', '=', 'payment_methods.id')
+            ->join('users', 'shipment_entries.created_by', '=', 'users.id')
+            ->join('departaments', DB::raw("JSON_UNQUOTE(JSON_EXTRACT(users.custom_fields, '$.departament_id'))"), '=', 'departaments.id')
             ->select(
                 'shipment_entries.*',
-                'payment_methods.name as payment_method' // Traemos el nombre
+                'payment_methods.name as payment_method', // Traemos la forma de pago
+                'users.name as created_by', // Traemos el nombre del usuario que creó la guía
+                'departaments.name as departament_name' // Traemos el nombre del departamento
             )
             ->first();
+
+        // Tracking de la guía
+        // Ingresos a Bodega de la guía
+        $guide_incomes = DB::table('warehouse_income_guides')
+            ->where('guide_number', $guide)
+            ->join('warehouse_incomes', 'warehouse_income_guides.warehouse_income_id', '=', 'warehouse_incomes.id')
+            ->join('warehouses', 'warehouse_incomes.warehouse_id', '=', 'warehouses.id')
+            ->join('routes', 'warehouse_incomes.route_id', '=', 'routes.id')
+            ->join('users', 'warehouse_incomes.person_scans', '=', 'users.id')
+            ->select(
+                'warehouse_income_guides.*',
+                'warehouse_incomes.manifest_code',
+                'users.name as user_name', // Traemos el nombre del usuario que escaneó
+                'warehouses.name as warehouse_name', // Traemos el nombre de la bodega
+                'routes.name as route_name', // Traemos el nombre de la ruta
+                'routes.plates as route_plate' // Traemos la placa de la ruta
+            )
+            ->orderBy('warehouse_income_guides.scanned_at', 'asc')
+            ->get();
+
+        // Salidas de bodega de la guía
+        $guide_outgos = DB::table('warehouse_outgo_guides')
+            ->where('guide_number', $guide)
+            ->join('warehouse_outgos', 'warehouse_outgo_guides.warehouse_outgo_id', '=', 'warehouse_outgos.id')
+            ->join('warehouses as destination', 'warehouse_outgos.warehouse_id', '=', 'destination.id')
+            ->join('warehouses as origin', 'warehouse_outgos.origin_warehouse_id', '=', 'origin.id')
+            ->join('routes', 'warehouse_outgos.route_id', '=', 'routes.id')
+            ->join('users', 'warehouse_outgos.person_scans', '=', 'users.id')
+            ->select(
+                'warehouse_outgo_guides.*',
+                'warehouse_outgos.manifest_code',
+                'users.name as user_name',
+                'destination.name as destination_name', // nombre de bodega destino
+                'origin.name as origin_name',           // nombre de bodega origen
+                'routes.name as route_name',
+                'routes.plates as route_plate'
+            )
+            ->orderBy('warehouse_outgo_guides.scanned_at', 'asc')
+            ->get();
+
 
         // Formatear solo la fecha de date_guide
         if ($guide_data) {
             $guide_data->date_guide = \Carbon\Carbon::parse($guide_data->date_guide)->format('d/m/Y');
         }
-
-        return response()->json($guide_data);
+        return response()->json([
+            'guide_data' => $guide_data,
+            'guide_incomes' => $guide_incomes,
+            'guide_outgos' => $guide_outgos,
+        ]);
     }
 }

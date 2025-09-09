@@ -428,13 +428,14 @@
     </x-filament::modal>
 
     {{-- MODAL CONSULTA DE GUÍAS --}}
+    {{-- MODAL CONSULTA DE GUÍAS --}}
     <x-filament::modal id="consultGuides" width="4xl">
         <x-slot name="heading">
             Consulta de Guías
         </x-slot>
 
         {{-- Input de búsqueda --}}
-        <div class="mb-0">
+        <div class="mb-4">
             <label for="search_guide"
                 class="fi-fo-field-wrp-label mb-2 inline-flex items-center gap-x-3 text-sm font-medium leading-6 text-gray-950 dark:text-white">
                 No. Guía
@@ -453,28 +454,32 @@
             </div>
         </div>
 
-        {{-- Información de la guía --}}
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-0">
+        {{-- Información principal --}}
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             {{-- Remitente --}}
             <div class="p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
                 <h3 class="text-lg font-semibold mb-2">Remitente</h3>
-                <p><span class="font-medium">Nombre:</span> <span id="sender_name_consult">-</span></p>
-                <p><span class="font-medium">Dirección:</span> <span id="sender_address_consult">-</span></p>
-                <p><span class="font-medium">Teléfono:</span> <span id="sender_phone_consult">-</span></p>
+                <div class="grid grid-cols-2 gap-2">
+                    <p><span class="font-medium">Nombre:</span> <span id="sender_name_consult">-</span></p>
+                    <p><span class="font-medium">Dirección:</span> <span id="sender_address_consult">-</span></p>
+                    <p><span class="font-medium">Teléfono:</span> <span id="sender_phone_consult">-</span></p>
+                </div>
             </div>
 
             {{-- Destinatario --}}
             <div class="p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
                 <h3 class="text-lg font-semibold mb-2">Destinatario</h3>
-                <p><span class="font-medium">Nombre:</span> <span id="receiver_name_consult">-</span></p>
-                <p><span class="font-medium">Dirección:</span> <span id="receiver_address_consult">-</span></p>
-                <p><span class="font-medium">Teléfono:</span> <span id="receiver_phone_consult">-</span></p>
+                <div class="grid grid-cols-2 gap-2">
+                    <p><span class="font-medium">Nombre:</span> <span id="receiver_name_consult">-</span></p>
+                    <p><span class="font-medium">Dirección:</span> <span id="receiver_address_consult">-</span></p>
+                    <p><span class="font-medium">Teléfono:</span> <span id="receiver_phone_consult">-</span></p>
+                </div>
             </div>
 
             {{-- Detalles del envío --}}
-            <div class="p-4 border rounded-lg bg-gray-50 dark:bg-gray-800 md:col-span-2">
+            <div class="p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
                 <h3 class="text-lg font-semibold mb-2">Detalles del Envío</h3>
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-2 gap-2">
                     <p><span class="font-medium">Producto:</span> <span id="product_consult">-</span></p>
                     <p><span class="font-medium">Piezas:</span> <span id="pieces_consult">-</span></p>
                     <p><span class="font-medium">Precio Unitario:</span> Q.<span id="unit_price_consult">-</span></p>
@@ -483,6 +488,29 @@
                     <p><span class="font-medium">Forma de Pago:</span> <span id="payment_method_consult">-</span></p>
                     <p><span class="font-medium">No. Manifiesto:</span> <span id="manifest_no_consult">-</span></p>
                 </div>
+            </div>
+        </div>
+
+        {{-- Tracking --}}
+        <div class="p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
+            <h3 class="text-lg font-semibold mb-2">Tracking</h3>
+
+            <div class="overflow-y-auto max-h-64">
+                <table
+                    class="min-w-full table-auto border-collapse border border-gray-200 dark:border-gray-700 text-sm">
+                    <thead class="bg-gray-200 dark:bg-gray-700">
+                        <tr>
+                            <th class="px-2 py-1 border">Fecha / Hora</th>
+                            <th class="px-2 py-1 border">Ubicación</th>
+                            <th class="px-2 py-1 border">Estado</th>
+                            <th class="px-2 py-1 border">Usuario</th>
+                            <th class="px-2 py-1 border">Comentario</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tracking_table_body">
+
+                    </tbody>
+                </table>
             </div>
         </div>
     </x-filament::modal>

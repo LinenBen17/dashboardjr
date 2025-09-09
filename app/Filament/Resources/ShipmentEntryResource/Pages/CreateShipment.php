@@ -218,6 +218,11 @@ class CreateShipment extends Page
             return;
         }
 
+        // Obtener usuario autenticado y sus custom fields
+        $user = Filament::auth()->user();
+        Logger($user);
+        $custom = $user->custom_fields ?? [];
+
         // Obtener el id del cliente remiente o destinatario
         $senderCustomerId = $this->getCustomerID($this->sender_code);
         $receiverCustomerId = $this->getCustomerID($this->receiver_code);
@@ -284,6 +289,7 @@ class CreateShipment extends Page
                     'date_guide' => $this->date_guide,
                     'payment_method_id' => $this->payment_method_id,
                     'no_manifest' => null,
+                    'created_by' => $user->id, // Guarda el ID del usuario que crea la entrada
                 ]);
             } else if ($this->link_child_later == false) {
                 $this->record = ShipmentEntry::create([
@@ -309,6 +315,7 @@ class CreateShipment extends Page
                     'date_guide' => $this->date_guide,
                     'payment_method_id' => $this->payment_method_id,
                     'no_manifest' => null,
+                    'created_by' => $user->id, // Guarda el ID del usuario que crea la entrada
                 ]);
 
                 // Recorrer los productos del envío
@@ -352,10 +359,7 @@ class CreateShipment extends Page
             $nextMother = ((int) $this->no_guide_user) + 1;
 
             //Actualiza el numero de madre
-            $user       = Filament::auth()->user();
-            $custom     = $user->custom_fields ?? [];
             $custom['serial_number'] = $nextMother;
-
             $user->custom_fields = $custom;
             $user->save();
 

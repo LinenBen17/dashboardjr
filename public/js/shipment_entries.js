@@ -541,7 +541,7 @@ $(document).on('click', '#searchGuideBtn', function () {
         .then(res => res.json())
         .then(data => {
             console.log(data);
-            $('#sender_name_consult').text(data.sender_name);
+            /* $('#sender_name_consult').text(data.sender_name);
             $('#sender_address_consult').text(data.sender_address);
             $('#sender_phone_consult').text(data.sender_phone);
             $('#receiver_name_consult').text(data.receiver_name);
@@ -553,7 +553,94 @@ $(document).on('click', '#searchGuideBtn', function () {
             $('#total_consult').text(data.total);
             $('#date_guide_consult').text(data.date_guide);
             $('#payment_method_consult').text(data.payment_method);
-            $('#manifest_no_consult').text(data.no_manifest);
+            $('#manifest_no_consult').text(data.no_manifest); */
+
+            // Foreach para guide_data, guide_incomes y guide_outgos
+            if (data.guide_data) {
+                const guide = data.guide_data;
+                const tbody = document.getElementById('tracking_table_body');
+                const row = document.createElement('tr');
+
+                $('#sender_name_consult').text(guide.sender_name);
+                $('#sender_address_consult').text(guide.sender_address);
+                $('#sender_phone_consult').text(guide.sender_phone);
+                $('#receiver_name_consult').text(guide.receiver_name);
+                $('#receiver_address_consult').text(guide.receiver_address);
+                $('#receiver_phone_consult').text(guide.receiver_phone);
+                $('#product_consult').text(guide.product_description);
+                $('#pieces_consult').text(guide.pieces);
+                $('#unit_price_consult').text(guide.unit_price);
+                $('#total_consult').text(guide.total);
+                $('#date_guide_consult').text(guide.date_guide);
+                $('#payment_method_consult').text(guide.payment_method);
+                $('#manifest_no_consult').text(guide.manifest_code);
+
+                tbody.innerHTML = '';
+                row.className = 'bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-50';
+
+                row.innerHTML = `
+                    <td class="text-center py-2 px-2">${guide.created_at}</td>
+                    <td class="text-center py-2 px-2">${guide.departament_name}</td>
+                    <td class="text-center py-2 px-2">Ingreso a Recepción</td>
+                    <td class="text-center py-2 px-2">${guide.created_by}</td>
+                    <td class="text-center py-2 px-2">
+                        -
+                    </td>
+                `;
+
+                tbody.appendChild(row);
+            }
+
+            if (data.guide_incomes && data.guide_incomes.length > 0) {
+                const tbody = document.getElementById('tracking_table_body');
+                tbody.innerHTML = '';
+
+                data.guide_incomes.forEach(income => {
+                    const row = document.createElement('tr');
+                    row.className = 'bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-50';
+
+                    row.innerHTML = `
+                        <td class="text-center py-2 px-2">${income.scanned_at}</td>
+                        <td class="text-center py-2 px-2">${income.warehouse_name}</td>
+                        <td class="text-center py-2 px-2">Ingreso a Bodega</td>
+                        <td class="text-center py-2 px-2">${income.user_name}</td>
+                        <td class="py-2 px-2">
+                            Manifiesto de Entrada: ${income.manifest_code} <br>
+                            Ruta que recolecta: ${income.route_name} <br>
+                            Placas del camión: ${income.route_plate}
+                        </td>
+                    `;
+
+                    tbody.appendChild(row);
+                });
+
+            }
+
+            if (data.guide_outgos && data.guide_outgos.length > 0) {
+                const tbody = document.getElementById('tracking_table_body');
+
+                data.guide_outgos.forEach(outgo => {
+                    const row = document.createElement('tr');
+                    row.className = 'bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-50';
+
+                    row.innerHTML = `
+                        <td class="text-center py-2 px-2">${outgo.scanned_at}</td>
+                        <td class="text-center py-2 px-2">${outgo.destination_name}</td>
+                        <td class="text-center py-2 px-2">Salida de Bodega</td>
+                        <td class="text-center py-2 px-2">${outgo.user_name}</td>
+                        <td class="py-2 px-2">
+                            Manifiesto de Salida: ${outgo.manifest_code} <br>
+                            Ruta que entrega: ${outgo.route_name} <br>
+                            Placas del camión: ${outgo.route_plate} <br>
+                            Origen: ${outgo.origin_name}
+                        </td>
+                    `;
+
+                    tbody.appendChild(row);
+                });
+
+            }
+
         })
         .catch(err => {
             console.error('Error al buscar guía:', err);

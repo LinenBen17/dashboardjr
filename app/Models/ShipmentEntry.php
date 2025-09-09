@@ -31,7 +31,8 @@ class ShipmentEntry extends Model
         'total',
         'date_guide',
         'payment_method_id',
-        'no_manifest'
+        'no_manifest',
+        'created_by',
     ];
 
     public function towns()
