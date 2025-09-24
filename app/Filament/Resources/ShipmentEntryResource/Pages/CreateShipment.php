@@ -220,7 +220,6 @@ class CreateShipment extends Page
 
         // Obtener usuario autenticado y sus custom fields
         $user = Filament::auth()->user();
-        Logger($user);
         $custom = $user->custom_fields ?? [];
 
         // Obtener el id del cliente remiente o destinatario

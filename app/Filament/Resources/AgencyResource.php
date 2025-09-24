@@ -60,7 +60,9 @@ class AgencyResource extends Resource
                             ->required(),
                     ]),
                 Forms\Components\TextInput::make('short')
-                    ->maxLength(5),
+                    ->label('Abreviatura')
+                    ->required()
+                    ->maxLength(50),
 
             ]);
     }
@@ -79,8 +81,7 @@ class AgencyResource extends Resource
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('short')
-                    ->searchable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

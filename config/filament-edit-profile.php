@@ -41,6 +41,42 @@ return [
             'hint_icon' => '', // optional
             'hint' => '', // optional
         ],
+        'departament_id' => [
+            'type' => 'select', // required
+            'label' => 'Departamento Origen', // required
+            'placeholder' => 'Seleccione el departamento de origen del usuario', // optional
+            'id' => 'departament_id', // optional
+            'required' => true, // optional
+            'options' => [], // optional
+            'selectable_placeholder' => true, // optional
+            'native' => true, // optional
+            'preload' => true, // optional
+            'suffix_icon' => '', // optional
+            'default' => '', // optional
+            'searchable' => false, // optional
+            'column_span' => 'full', // optional
+            'rules' => [], // optional
+            'hint_icon' => '', // optional
+            'hint' => '', // optional
+        ],
+        'agency_id' => [
+            'type' => 'select', // required
+            'label' => 'Agencia de Origen', // required
+            'placeholder' => 'Seleccione la agencia de origen del usuario', // optional
+            'id' => 'agency_id', // optional
+            'required' => true, // optional
+            'options' => [], // optional
+            'selectable_placeholder' => true, // optional
+            'native' => true, // optional
+            'preload' => true, // optional
+            'suffix_icon' => '', // optional
+            'default' => '', // optional
+            'searchable' => false, // optional
+            'column_span' => 'full', // optional
+            'rules' => [], // optional
+            'hint_icon' => '', // optional
+            'hint' => '', // optional
+        ],
         'user_name' => [
             'type' => 'text', // required
             'label' => 'Nombre de Usuario', // required

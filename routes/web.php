@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\LoanController;
 use App\Http\Controllers\ShipmentEntryController;
+use App\Http\Controllers\ShipmentManifestController;
 use App\Http\Controllers\VacationController;
 use App\Http\Controllers\WarehouseIncomesController;
 use App\Http\Controllers\WarehouseOutgosController;
@@ -25,3 +26,8 @@ Route::get('/shipment-entries/buscar-ruta', [ShipmentEntryController::class, 'se
 Route::get('/shipment-entries/buscar-cliente', [ShipmentEntryController::class, 'getCustomerData'])->name('buscar_cliente');
 Route::get('/shipment-entries/listar-clientes', [ShipmentEntryController::class, 'getCustomers'])->name('listar_clientes');
 Route::get('/shipment-entries/buscar-guia', [ShipmentEntryController::class, 'getGuideData'])->name('buscar_guia');
+
+Route::get('/shipment-manifest/buscar-agencia', [ShipmentManifestController::class, 'searchAgencyByRoute'])->name('buscar_agencia');
+Route::get('/shipment-manifest/crear-manifiesto', [ShipmentManifestController::class, 'newManifestByRoute'])->name('crear_manifiesto');
+Route::get('/shipment-manifest/obtener-guia-manifestadas', [ShipmentManifestController::class, 'getManifestGuides'])->name('obtener_guias_manifestadas');
+Route::get('/shipment_manifest/{manifest_code}/printManifestGuides', [ShipmentManifestController::class, 'printManifestGuides'])->name('imprimir_manifiesto_entrega');

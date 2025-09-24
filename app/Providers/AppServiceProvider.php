@@ -37,6 +37,14 @@ class AppServiceProvider extends ServiceProvider
                     ->toArray(),
             ]);
         }
+        if (empty(config('filament-edit-profile.custom_fields.agency_id.options'))) {
+            config([
+                'filament-edit-profile.custom_fields.agency_id.options' =>
+                DB::table('agencies')
+                    ->pluck('name', 'id')
+                    ->toArray(),
+            ]);
+        }
 
         FilamentAsset::register([
             //agregar jquery
