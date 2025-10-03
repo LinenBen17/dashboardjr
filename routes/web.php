@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\LoanController;
+use App\Http\Controllers\ShipmentDeliveryController;
 use App\Http\Controllers\ShipmentEntryController;
 use App\Http\Controllers\ShipmentManifestController;
 use App\Http\Controllers\VacationController;
@@ -31,3 +32,5 @@ Route::get('/shipment-manifest/buscar-agencia', [ShipmentManifestController::cla
 Route::get('/shipment-manifest/crear-manifiesto', [ShipmentManifestController::class, 'newManifestByRoute'])->name('crear_manifiesto');
 Route::get('/shipment-manifest/obtener-guia-manifestadas', [ShipmentManifestController::class, 'getManifestGuides'])->name('obtener_guias_manifestadas');
 Route::get('/shipment_manifest/{manifest_code}/printManifestGuides', [ShipmentManifestController::class, 'printManifestGuides'])->name('imprimir_manifiesto_entrega');
+
+Route::get('/shipment-delivery/obtener-datos-entrega', [ShipmentDeliveryController::class, 'getDataDelivery'])->name('obtener_datos_entrega');

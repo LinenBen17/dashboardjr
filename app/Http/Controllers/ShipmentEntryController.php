@@ -102,13 +102,15 @@ class ShipmentEntryController extends Controller
         $guide_data = DB::table('shipment_entries')
             ->where('mother', $guide)
             ->join('payment_methods', 'shipment_entries.payment_method_id', '=', 'payment_methods.id')
-            ->join('users', 'shipment_entries.created_by', '=', 'users.id')
-            ->join('departaments', DB::raw("JSON_UNQUOTE(JSON_EXTRACT(users.custom_fields, '$.departament_id'))"), '=', 'departaments.id')
+            ->leftJoin('users', 'shipment_entries.created_by', '=', 'users.id')
+            ->leftJoin('departaments', DB::raw("JSON_UNQUOTE(JSON_EXTRACT(users.custom_fields, '$.departament_id'))"), '=', 'departaments.id')
+            ->leftJoin('shipment_manifests', 'shipment_entries.shipment_manifest_id', '=', 'shipment_manifests.id')
             ->select(
                 'shipment_entries.*',
-                'payment_methods.name as payment_method', // Traemos la forma de pago
-                'users.name as created_by', // Traemos el nombre del usuario que creó la guía
-                'departaments.name as departament_name' // Traemos el nombre del departamento
+                'payment_methods.name as payment_method',
+                'users.name as created_by',
+                'departaments.name as departament_name',
+                'shipment_manifests.manifest_code as manifest_code'
             )
             ->first();
 

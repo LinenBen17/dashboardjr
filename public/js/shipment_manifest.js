@@ -2,6 +2,12 @@ let manifestedGuides = [];
 
 //autofocus manifest_code
 $(window).on('load', function () {
+    $("input").on("keypress", function () {
+        $input = $(this);
+        setTimeout(function () {
+            $input.val($input.val().toUpperCase());
+        }, 50);
+    });
     restartFocus();
 });
 
