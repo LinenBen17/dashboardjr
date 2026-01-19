@@ -20,4 +20,9 @@ class ShipmentEntryChild extends Model
     {
         return $this->belongsTo(Product::class);
     }
+
+    public function shipmentEntry()
+    {
+        return $this->belongsTo(ShipmentEntry::class);
+    }
 }

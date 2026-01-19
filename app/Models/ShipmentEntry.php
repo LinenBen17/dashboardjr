@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\AuditableGuide;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class ShipmentEntry extends Model
 {
     use HasFactory;
+    use AuditableGuide;
+
     protected $fillable = [
         'mother',
         'mother_guide_id',
@@ -31,7 +34,7 @@ class ShipmentEntry extends Model
         'total',
         'date_guide',
         'payment_method_id',
-        'no_manifest',
+        'shipment_manifest_id',
         'created_by',
     ];
 
@@ -65,5 +68,34 @@ class ShipmentEntry extends Model
     public function receiver()
     {
         return $this->belongsTo(Customer::class, 'receiver_code');
+    }
+
+    public function updateFields(array $data): void
+    {
+        $before = $this->auditData();
+
+        $this->fill($data);
+        $this->save();
+
+        [$old, $new] = $this->detectDiff($before, $this->auditData());
+
+        $this->logDiff(
+            'updated',
+            'Se modificaron datos de la guía',
+            $old,
+            $new
+        );
+    }
+
+    public function markAsPrinted(): void
+    {
+        $this->fecha_impresion = now();
+        $this->estado = 'printed';
+        $this->save();
+
+        $this->logSnapshot(
+            'printed',
+            'Se imprimió la guía'
+        );
     }
 }

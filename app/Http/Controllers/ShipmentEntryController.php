@@ -37,6 +37,18 @@ class ShipmentEntryController extends Controller
         return response()->json($municipios);
     }
 
+    public function searchOnlyTown(Request $request)
+    {
+        $town_id = $request->get('town_id');
+
+        $towns = Town::query()
+            ->where('id', $town_id)
+            ->orderBy('id', 'asc')
+            ->pluck('name', 'id');
+
+        return response()->json($towns);
+    }
+
     public function searchProductDetail(Request $request)
     {
         $idProduct = $request->get('code');

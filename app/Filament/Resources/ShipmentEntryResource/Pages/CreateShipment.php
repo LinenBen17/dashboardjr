@@ -73,6 +73,7 @@ class CreateShipment extends Page
 
     public $municipios = [];
 
+    public $statusPrinted = false;
 
     public function mount()
     {
@@ -175,6 +176,11 @@ class CreateShipment extends Page
 
     public function confirmSave()
     {
+        if ($this->link_child_later) {
+            Logger("El valor de link_child_later es: true");
+        } else {
+            Logger("El valor de link_child_later es: false");
+        }
         $this->totalPieces = 0;
         // Get total pieces from products
         foreach ($this->productos as $product => $value) {
@@ -186,6 +192,7 @@ class CreateShipment extends Page
         if ($this->totalPieces > 1) {
             $this->dispatch('open-modal', id: 'childGuides');
         } else {
+            $this->link_child_later = true;
             $this->save();
         }
     }
@@ -245,7 +252,7 @@ class CreateShipment extends Page
                 }
             }
         } else {
-            $productId = null;
+            $productId = $this->productos[0]['product_id'] ?? null;
         }
 
         //obtener la forma de pago
@@ -281,7 +288,7 @@ class CreateShipment extends Page
                     'product_id' => $productId,
                     'product_description' => $productDescription,
                     'pieces' => $this->totalPieces,
-                    'unit_price' => ($this->totalPieces == 1) ? $this->total : 0,
+                    'unit_price' => ($this->totalPieces == 1) ? $this->total : $this->productos[0]['unit_price'],
                     'sender_total' => $this->sender_total ?? 0,
                     'receiver_total' => $this->receiver_total ?? 0,
                     'total' => $this->total,
@@ -290,6 +297,10 @@ class CreateShipment extends Page
                     'no_manifest' => null,
                     'created_by' => $user->id, // Guarda el ID del usuario que crea la entrada
                 ]);
+                $this->record->logSnapshot(
+                    'created',
+                    'Guía creada sin guías hijas enlazadas por el usuario: ' . $user->custom_fields['user_name'] . '. Horario: ' . Carbon::now()->format('d/m/Y H:i:s'),
+                );
             } else if ($this->link_child_later == false) {
                 $this->record = ShipmentEntry::create([
                     'mother' => $this->no_guide_user,
@@ -307,7 +318,7 @@ class CreateShipment extends Page
                     'product_id' => $productId,
                     'product_description' => $productDescription,
                     'pieces' => $this->totalPieces,
-                    'unit_price' => ($this->totalPieces == 1) ? $this->total : 0,
+                    'unit_price' => ($this->totalPieces == 1) ? $this->total : $this->productos[0]['unit_price'],
                     'sender_total' => $this->sender_total ?? 0,
                     'receiver_total' => $this->receiver_total ?? 0,
                     'total' => $this->total,
@@ -316,6 +327,11 @@ class CreateShipment extends Page
                     'no_manifest' => null,
                     'created_by' => $user->id, // Guarda el ID del usuario que crea la entrada
                 ]);
+
+                $this->record->logSnapshot(
+                    'created',
+                    'Guía creada con guías hijas enlazadas por el usuario: ' . $user->custom_fields['user_name'] . 'Horario: ' . Carbon::now()->format('d/m/Y H:i:s'),
+                );
 
                 // Recorrer los productos del envío
                 $productEntries = [];
@@ -384,6 +400,13 @@ class CreateShipment extends Page
                 'mes' => $mes,
                 'anio' => $anio,
             ]);
+
+            if ($this->statusPrinted) {
+                $this->record->logSnapshot(
+                    'printed',
+                    'Guía impresa con éxito'
+                );
+            }
 
             //Limpia variables
             $this->childGuides = [];

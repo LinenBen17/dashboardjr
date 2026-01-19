@@ -100,6 +100,12 @@ $(window).on('load', function () {
             .then(response => response.json())
             .then(data => {
                 console.log('Respuesta de impresión:', data);
+                //{'status': 'printed'}
+                if (data.status == 'printed') {
+                    const component = document.querySelector('[wire\\:id]');
+                    const componentId = component?.getAttribute('wire:id');
+                    Livewire.find(componentId).set('statusPrinted', true);
+                }
             })
             .catch(error => {
                 console.error('Error al conectar con el servidor local:', error);

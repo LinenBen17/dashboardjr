@@ -22,11 +22,13 @@ Route::get('/manifest-outgos/{id}', WarehouseOutgosController::class)->name('man
 
 Route::get('/shipment-entries/{id}/printMother', [ShipmentEntryController::class, 'printMother'])->name('shipment_entry.printMother');
 Route::get('/shipment-entries/buscar-municipios', [ShipmentEntryController::class, 'searchTown'])->name('buscar_municipios');
+Route::get('/shipment-entries/buscar-unico-municipio', [ShipmentEntryController::class, 'searchOnlyTown'])->name('buscar_unico_municipio');
 Route::get('/shipment-entries/buscar-producto', [ShipmentEntryController::class, 'searchProductDetail'])->name('buscar_producto');
 Route::get('/shipment-entries/buscar-ruta', [ShipmentEntryController::class, 'searchRoute'])->name('buscar_ruta');
 Route::get('/shipment-entries/buscar-cliente', [ShipmentEntryController::class, 'getCustomerData'])->name('buscar_cliente');
 Route::get('/shipment-entries/listar-clientes', [ShipmentEntryController::class, 'getCustomers'])->name('listar_clientes');
 Route::get('/shipment-entries/buscar-guia', [ShipmentEntryController::class, 'getGuideData'])->name('buscar_guia');
+Route::put('/shipment-entries/modificar-guia/{id}', [ShipmentEntryController::class, 'modifyGuideData'])->name('modificar_guia');
 
 Route::get('/shipment-manifest/buscar-agencia', [ShipmentManifestController::class, 'searchAgencyByRoute'])->name('buscar_agencia');
 Route::get('/shipment-manifest/crear-manifiesto', [ShipmentManifestController::class, 'newManifestByRoute'])->name('crear_manifiesto');
