@@ -23,7 +23,7 @@
         <div class="logo">
             <img src="{{ asset('images/jrico.png') }}" alt="logo">
             <p>Transportes JR<br>
-                2 Avenida, 2-43, Zona 3, Guatemala</p>
+                20 Calle 2-43, Zona 3, Guatemala</p>
         </div>
         <div class="titleContainer">
             <div class="title">

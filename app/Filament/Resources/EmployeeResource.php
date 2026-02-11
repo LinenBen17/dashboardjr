@@ -98,9 +98,16 @@ class EmployeeResource extends Resource
 
                             Select::make('town_id')
                                 ->label('Municipio')
-                                ->relationship('towns', 'name', fn($query, $get) =>
-                                $query->where('agency_id', $get('departament_id')))
+                                ->relationship(
+                                    'towns',
+                                    'name',
+                                    fn($query, $get) =>
+                                    $query->whereHas('route.agency', function ($q) use ($get) {
+                                        $q->where('departament_id', $get('departament_id'));
+                                    })
+                                )
                                 ->required()
+                                ->reactive()
                                 ->columnSpan(3),
 
                             TextInput::make('zone')
@@ -170,7 +177,7 @@ class EmployeeResource extends Resource
                                 ->required()
                                 ->columnSpan(2),
 
-                            Select::make('id_agency')
+                            Select::make('agency_id')
                                 ->label('Agencia')
                                 ->relationship(name: 'agencies', titleAttribute: 'name')
                                 ->required()

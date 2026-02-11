@@ -14,7 +14,8 @@ class LoanController extends Controller
         // Unir datos de tabla vacations y vacations_histories, y de employees para obtener datos en base el id
         try {
             $loan = DB::table('loans')
-                ->join('employees', 'loans.employee_id', '=', 'employees.id')
+                ->join('employee_payrolls', 'loans.employee_payroll_id', '=', 'employee_payrolls.id')
+                ->join('employees', 'employee_payrolls.employee_id', '=', 'employees.id')
                 ->select('loans.*', 'employees.name', 'employees.last_name', 'employees.dpi')
                 ->where('loans.id', $id)
                 ->first();

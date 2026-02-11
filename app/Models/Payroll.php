@@ -8,8 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class Payroll extends Model
 {
     use HasFactory;
-    protected $fillable = ['state'];
-    
+    protected $fillable = ['state', 'name'];
+
     public function employees()
     {
         return $this->hasMany(Employee::class, 'id_payroll');

@@ -5,19 +5,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Bonus extends Model
+class EmployeePayrolls extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['employee_payroll_id', 'date', 'amount', 'comments'];
+    protected $fillable = ['employee_id', 'payroll_id', 'active'];
 
-    public function employees()
+    public function employee()
     {
         return $this->belongsTo(Employee::class, 'employee_id');
     }
-
-    public function employeePayroll()
+    public function payroll()
     {
-        return $this->belongsTo(EmployeePayrolls::class);
+        return $this->belongsTo(Payroll::class, 'payroll_id');
     }
 }

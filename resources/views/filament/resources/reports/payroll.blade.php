@@ -18,7 +18,7 @@
         <div class="head">
             <div class="headtop">
                 <div class="title">
-                    <img src="{{ asset('assets/images/jrico.png') }}">
+                    <img src="{{ asset('images/jrico.png') }}">
                     <h1>PLANILLA DE SUELDOS</h1>
                 </div>
             </div>
@@ -49,12 +49,14 @@
                         <th>Bono Incentivo</th>
                         <th>Otros Ingresos</th>
                         <th>Total Devengado</th>
-                        <th>IGSS</th>
                         <th>Anticipo</th>
                         <th>Ausencias</th>
+                        <th>Teléfono</th>
                         <th>Otros Descuentos</th>
                         <th>Préstamos</th>
                         <th>Total Descuento</th>
+                        <th>IGSS</th>
+                        <th>ISR</th>
                         <th>Líquido a Recibir</th>
                     </tr>
                 </thead>
@@ -90,19 +92,19 @@
                                             <td> {{ $row['id'] }} </td>
                                             <td> {{ $row['ctaBancaria'] }} </td>
                                             <td> {{ $row['empleado'] }} </td>
-                                            {{-- <td> {{ $row['cargo'] }} </td> --}}
-                                            {{-- <td> {{ $row['agencia'] }} </td> --}}
                                             <td> {{ number_format($row['sueldo'], 2) }} </td>
                                             <td> {{ number_format($row['bonoLey'], 2) }} </td>
                                             <td> {{ number_format($row['bonoIncentivo'], 2) }} </td>
                                             <td> {{ number_format($row['bonoMonto'], 2) }} </td>
                                             <td> {{ number_format($row['totalDevengado'], 2) }} </td>
-                                            <td> {{ number_format($row['igss'], 2) }} </td>
                                             <td> {{ number_format($row['anticipos'], 2) }} </td>
                                             <td> {{ number_format($row['ausencias'], 2) }} </td>
+                                            <td> {{ number_format($row['phone_discount'], 2) }} </td>
                                             <td> {{ number_format($row['otros'], 2) }} </td>
                                             <td> {{ number_format($row['installments'], 2) }} </td>
                                             <td> {{ number_format($row['totalDescuento'], 2) }} </td>
+                                            <td> {{ number_format($row['igss'], 2) }} </td>
+                                            <td> {{ number_format($row['isr'], 2) }} </td>
                                             <td> {{ number_format($row['liquido'], 2) }} </td>
                                         </tr>
                                     @endforeach
@@ -113,7 +115,7 @@
                     <tr class="totals">
                         <td colspan="3">TOTAL</td>
                         @foreach ($payrollData['totals'] as $total)
-                            <td>{{ number_format($total) }}</td>
+                            <td>{{ number_format($total, 2) }}</td>
                         @endforeach
                     </tr>
                 </tbody>

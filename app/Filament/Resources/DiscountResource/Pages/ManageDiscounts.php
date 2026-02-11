@@ -38,9 +38,18 @@ class ManageDiscounts extends ManageRecords
                     Section::make('Ingreso de Prestamos')
                         ->columns(2)
                         ->schema([
-                            Select::make('employee_id')
+                            Select::make('employee_payroll_id')
                                 ->label('Empleado')
-                                ->relationship('employees', 'name', fn(Builder $query) => $query->select('id', DB::raw("CONCAT(name, ' ', last_name) as name")))
+                                ->options(function () {
+                                    return DB::table('employee_payrolls')
+                                        ->join('employees', 'employee_payrolls.employee_id', '=', 'employees.id')
+                                        ->join('payrolls', 'employee_payrolls.payroll_id', '=', 'payrolls.id')
+                                        ->select('employee_payrolls.id', DB::raw("CONCAT(employees.name, ' ', employees.last_name, ' - ', payrolls.name) as full_name_payroll"))
+                                        ->where('employee_payrolls.active', 1)
+                                        ->orderBy('employees.name')
+                                        ->pluck('full_name_payroll', 'employee_payrolls.id')
+                                        ->toArray();
+                                })
                                 ->required(),
                             DatePicker::make('start_date')
                                 ->label('Fecha de inicio')
@@ -65,7 +74,7 @@ class ManageDiscounts extends ManageRecords
                                 ->label('Monto en cada cuota')
                                 ->prefix('Q')
                                 ->default(0)
-                                ->disabled()
+                                // ->disabled()
                                 ->dehydrated()
                                 ->numeric()
                                 ->required(),
@@ -85,7 +94,7 @@ class ManageDiscounts extends ManageRecords
                 ])
                 ->action(function (array $data) {
                     $validator = Validator::make($data, [
-                        'employee_id' => 'required|exists:employees,id',
+                        'employee_payroll_id' => 'required|exists:employee_payrolls,id',
                         'start_date' => 'required|date',
                         'amount_loan' => 'required|numeric|min:0',
                         'no_share' => 'required|integer|min:1',
@@ -105,7 +114,7 @@ class ManageDiscounts extends ManageRecords
 
                     try {
                         $loan = Loan::create([
-                            'employee_id' => $data['employee_id'],
+                            'employee_payroll_id' => $data['employee_payroll_id'],
                             'start_date' => $data['start_date'],
                             'amount_loan' => $data['amount_loan'],
                             'no_share' => $data['no_share'],

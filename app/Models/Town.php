@@ -15,10 +15,6 @@ class Town extends Model
     {
         return $this->belongsTo(Route::class, 'route_id');
     }
-    public function employees()
-    {
-        return $this->hasMany(Employee::class, 'town_id');
-    }
     public function departament()
     {
         return $this->belongsTo(Departament::class, 'departament_id');

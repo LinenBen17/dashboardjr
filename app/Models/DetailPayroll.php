@@ -10,19 +10,18 @@ class DetailPayroll extends Model
     use HasFactory;
 
     protected $fillable = [
-        'employee_id',
+        'employee_payroll_id',
         'regular_salaries',
         'bonus_of_law',
         'incentive_bonus',
         'percentage_igss',
         'percentage_isr',
         'phone_discount',
-        'district_id'
     ];
 
-    public function employees()
+    public function employeePayroll()
     {
-        return $this->belongsTo(Employee::class, 'employee_id');
+        return $this->belongsTo(EmployeePayrolls::class, 'employee_payroll_id');
     }
     public function districts()
     {

@@ -10,7 +10,7 @@ class Discount extends Model
     use HasFactory;
 
     protected $fillable = [
-        'employee_id',
+        'employee_payroll_id',
         'type',
         'date',
         'amount',
@@ -20,5 +20,10 @@ class Discount extends Model
     public function employees()
     {
         return $this->belongsTo(Employee::class, 'employee_id');
+    }
+
+    public function employeePayroll()
+    {
+        return $this->belongsTo(EmployeePayrolls::class);
     }
 }

@@ -14,7 +14,7 @@ class Route extends Model
     {
         return $this->belongsTo(Employee::class, 'employee_id');
     }
-    public function agencies()
+    public function agency()
     {
         return $this->belongsTo(Agency::class, 'agency_id');
     }

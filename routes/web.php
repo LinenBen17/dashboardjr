@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\LoanController;
+use App\Http\Controllers\PayrollController;
 use App\Http\Controllers\ShipmentDeliveryController;
 use App\Http\Controllers\ShipmentEntryController;
 use App\Http\Controllers\ShipmentManifestController;
@@ -36,3 +37,5 @@ Route::get('/shipment-manifest/obtener-guia-manifestadas', [ShipmentManifestCont
 Route::get('/shipment_manifest/{manifest_code}/printManifestGuides', [ShipmentManifestController::class, 'printManifestGuides'])->name('imprimir_manifiesto_entrega');
 
 Route::get('/shipment-delivery/obtener-datos-entrega', [ShipmentDeliveryController::class, 'getDataDelivery'])->name('obtener_datos_entrega');
+
+Route::get('/payrolls/{id}/printPayroll', PayrollController::class)->name('payroll.printPayroll');

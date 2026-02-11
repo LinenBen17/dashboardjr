@@ -36,9 +36,18 @@ class DiscountResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('employee_id')
+                Forms\Components\Select::make('employee_payroll_id')
                     ->label('Empleado')
-                    ->relationship('employees', 'name', fn(Builder $query) => $query->select('id', DB::raw("CONCAT(name, ' ', last_name) as name")))
+                    ->options(function () {
+                        return DB::table('employee_payrolls')
+                            ->join('employees', 'employee_payrolls.employee_id', '=', 'employees.id')
+                            ->join('payrolls', 'employee_payrolls.payroll_id', '=', 'payrolls.id')
+                            ->select('employee_payrolls.id', DB::raw("CONCAT(employees.name, ' ', employees.last_name, ' - ', payrolls.name) as full_name_payroll"))
+                            ->where('employee_payrolls.active', 1)
+                            ->orderBy('employees.name')
+                            ->pluck('full_name_payroll', 'employee_payrolls.id')
+                            ->toArray();
+                    })
                     ->required(),
                 Forms\Components\Select::make('type')
                     ->options([
@@ -65,12 +74,20 @@ class DiscountResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('employee_id')
+                Tables\Columns\TextColumn::make('employee_payroll_id')
                     ->numeric()
                     ->label('Empleado')
                     ->getStateUsing(function (Discount $record) {
-                        return $record->employees->name . ' ' . $record->employees->last_name;
+
+                        return DB::table('employee_payrolls')
+                            ->join('employees', 'employee_payrolls.employee_id', '=', 'employees.id')
+                            ->join('payrolls', 'employee_payrolls.payroll_id', '=', 'payrolls.id')
+                            ->where('employee_payrolls.id', $record->employee_payroll_id)
+                            ->select(DB::raw("CONCAT(employees.name, ' ', employees.last_name, ' - ', payrolls.name) as full_name_payroll"))
+                            ->value('full_name_payroll');
                     })
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('type')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('date')
                     ->date()

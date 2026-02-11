@@ -7,12 +7,14 @@ use App\Filament\Resources\PayrollResource\Pages;
 use App\Filament\Resources\PayrollResource\RelationManagers;
 use App\Models\Payroll;
 use Filament\Forms;
+use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Psy\VersionUpdater\Checker;
 
 class PayrollResource extends Resource
 {
@@ -34,9 +36,13 @@ class PayrollResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('state')
+                Forms\Components\TextInput::make('name')
                     ->required()
                     ->maxLength(191),
+                Checkbox::make('state')
+                    ->default(true)
+                    ->required(),
+
             ]);
     }
 
@@ -44,6 +50,9 @@ class PayrollResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('name')
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('state')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')

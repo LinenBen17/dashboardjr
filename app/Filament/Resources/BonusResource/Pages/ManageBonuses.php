@@ -14,10 +14,10 @@ class ManageBonuses extends ManageRecords
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('resetStars')
+            /* Action::make('resetStars')
                 ->icon('heroicon-m-x-mark')
                 ->color('danger')
-                ->requiresConfirmation(),
+                ->requiresConfirmation(), */
             Actions\CreateAction::make(),
         ];
     }

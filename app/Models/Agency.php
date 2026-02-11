@@ -14,10 +14,6 @@ class Agency extends Model
     {
         return $this->belongsTo(Departament::class, 'departament_id');
     }
-    public function town()
-    {
-        return $this->hasMany(Town::class, 'agency_id');
-    }
 
     public function employees()
     {

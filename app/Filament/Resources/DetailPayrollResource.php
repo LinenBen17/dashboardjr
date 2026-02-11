@@ -9,7 +9,10 @@ use App\Models\Departament;
 use App\Models\DetailPayroll;
 use App\Models\District;
 use App\Models\Employee;
+use App\Models\Payroll;
 use Filament\Forms;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\View;
 use Filament\Forms\Form;
 use Filament\Forms\Set;
 use Filament\Resources\Resource;
@@ -40,29 +43,20 @@ class DetailPayrollResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('employee_id')
+                Forms\Components\Select::make('employee_payroll_id')
                     ->required()
-                    ->relationship('employees', 'name', fn(Builder $query) => $query->select('id', DB::raw("CONCAT(name, ' ', last_name) as name")))
-                    ->live(onBlur: true)
-                    ->afterStateUpdated(function (Set $set, ?string $state) {
-                        if ($state) {
-                            $employee = Employee::find($state);
-                            $departament = Departament::where('id', $employee->departament_id)->value('name');
-
-                            Logger($employee);
-                            Logger($departament);
-
-                            $salary = District::where('year', now()->year)
-                                ->where('name', ($departament == "Guatemala") ? 'CE1' : 'CE2')
-                                ->value('salary');
-                            $district = District::where('year', now()->year)
-                                ->where('name', ($departament == "Guatemala") ? 'CE1' : 'CE2')
-                                ->first();
-
-                            $set('regular_salaries', $salary);
-                            $set('district_id', $district->id);
-                        }
-                    }),
+                    ->options(
+                        fn() => DB::table('employee_payrolls')
+                            ->join('employees', 'employee_payrolls.employee_id', '=', 'employees.id')
+                            ->join('payrolls', 'employee_payrolls.payroll_id', '=', 'payrolls.id')
+                            ->select(
+                                'employee_payrolls.id',
+                                DB::raw("CONCAT(employees.name, ' ', employees.last_name, ' - ', payrolls.name) as full_name_payroll")
+                            )
+                            ->where('employee_payrolls.active', 1)
+                            ->pluck('full_name_payroll', 'employee_payrolls.id')
+                            ->toArray()
+                    ),
                 Forms\Components\TextInput::make('regular_salaries')
                     ->required()
                     ->prefix('Q')
@@ -93,11 +87,6 @@ class DetailPayrollResource extends Resource
                     ->prefix('Q')
                     ->numeric()
                     ->default(0.00),
-                Forms\Components\Select::make('district_id')
-                    ->required()
-                    ->relationship('districts', 'name')
-                    ->disabled()
-                    ->dehydrated(),
             ]);
     }
 
@@ -105,14 +94,19 @@ class DetailPayrollResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('employee_id')
+                Tables\Columns\TextColumn::make('employee_payroll.employee')
                     ->label('Empleado')
                     ->getStateUsing(function (DetailPayroll $record) {
-                        return $record->employees->name . ' ' . $record->employees->last_name;
+                        $employee = $record->employeePayroll->employee;
+                        return $employee ? $employee->name . ' ' . $employee->last_name : 'N/A';
                     })
                     ->sortable(),
-                Tables\Columns\TextColumn::make('districts.name')
-                    ->numeric()
+                Tables\Columns\TextColumn::make('employee_payroll.payroll.name')
+                    ->label('Planilla')
+                    ->getStateUsing(function (DetailPayroll $record) {
+                        $payroll = $record->employeePayroll->payroll;
+                        return $payroll ? $payroll->name : 'N/A';
+                    })
                     ->sortable(),
                 Tables\Columns\TextColumn::make('regular_salaries')
                     ->numeric()
@@ -127,7 +121,6 @@ class DetailPayrollResource extends Resource
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('percentage_isr')
-                    ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('phone_discount')
                     ->numeric()

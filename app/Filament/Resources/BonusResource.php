@@ -37,9 +37,18 @@ class BonusResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('employee_id')
+                Forms\Components\Select::make('employee_payroll_id')
                     ->label('Empleado')
-                    ->relationship('employees', 'name')
+                    ->options(function () {
+                        return DB::table('employee_payrolls')
+                            ->join('employees', 'employee_payrolls.employee_id', '=', 'employees.id')
+                            ->join('payrolls', 'employee_payrolls.payroll_id', '=', 'payrolls.id')
+                            ->select('employee_payrolls.id', DB::raw("CONCAT(employees.name, ' ', employees.last_name, ' - ', payrolls.name) as full_name_payroll"))
+                            ->where('employee_payrolls.active', 1)
+                            ->orderBy('employees.name')
+                            ->pluck('full_name_payroll', 'employee_payrolls.id')
+                            ->toArray();
+                    })
                     ->required(),
                 Forms\Components\DatePicker::make('date')
                     ->required(),
@@ -62,7 +71,12 @@ class BonusResource extends Resource
                     ->numeric()
                     ->label('Empleado')
                     ->getStateUsing(function (Bonus $record) {
-                        return $record->employees->name . ' ' . $record->employees->last_name;
+                        return DB::table('employee_payrolls')
+                            ->join('employees', 'employee_payrolls.employee_id', '=', 'employees.id')
+                            ->join('payrolls', 'employee_payrolls.payroll_id', '=', 'payrolls.id')
+                            ->where('employee_payrolls.id', $record->employee_payroll_id)
+                            ->select(DB::raw("CONCAT(employees.name, ' ', employees.last_name, ' - ', payrolls.name) as full_name_payroll"))
+                            ->value('full_name_payroll');
                     })
                     ->sortable(),
                 Tables\Columns\TextColumn::make('date')
