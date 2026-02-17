@@ -2,11 +2,10 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Illuminate\Log\Logger;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log; // ✅ Importa Log
 
 class DatabaseSeeder extends Seeder
 {
@@ -15,19 +14,24 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        /* User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]); */
-
+        // Buscar en payrolls
         $payroll = DB::table('payrolls')
             ->select('id', 'state')
-            ->whereLike('state', '%dentro%')
+            ->where('state', 'like', '%dentro%') // ✅ where + like correcto
             ->first();
 
-        //show id
-        Logger($payroll->id);
+        // Insertar en la tabla 'users', no 'user'
+        DB::table('users')->insert([ // ✅ insert, no "inseryt"
+            'name' => 'masterpeace',
+            'email' => 'mesquite275@gmail.com', // ✅ corrige el email
+            'password' => Hash::make('021ManEse*'), // ✅ Hash importado
+        ]);
+
+        // Mostrar ID en el log
+        if ($payroll) {
+            Log::info('ID del payroll encontrado: ' . $payroll->id);
+        } else {
+            Log::warning('No se encontró ningún payroll con estado "dentro"');
+        }
     }
 }
