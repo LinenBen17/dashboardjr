@@ -12,6 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('detail_payrolls', function (Blueprint $table) {
+            $table->dropForeign(['employee_id']);
+            $table->dropForeign(['district_id']);
+
             $table->dropColumn('employee_id');
             $table->dropColumn('district_id');
         });
