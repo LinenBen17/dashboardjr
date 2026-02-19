@@ -24,7 +24,10 @@ return new class extends Migration
             $table->foreignId('departament_id')->constrained()->onDelete('cascade');
             $table->foreignId('town_id')->constrained()->onDelete('cascade');
             $table->string('prefix_origin', 10);
-            $table->foreignId('employee_id')->constrained()->onDelete('set null');
+            $table->foreignId('employee_id')
+                ->nullable()
+                ->constrained()
+                ->nullOnDelete();
             $table->timestamps();
         });
     }
