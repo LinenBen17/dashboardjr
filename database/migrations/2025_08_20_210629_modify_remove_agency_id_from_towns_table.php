@@ -9,9 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('towns', function (Blueprint $table) {
-            // primero eliminamos el índice
-            $table->dropIndex('towns_agency_id_foreign');
-            // luego eliminamos la columna
+            $table->dropForeign(['agency_id']);
             $table->dropColumn('agency_id');
         });
     }
