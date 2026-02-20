@@ -8,10 +8,6 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::table('discounts', function (Blueprint $table) {
-            $table->dropForeign('bonuses_employee_id_foreign');
-
-            $table->dropColumn('employee_id');
-
             $table->foreignId('employee_payroll_id')
                 ->after('id')
                 ->constrained('employee_payrolls')
