@@ -16,8 +16,8 @@ class TownImporter extends Importer
         return [
             ImportColumn::make('name')
                 ->requiredMapping()
-                ->rules(['required', 'max:30']),
-            ImportColumn::make('agency_id')
+                ->rules(['required']),
+            ImportColumn::make('route_id')
                 ->requiredMapping()
                 ->numeric()
                 ->rules(['required', 'integer']),
