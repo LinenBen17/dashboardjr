@@ -80,7 +80,7 @@ class RouteResource extends Resource
                 Tables\Columns\TextColumn::make('agency_id')
                     ->numeric()
                     ->getStateUsing(function (Route $record) {
-                        return $record->agencies->name;
+                        return $record->agency->name;
                     })
                     ->sortable(),
                 Tables\Columns\TextColumn::make('plates')
