@@ -13,7 +13,8 @@ class Agency extends Seeder
      */
     public function run(): void
     {
-        DB::table('agencies')->truncate();
+        // Eliminar todos los registros de la tabla agencies
+        DB::table('agencies')->delete();
         DB::table('agencies')->insert([
             ['departament_id' => 1, 'name' => 'Guatemala Centro', 'short' => null,],
             ['departament_id' => 2, 'name' => 'El Progreso Centro', 'short' => null,],
