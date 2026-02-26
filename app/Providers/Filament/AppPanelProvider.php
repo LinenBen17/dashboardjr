@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Auth\CustomLogin;
 use Filament\Facades\Filament;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Filament\Forms\Components\TextInput;
@@ -32,7 +33,7 @@ class AppPanelProvider extends PanelProvider
         return $panel
             ->id('app')
             ->path('app')
-            ->login()
+            ->login(CustomLogin::class)
             // ->profile()
             ->userMenuItems([
                 'profile' => MenuItem::make()

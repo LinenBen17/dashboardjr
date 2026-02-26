@@ -70,4 +70,16 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
     {
         return true;
     }
+
+    protected static function booted()
+    {
+        static::saving(function ($user) {
+            if (
+                is_array($user->custom_fields) &&
+                isset($user->custom_fields['user_name'])
+            ) {
+                $user->username = $user->custom_fields['user_name'];
+            }
+        });
+    }
 }
