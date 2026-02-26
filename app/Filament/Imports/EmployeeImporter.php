@@ -17,20 +17,20 @@ class EmployeeImporter extends Importer
             ImportColumn::make('name')
                 ->requiredMapping()
                 ->rules(['required', 'max:25'])
-                ->fillRecordUsing(function (Employee $record, $value) {
-                    $record->name = ucwords(strtolower($value));
+                ->fillRecordUsing(function (Employee $record, string $state): void {
+                    $record->name = ucwords(strtolower($state));
                 }),
             ImportColumn::make('last_name')
                 ->requiredMapping()
                 ->rules(['required', 'max:25'])
-                ->fillRecordUsing(function (Employee $record, $value) {
-                    $record->last_name = ucwords(strtolower($value));
+                ->fillRecordUsing(function (Employee $record, string $state): void {
+                    $record->last_name = ucwords(strtolower($state));
                 }),
             ImportColumn::make('comments')
                 ->requiredMapping()
                 ->rules(['required'])
-                ->fillRecordUsing(function (Employee $record, $value) {
-                    $record->comments = ucwords(strtolower($value));
+                ->fillRecordUsing(function (Employee $record, string $state): void {
+                    $record->comments = ucwords(strtolower($state));
                 }),
             ImportColumn::make('entry_date')
                 ->requiredMapping()
@@ -48,8 +48,8 @@ class EmployeeImporter extends Importer
             ImportColumn::make('address')
                 ->requiredMapping()
                 ->rules(['required', 'max:500'])
-                ->fillRecordUsing(function (Employee $record, $value) {
-                    $record->address = ucwords(strtolower($value));
+                ->fillRecordUsing(function (Employee $record, string $state): void {
+                    $record->address = ucwords(strtolower($state));
                 }),
             ImportColumn::make('town_id')
                 ->numeric()
@@ -97,7 +97,10 @@ class EmployeeImporter extends Importer
                 ->rules(['required', 'integer']),
             ImportColumn::make('email')
                 ->requiredMapping()
-                ->rules(['required', 'email', 'max:100']),
+                ->rules(['required', 'email', 'max:100'])
+                ->fillRecordUsing(function (Employee $record, string $state): void {
+                    $record->email = strtolower($state);
+                }),
             ImportColumn::make('photo')
                 ->requiredMapping()
                 ->rules(['required', 'max:191']),
