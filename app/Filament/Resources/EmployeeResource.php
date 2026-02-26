@@ -193,7 +193,7 @@ class EmployeeResource extends Resource
 
                             Select::make('id_payroll')
                                 ->label('Estado Planilla')
-                                ->relationship(name: 'payrolls', titleAttribute: 'state')
+                                ->relationship(name: 'payrolls', titleAttribute: 'name')
                                 ->required()
                                 ->columnSpan(2),
 
@@ -217,8 +217,7 @@ class EmployeeResource extends Resource
                         ->label('Fotografía')
                         ->disk('public')
                         ->image()
-                        ->imagePreviewHeight('150')
-                        ->required(),
+                        ->imagePreviewHeight('150'),
 
                     RichEditor::make('comments')
                         ->id('comments')
@@ -247,69 +246,77 @@ class EmployeeResource extends Resource
                     ->label('Estado')
                     ->searchable()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('payrolls.name')
+                    ->label('Tipo Planilla')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('entry_date')
+                    ->label('Fecha de Ingreso')
                     ->date()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('agencies.name')
+                    ->label('Agencia')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('charges.name')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('payrolls.state')
+                    ->label('Cargo')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('bank_account')
+                    ->label('Cuenta Bancaria')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('address')
+                    ->label('Dirección')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('towns.name')
+                    ->label('Municipio')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('departaments.name')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('zone')
+                    ->label('Departamento')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('birthplace')
+                    ->label('Lugar de Nacimiento')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('nationalities.name')
+                    ->label('Nacionalidad')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('phone')
+                    ->label('Teléfono')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('cellphone')
+                    ->label('Celular')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('birth_date')
+                    ->label('Fecha de Nacimiento')
                     ->date()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('age')
-                    ->numeric()
-                    ->sortable(),
                 Tables\Columns\TextColumn::make('civilStatus.name')
+                    ->label('Estado Civil')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('genders.name')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('children')
+                    ->label('Género')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('dpi')
+                    ->label('DPI')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('nit')
+                    ->label('NIT')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('email')
+                    ->label('Correo Electrónico')
                     ->searchable(),
                 Tables\Columns\ImageColumn::make('photo')
+                    ->label('Fotografía')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('comments')
                     ->limit(10)
-                    ->searchable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
