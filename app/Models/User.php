@@ -26,6 +26,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
      */
     protected $fillable = [
         'name',
+        'username',
         'email',
         'password',
         'avatar_url',
@@ -54,6 +55,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
     protected function casts(): array
     {
         return [
+            'username' => 'string',
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'custom_fields' => 'array'
