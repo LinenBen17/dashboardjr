@@ -84,6 +84,15 @@ class ManageDetailPayrolls extends ManageRecords
                             ->title('La planilla para este período ya existe.')
                             ->warning()
                             ->send();
+
+                        $this->payrollPeriodId = PayrollPeriods::where([
+                            'payroll_id' => $data['payroll_id'],
+                            'period_start' => $data['year'] . '-' . $data['month'] . '-' . ($data['period_number'] == 1 ? '01' : '16'),
+                            'period_end' => $data['year'] . '-' . $data['month'] . '-' . ($data['period_number'] == 1 ? '15' : Carbon::create($data['year'], $data['month'], 1)->endOfMonth()->day),
+                            'year' => $data['year'],
+                            'period_number' => $data['period_number'],
+                        ])->first()->id; // guardar ID para impresión
+
                         return;
                     }
 
