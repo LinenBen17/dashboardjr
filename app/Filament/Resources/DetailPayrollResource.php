@@ -100,7 +100,22 @@ class DetailPayrollResource extends Resource
                         $employee = $record->employeePayroll->employee;
                         return $employee ? $employee->name . ' ' . $employee->last_name : 'N/A';
                     })
-                    ->sortable(),
+                    ->searchable(query: function ($query, $search) {
+                        $query
+                            ->join('employee_payrolls', 'detail_payrolls.employee_payroll_id', '=', 'employee_payrolls.id')
+                            ->join('employees', 'employee_payrolls.employee_id', '=', 'employees.id')
+                            ->where(function ($query) use ($search) {
+                                $query->where('employees.name', 'like', "%{$search}%")
+                                    ->orWhere('employees.last_name', 'like', "%{$search}%");
+                            });
+                    })
+                    ->sortable(query: function ($query, $direction) {
+                        $query
+                            ->join('employee_payrolls', 'detail_payrolls.employee_payroll_id', '=', 'employee_payrolls.id')
+                            ->join('employees', 'employee_payrolls.employee_id', '=', 'employees.id')
+                            ->orderBy('employees.name', $direction)
+                            ->orderBy('employees.last_name', $direction);
+                    }),
                 Tables\Columns\TextColumn::make('employeePayroll.payroll.name')
                     ->label('Planilla')
                     ->getStateUsing(function (DetailPayroll $record) {
@@ -112,6 +127,12 @@ class DetailPayrollResource extends Resource
                             ->join('employee_payrolls', 'detail_payrolls.employee_payroll_id', '=', 'employee_payrolls.id')
                             ->join('payrolls', 'employee_payrolls.payroll_id', '=', 'payrolls.id')
                             ->orderBy('payrolls.name', $direction);
+                    })
+                    ->searchable(query: function ($query, $search) {
+                        $query
+                            ->join('employee_payrolls', 'detail_payrolls.employee_payroll_id', '=', 'employee_payrolls.id')
+                            ->join('payrolls', 'employee_payrolls.payroll_id', '=', 'payrolls.id')
+                            ->where('payrolls.name', 'like', "%{$search}%");
                     }),
                 Tables\Columns\TextColumn::make('regular_salaries')
                     ->numeric()
