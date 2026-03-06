@@ -93,46 +93,47 @@ class DetailPayrollResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(
+                fn($query) =>
+                $query->with([
+                    'employeePayroll.employee',
+                    'employeePayroll.payroll',
+                ])
+            )
             ->columns([
-                Tables\Columns\TextColumn::make('employee_payroll.employee')
+                Tables\Columns\TextColumn::make('employeePayroll.employee')
                     ->label('Empleado')
-                    ->getStateUsing(function (DetailPayroll $record) {
-                        $employee = $record->employeePayroll->employee;
-                        return $employee ? $employee->name . ' ' . $employee->last_name : 'N/A';
-                    })
+                    ->getStateUsing(
+                        fn($record) => ($record->employeePayroll?->employee?->name ?? '') . ' ' .
+                            ($record->employeePayroll?->employee?->last_name ?? '')
+                    )
                     ->searchable(query: function ($query, $search) {
-                        $query
-                            ->join('employee_payrolls', 'detail_payrolls.employee_payroll_id', '=', 'employee_payrolls.id')
-                            ->join('employees', 'employee_payrolls.employee_id', '=', 'employees.id')
-                            ->where(function ($query) use ($search) {
-                                $query->where('employees.name', 'like', "%{$search}%")
-                                    ->orWhere('employees.last_name', 'like', "%{$search}%");
-                            });
+                        $query->whereHas('employeePayroll.employee', function ($q) use ($search) {
+                            $q->where('name', 'like', "%{$search}%")
+                                ->orWhere('last_name', 'like', "%{$search}%");
+                        });
                     })
                     ->sortable(query: function ($query, $direction) {
-                        $query
-                            ->join('employee_payrolls', 'detail_payrolls.employee_payroll_id', '=', 'employee_payrolls.id')
-                            ->join('employees', 'employee_payrolls.employee_id', '=', 'employees.id')
-                            ->orderBy('employees.name', $direction)
-                            ->orderBy('employees.last_name', $direction);
+                        $query->whereHas('employeePayroll.employee', function ($q) use ($direction) {
+                            $q->orderBy('name', $direction)
+                                ->orderBy('last_name', $direction);
+                        });
                     }),
                 Tables\Columns\TextColumn::make('employeePayroll.payroll.name')
                     ->label('Planilla')
-                    ->getStateUsing(function (DetailPayroll $record) {
-                        $payroll = $record->employeePayroll->payroll;
-                        return $payroll ? $payroll->name : 'N/A';
+                    ->getStateUsing(
+                        fn(DetailPayroll $record) =>
+                        $record->employeePayroll?->payroll?->name ?? 'N/A'
+                    )
+                    ->searchable(query: function ($query, $search) {
+                        $query->whereHas('employeePayroll.payroll', function ($q) use ($search) {
+                            $q->where('name', 'like', "%{$search}%");
+                        });
                     })
                     ->sortable(query: function ($query, $direction) {
-                        $query
-                            ->join('employee_payrolls', 'detail_payrolls.employee_payroll_id', '=', 'employee_payrolls.id')
-                            ->join('payrolls', 'employee_payrolls.payroll_id', '=', 'payrolls.id')
-                            ->orderBy('payrolls.name', $direction);
-                    })
-                    ->searchable(query: function ($query, $search) {
-                        $query
-                            ->join('employee_payrolls', 'detail_payrolls.employee_payroll_id', '=', 'employee_payrolls.id')
-                            ->join('payrolls', 'employee_payrolls.payroll_id', '=', 'payrolls.id')
-                            ->where('payrolls.name', 'like', "%{$search}%");
+                        $query->whereHas('employeePayroll.payroll', function ($q) use ($direction) {
+                            $q->orderBy('name', $direction);
+                        });
                     }),
                 Tables\Columns\TextColumn::make('regular_salaries')
                     ->numeric()
