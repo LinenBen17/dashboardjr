@@ -101,13 +101,18 @@ class DetailPayrollResource extends Resource
                         return $employee ? $employee->name . ' ' . $employee->last_name : 'N/A';
                     })
                     ->sortable(),
-                Tables\Columns\TextColumn::make('employee_payroll.payroll.name')
+                Tables\Columns\TextColumn::make('employeePayroll.payroll.name')
                     ->label('Planilla')
                     ->getStateUsing(function (DetailPayroll $record) {
                         $payroll = $record->employeePayroll->payroll;
                         return $payroll ? $payroll->name : 'N/A';
                     })
-                    ->sortable(),
+                    ->sortable(query: function ($query, $direction) {
+                        $query
+                            ->join('employee_payrolls', 'detail_payrolls.employee_payroll_id', '=', 'employee_payrolls.id')
+                            ->join('payrolls', 'employee_payrolls.payroll_id', '=', 'payrolls.id')
+                            ->orderBy('payrolls.name', $direction);
+                    }),
                 Tables\Columns\TextColumn::make('regular_salaries')
                     ->numeric()
                     ->sortable(),
