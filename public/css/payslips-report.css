@@ -1,57 +1,84 @@
-*{
+* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: sans-serif;
+    font-family: "Courier New", monospace;
     font-size: 9.5pt;
+    font-weight: bold;
 }
-.container{
-    padding: 10px 20px;
+
+body {
+    width: 100%;
+    margin: 0;
 }
-.title h2{
+
+@page {
+    size: A4;
+    margin: 0;
+}
+
+.container {
+    width: 8.5in;
+    height: 5.5in;
+    padding: 5px;
+}
+
+.title h2 {
     font-size: 16pt;
 }
-.title p{
+
+.title p {
     font-size: 9pt;
     text-decoration: underline;
     margin-bottom: 10px;
 }
+
 table {
     width: 100%;
     border-collapse: collapse;
+    table-layout: fixed;
 }
-th, td{
+
+th,
+td {
     border: 1px solid black;
     padding: 6px;
     text-align: center;
 }
-.datosMonetarios{
+
+.datosMonetarios {
     margin-bottom: 40px;
 }
-.datosMonetarios th, .datosMonetarios td {
+
+.datosMonetarios th,
+.datosMonetarios td {
     text-align: left;
 }
-th.section-title{ 
+
+th.section-title {
     text-align: center;
 }
-.datosEmpresa, .datosEmpleado{
+
+.datosEmpresa,
+.datosEmpleado {
     margin-bottom: 10px;
 }
+
 .section-title {
     background-color: #D0F2BF;
-    -webkit-print-color-adjust: exact;
     font-weight: bold;
     text-align: center;
 }
+
 .no-border {
     border: none;
 }
-.totales {
-    font-weight: bold;
-}
-.firma th, .firma td{
+
+.firma th,
+.firma td {
     border: none;
 }
-.break{
-    page-break-after:always;
+
+.break {
+    page-break-after: always;
 }

@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 
 class PayrollController extends Controller
 {
-    public function __invoke($payrollPeriodId)
+    public function generatePayrollReport($payrollPeriodId)
     {
         // 1. Traer payroll_period_details
         $payroll_period_details = PayrollPeriodDetails::where('payroll_period_id', $payrollPeriodId)->get();
@@ -93,8 +93,6 @@ class PayrollController extends Controller
             ->unique()
             ->values()
             ->toArray();
-
-        // DESCUENTOS EMPLEADO EN EL PERIODO
 
         // DATA DE EMPLEADOS
         $data = [];
@@ -189,5 +187,18 @@ class PayrollController extends Controller
             'to' => $to,
             'payrollData' => $payrollData,
         ]; */
+    }
+    public function generatePayslipsReport($payroll_id, $year, $month, $period_number)
+    {
+        $payroll_period_details = PayrollPeriodDetails::whereHas('payrollPeriod', function ($query) use ($payroll_id, $year, $month, $period_number) {
+            $query->where('payroll_id', $payroll_id)
+                ->where('year', $year)
+                ->where('period_number', $period_number)
+                ->whereMonth('period_start', $month);
+        })->get();
+
+        return view('filament.resources.reports.payslips', [
+            'payroll_period_details' => $payroll_period_details,
+        ]);
     }
 }

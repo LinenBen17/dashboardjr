@@ -38,4 +38,5 @@ Route::get('/shipment_manifest/{manifest_code}/printManifestGuides', [ShipmentMa
 
 Route::get('/shipment-delivery/obtener-datos-entrega', [ShipmentDeliveryController::class, 'getDataDelivery'])->name('obtener_datos_entrega');
 
-Route::get('/payrolls/{id}/printPayroll', PayrollController::class)->name('payroll.printPayroll');
+Route::get('/payrolls/{id}/printPayroll', [PayrollController::class, 'generatePayrollReport'])->name('payroll.printPayroll');
+Route::get('/payrolls/benefit-payslips', [PayrollController::class, 'generatePayslipsReport'])->name('payroll.generatePayslipsReport');
