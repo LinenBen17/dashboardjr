@@ -11,6 +11,7 @@
     "require": {
         "php": "^8.2",
         "bezhansalleh/filament-shield": "^3.3",
+        "defstudio/filament-searchable-input": "^1.0",
         "dvarilek/filament-table-select": "2.0.3",
         "filament/filament": "^3.3",
         "joaopaulolndev/filament-edit-profile": "^1.0",
