@@ -33,40 +33,6 @@ class ManageDetailPayrolls extends ManageRecords
     {
         return [
             Actions\CreateAction::make(),
-            Action::make('Asignar Empleado a Planilla')
-                ->color('warning')
-                ->form([
-                    Section::make('')
-                        ->columns(2)
-                        ->schema([
-                            Select::make('employee_id')
-                                ->label('Empleado')
-                                ->searchable()
-                                ->options(
-                                    fn() => Employee::where('status_id', 1)
-                                        ->pluck(DB::raw("CONCAT(name, ' ', last_name) as full_name"), 'id')
-                                        ->toArray()
-                                )
-                                ->required(),
-                            Select::make('payroll_id')
-                                ->label('Planilla')
-                                ->options(function () {
-                                    return Payroll::all()->pluck('name', 'id')->toArray();
-                                })
-                                ->required(),
-                            Checkbox::make('active')
-                                ->label('Activo')
-                                ->default(true)
-                                ->columnSpan(2),
-                        ]),
-                ])
-                ->action(function (array $data) {
-                    EmployeePayrolls::create($data);
-                    Notification::make()
-                        ->title('Empleado asignado a planilla correctamente')
-                        ->success()
-                        ->send();
-                }),
             Action::make('Generar Reportes de Planilla')
                 ->color('info')
                 ->form([
