@@ -52,6 +52,7 @@ class BonusResource extends Resource
                     })
                     ->required(),
                 Forms\Components\DatePicker::make('date')
+                    ->default(now())
                     ->required(),
                 Forms\Components\TextInput::make('amount')
                     ->required()
