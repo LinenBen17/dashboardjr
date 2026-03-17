@@ -62,7 +62,8 @@ class DiscountResource extends Resource
                             ->orderBy('employees.name')
                             ->pluck('full_name_payroll', 'employee_payrolls.id')
                             ->toArray();
-                    }),
+                    })
+                    ->required(),
                 Forms\Components\Select::make('type')
                     ->options([
                         'anticipo' => 'Anticipo',

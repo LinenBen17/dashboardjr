@@ -7,6 +7,7 @@ use App\Filament\Resources\BonusResource\Pages;
 use App\Filament\Resources\BonusResource\RelationManagers;
 use App\Models\Bonus;
 use App\Models\Vacation;
+use DefStudio\SearchableInput\Forms\Components\SearchableInput;
 use Filament\Actions\Action;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -37,7 +38,7 @@ class BonusResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('employee_payroll_id')
+                SearchableInput::make('employee_payroll_id')
                     ->label('Empleado')
                     ->options(function () {
                         return DB::table('employee_payrolls')

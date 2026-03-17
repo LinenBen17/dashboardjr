@@ -10,6 +10,7 @@ use App\Models\DetailPayroll;
 use App\Models\District;
 use App\Models\Employee;
 use App\Models\Payroll;
+use DefStudio\SearchableInput\Forms\Components\SearchableInput;
 use Filament\Forms;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\View;
@@ -43,20 +44,19 @@ class DetailPayrollResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('employee_payroll_id')
-                    ->required()
-                    ->options(
-                        fn() => DB::table('employee_payrolls')
+                SearchableInput::make('employee_payroll_id')
+                    ->label('Empleado')
+                    ->options(function () {
+                        return DB::table('employee_payrolls')
                             ->join('employees', 'employee_payrolls.employee_id', '=', 'employees.id')
                             ->join('payrolls', 'employee_payrolls.payroll_id', '=', 'payrolls.id')
-                            ->select(
-                                'employee_payrolls.id',
-                                DB::raw("CONCAT(employees.name, ' ', employees.last_name, ' - ', payrolls.name) as full_name_payroll")
-                            )
+                            ->select('employee_payrolls.id', DB::raw("CONCAT(employees.name, ' ', employees.last_name, ' - ', payrolls.name) as full_name_payroll"))
                             ->where('employee_payrolls.active', 1)
+                            ->orderBy('employees.name')
                             ->pluck('full_name_payroll', 'employee_payrolls.id')
-                            ->toArray()
-                    ),
+                            ->toArray();
+                    })
+                    ->required(),
                 Forms\Components\TextInput::make('regular_salaries')
                     ->required()
                     ->prefix('Q')
