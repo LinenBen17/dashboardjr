@@ -38,11 +38,11 @@ class ShipmentEntryResource extends Resource
 
     protected static ?string $cluster = Shipping::class;
 
-    protected static ?string $navigationLabel = 'Ingreso de Envíos';
-    protected static ?string $modelLabel = 'Ingreso de Envío';
+    protected static ?string $navigationLabel = 'Recepción de Envíos';
+    protected static ?string $modelLabel = 'Recepción de Envío';
 
     protected static ?string $navigationIcon = 'heroicon-o-computer-desktop';
-    protected static ?string $label = 'Ingreso de Envíos';
+    protected static ?string $label = 'Recepción de Envíos';
 
     //Sort in the cluster
     protected static ?int $navigationSort = 3;
