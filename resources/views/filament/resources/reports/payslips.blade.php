@@ -6,17 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
-    <link rel="stylesheet" href="{{ asset('assets/css/payslips-report.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/payslips-report.css') }}">
     <title>Reporte Boletas de Pago</title>
     <script>
         window.print();
-        console.log(@json($payrollData));
     </script>
 </head>
 
 <body>
     @foreach ($payrollData['data'] as $item)
-        {{-- @for ($i = 1; $i <= 2; $i++) --}}
         <div class="container">
             <div class="title">
                 <h2 style="text-align: center;">RECIBO DE PAGO</h2>
@@ -123,7 +121,6 @@
                 </tr>
             </table>
         </div>
-        {{-- @endfor --}}
         <div class="break"></div>
     @endforeach
 </body>

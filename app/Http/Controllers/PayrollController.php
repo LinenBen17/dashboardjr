@@ -8,11 +8,8 @@ use Illuminate\Support\Facades\DB;
 
 class PayrollController extends Controller
 {
-    public function generatePayrollReport($payrollPeriodId)
+    private function buildPayrollData($payrollPeriodId)
     {
-        // 1. Traer payroll_period_details
-        $payroll_period_details = PayrollPeriodDetails::where('payroll_period_id', $payrollPeriodId)->get();
-
         $period = DB::table('payroll_periods')
             ->where('id', $payrollPeriodId)
             ->first();
@@ -32,6 +29,7 @@ class PayrollController extends Controller
                 'e.name',
                 'e.last_name',
                 'e.bank_account',
+                'e.entry_date as fechaIngreso',
                 'ag.name as agency_name',
                 'ch.name as charge_name',
                 'ppd.salary_base',
@@ -126,6 +124,7 @@ class PayrollController extends Controller
                 'id' => $counter++,
                 'ctaBancaria' => $row->bank_account,
                 'empleado' => $row->name . ' ' . $row->last_name,
+                'fechaIngreso' => $row->fechaIngreso,
                 'cargo' => $row->charge_name,
                 'agencia' => $row->agency_name,
 
@@ -174,31 +173,52 @@ class PayrollController extends Controller
             'totals'   => $totals,
         ];
 
+        return [
+            'from' => $period->period_start ?? null,
+            'to'   => $period->period_end ?? null,
+            'data' => $data,
+            'totals' => $totals,
+            'agencies' => $agencies,
+            'charges' => $charges,
+        ];
+    }
+    public function generatePayrollReport($payrollPeriodId)
+    {
+        $payroll_period_details = PayrollPeriodDetails::where('payroll_period_id', $payrollPeriodId)->get();
+
+        $payrollData = $this->buildPayrollData($payrollPeriodId);
+
         return view('filament.resources.reports.payroll', [
             'payroll_period_details' => $payroll_period_details,
-            'from' => $from,
-            'to' => $to,
+            'from' => $payrollData['from'],
+            'to' => $payrollData['to'],
             'payrollData' => $payrollData,
         ]);
-
-        /* return [
-            'payroll_period_details' => $payroll_period_details,
-            'from' => $from,
-            'to' => $to,
-            'payrollData' => $payrollData,
-        ]; */
     }
-    public function generatePayslipsReport($payroll_id, $year, $month, $period_number)
+    public function generatePayslipsReport(Request $request)
     {
-        $payroll_period_details = PayrollPeriodDetails::whereHas('payrollPeriod', function ($query) use ($payroll_id, $year, $month, $period_number) {
-            $query->where('payroll_id', $payroll_id)
-                ->where('year', $year)
-                ->where('period_number', $period_number)
-                ->whereMonth('period_start', $month);
-        })->get();
+        $payroll_id = $request->payroll_id;
+        $year = $request->year;
+        $month = $request->month;
+        $period_number = $request->period_number;
+
+        $period = DB::table('payroll_periods')
+            ->where('payroll_id', $payroll_id)
+            ->where('year', $year)
+            ->where('period_number', $period_number)
+            ->whereMonth('period_start', $month)
+            ->first();
+
+        if (!$period) {
+            abort(404);
+        }
+
+        $payrollData = $this->buildPayrollData($period->id);
 
         return view('filament.resources.reports.payslips', [
-            'payroll_period_details' => $payroll_period_details,
+            'from' => $payrollData['from'],
+            'to' => $payrollData['to'],
+            'payrollData' => $payrollData,
         ]);
     }
 }

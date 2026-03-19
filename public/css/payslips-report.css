@@ -13,14 +13,17 @@ body {
 }
 
 @page {
-    size: A4;
-    margin: 0;
+    size: 8.5in 5.5in;
+    margin: .5cm;
 }
 
 .container {
     width: 8.5in;
-    height: 5.5in;
     padding: 5px;
+}
+
+.container {
+    page-break-inside: avoid;
 }
 
 .title h2 {
@@ -42,7 +45,7 @@ table {
 th,
 td {
     border: 1px solid black;
-    padding: 6px;
+    padding: 4px;
     text-align: center;
 }
 

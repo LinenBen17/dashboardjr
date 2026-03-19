@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\DetailPayrollResource\Pages;
 
 use App\Filament\Resources\DetailPayrollResource;
+use App\Filament\Resources\PayrollPeriodsResource;
 use App\Models\DetailPayroll;
 use App\Models\Employee;
 use App\Models\EmployeePayrolls;
@@ -36,16 +37,16 @@ class ManageDetailPayrolls extends ManageRecords
             Action::make('Generar Reportes de Planilla')
                 ->color('info')
                 ->form([
-                    Grid::make(4)
+                    Grid::make(5)
                         ->schema([
                             Select::make('payroll_id')
-                                ->label('Seleccione el Tipo Planilla')
+                                ->label('Tipo Planilla')
                                 ->options(function () {
                                     return Payroll::all()->pluck('name', 'id')->toArray();
                                 })
                                 ->required(),
                             Select::make('payroll_type')
-                                ->label('Seleccione Tipo de Reporte')
+                                ->label('Tipo de Reporte')
                                 ->options([
                                     'impresion_de_planilla' => 'Impresión de Planilla',
                                     'impresion_de_boletas_de_pago' => 'Impresión de Boletas de Pago',
@@ -216,7 +217,10 @@ class ManageDetailPayrolls extends ManageRecords
                     }
                 })
                 ->extraModalFooterActions(fn() => [
-                    Actions\Action::make('ImprimirPlanilla')
+                    Actions\Action::make('Visualizar')
+                        ->label('Visualizar Planillas')
+                        ->url(PayrollPeriodsResource::getUrl('index')),
+                    /* Actions\Action::make('ImprimirPlanilla')
                         ->label('Imprimir Planilla')
                         ->url(
                             fn() => filled($this->payrollPeriodId)
@@ -238,8 +242,9 @@ class ManageDetailPayrolls extends ManageRecords
                                 : null
                         )
                         ->openUrlInNewTab()
-                        ->visible(fn() => filled($this->payrollPeriodId)),
+                        ->visible(fn() => filled($this->payrollPeriodId)), */
                 ])
+
         ];
     }
 }
