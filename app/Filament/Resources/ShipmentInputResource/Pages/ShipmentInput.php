@@ -1,0 +1,435 @@
+<?php
+
+namespace App\Filament\Resources\ShipmentInputResource\Pages;
+
+use App\Filament\Resources\ShipmentInputResource;
+use App\Models\ShipmentEntry;
+use App\Models\ShipmentEntryChild;
+use Carbon\Carbon;
+use Filament\Facades\Filament;
+use Filament\Notifications\Notification;
+use Filament\Resources\Pages\Page;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Log\Logger;
+
+class ShipmentInput extends Page
+{
+    protected static string $resource = ShipmentInputResource::class;
+
+    protected static string $view = 'filament.resources.shipment-input-resource.pages.shipment-input';
+    public $no_guide_user;
+    public $manifest_code;
+    public $date_guide;
+    public $payment_method_id;
+    public $sender_total;
+    public $receiver_total;
+    public $total;
+
+    public $sender_code;
+    public $sender_name;
+    public $sender_address;
+    public $sender_phone;
+    public $receiver_code;
+    public $receiver_name;
+    public $receiver_address;
+    public $receiver_phone;
+
+    public $prefix_origin;
+    public $prefix_destination;
+    public $town_id;
+
+    public $productos = [];
+    public $newProduct = [
+        'product_id' => '',
+        'pieces' => '1',
+        'product_description' => '',
+        'unit_price' => '40.00',
+        'subtotal' => '0.00',
+    ];
+
+    public $payment_methods;
+    public array $childGuides = [];
+    public int $totalPieces = 0;
+    public bool $link_child_later = false;
+    public $record;
+
+    public $municipios = [];
+
+    public $statusPrinted = false;
+
+    public function mount()
+    {
+        $this->date_guide = now()->format('Y-m-d'); // o Carbon::now()->format('Y-m-d')
+
+        $this->prefix_origin = DB::table('departaments')
+            ->where('id', Auth::user()->custom_fields['departament_id'])
+            ->value('prefix');
+
+        $this->payment_methods = DB::table('payment_methods')
+            ->select('id', 'name')
+            ->orderBy('id')
+            ->pluck('name', 'id')
+            ->toArray();
+    }
+
+    public function openCustomersModal()
+    {
+        $this->dispatch('open-modal', id: 'customersModal');
+    }
+
+    public function openConsultGuides()
+    {
+        $this->dispatch('open-modal', id: 'consultGuides');
+    }
+
+    public function closeCustomersModal()
+    {
+        $this->dispatch('close-modal', id: 'customersModal');
+    }
+
+    public function getCustomerID($code)
+    {
+        $customer_id = DB::table('customers')
+            ->where('code', 'LIKE', '%-' . $code)
+            ->value('id');
+
+        return $customer_id;
+    }
+
+    public function addProduct()
+    {
+        $this->newProduct['subtotal'] =
+            $this->newProduct['pieces'] * $this->newProduct['unit_price'];
+
+        $this->productos[] = $this->newProduct;
+
+        $this->calculateTotals();
+
+        $this->newProduct = [
+            'product_id' => '',
+            'pieces' => '1',
+            'product_description' => '',
+            'unit_price' => '40.00',
+            'subtotal' => '0.00',
+        ];
+
+        $this->dispatch('focus-product-input');
+    }
+
+    public function calculateTotals()
+    {
+        $this->totalPieces = 0;
+        $this->total = 0;
+
+        foreach ($this->productos as $product) {
+            $this->totalPieces += (int) $product['pieces'];
+            $this->total += (float) $product['subtotal'];
+        }
+    }
+
+    public function removeProduct($index)
+    {
+        Logger("Eliminando producto en el índice: " . $index);
+        unset($this->productos[$index]);
+        $this->productos = array_values($this->productos);
+
+        $this->calculateTotals();
+
+        $this->dispatch('focus-product-input');
+    }
+
+    public function addChildGuide(string $guide)
+    {
+        $guide = trim($guide);
+
+        if (!$guide) return;
+
+        if (in_array($guide, $this->childGuides)) {
+            // Si la guía ya está en la lista, no hacer nada (No devuelve notificacion porque no es necesario)
+            return;
+        }
+        if (count($this->childGuides) >= ($this->totalPieces - 1)) {
+            Notification::make()
+                ->title('Máximo de guías hijas alcanzado')
+                ->body('No se pueden agregar más de ' . $this->totalPieces - 1 . ' guías hijas.')
+                ->warning()
+                ->send();
+            return;
+        }
+        $this->childGuides[] = $guide;
+    }
+
+    public function confirmChilds()
+    {
+        if ($this->link_child_later) {
+            Logger('Enlazar guías hijas más tarde');
+            $this->save();
+            $this->dispatch('close-modal', id: 'childGuides');
+            return;
+        } elseif (count($this->childGuides) < ($this->totalPieces - 1) && !$this->link_child_later) {
+            Notification::make()
+                ->title('Guías hijas incompletas')
+                ->body('Es necesario enlazar ' . ($this->totalPieces - 1) . ' guías hijas. ' . count($this->childGuides) . ' guías hijas actualmente enlazadas.')
+                ->warning()
+                ->send();
+            return;
+        } elseif (count($this->childGuides) == ($this->totalPieces - 1)  && !$this->link_child_later) {
+            $this->save();
+            $this->dispatch('close-modal', id: 'childGuides');
+        }
+    }
+
+    public function confirmSave()
+    {
+        if ($this->link_child_later) {
+            Logger("El valor de link_child_later es: true");
+        } else {
+            Logger("El valor de link_child_later es: false");
+        }
+        $this->totalPieces = 0;
+        // Get total pieces from products
+        foreach ($this->productos as $product => $value) {
+            if (isset($value['pieces'])) {
+                $this->totalPieces += $value['pieces'];
+            }
+        }
+
+        if ($this->totalPieces > 1) {
+            $this->dispatch('open-modal', id: 'childGuides');
+        } else {
+            $this->link_child_later = true;
+            $this->save();
+        }
+    }
+
+    public function save()
+    {
+        try {
+            $this->validate([
+                'no_guide_user' => 'required|numeric',
+                'date_guide' => 'required|date',
+                'payment_method_id' => 'required',
+                'sender_name' => 'required|string|max:255',
+                'sender_address' => 'required|string|max:255',
+                'sender_phone' => 'nullable|string|max:20',
+                'receiver_name' => 'required|string|max:255',
+                'receiver_address' => 'required|string|max:255',
+                'receiver_phone' => 'nullable|string|max:20',
+                'prefix_origin' => 'required|string|max:3',
+                'prefix_destination' => 'required|string|max:3',
+                'town_id' => 'required',
+            ]);
+        } catch (ValidationException $e) {
+            Logger('Error de validación: ' . $e->getMessage());
+            // Si prefieres mostrar errores como notificación (uno solo general)
+            Notification::make()
+                ->title('Faltan campos obligatorios')
+                ->body('Por favor completa todos los campos requeridos.')
+                ->danger()
+                ->send();
+
+            return;
+        }
+
+        // Obtener usuario autenticado y sus custom fields
+        $user = Filament::auth()->user();
+        $custom = $user->custom_fields ?? [];
+
+        // Obtener el id del cliente remiente o destinatario
+        $senderCustomerId = $this->getCustomerID($this->sender_code);
+        $receiverCustomerId = $this->getCustomerID($this->receiver_code);
+
+        // Establecer descripcion completa del pedido si tuviese más de 1 pieza o no
+        $arrayProductDescription = [];
+
+        foreach ($this->productos as $product => $value) {
+            if (isset($value['product_description'])) {
+                $arrayProductDescription[] = $value['product_description'];
+            }
+        }
+        $productDescription = implode(',', array_unique($arrayProductDescription)) ?? null;
+
+        //Establecer codigo en caso de que sea solo 1 pieza
+        $productId = 0;
+        if ($this->totalPieces == 1) {
+            foreach ($this->productos as $product => $value) {
+                if (isset($value['product_id'])) {
+                    $productId = $value['product_id'];
+                }
+            }
+        } else {
+            $productId = $this->productos[0]['product_id'] ?? null;
+        }
+
+        //obtener la forma de pago
+        $paymentMethodName = DB::table('payment_methods')
+            ->where('id', $this->payment_method_id)
+            ->value('name');
+
+        //Asignando total de pieces
+        $pieces = $this->totalPieces;
+
+        //Dividiendo Día, Mes y Año
+        $dateGuide = Carbon::parse($this->date_guide);
+
+        //obtener manifiesto id
+        $shipment_manifest_id = DB::table('shipment_manifests')
+            ->where('manifest_code', $this->manifest_code)
+            ->value('id');
+
+        $dia = $dateGuide->day;
+        $mes = $dateGuide->month;
+        $anio = $dateGuide->year;
+
+        try {
+            if ($this->link_child_later) {
+                $this->record = ShipmentEntry::create([
+                    'mother' => $this->no_guide_user,
+                    'sender_code' => $senderCustomerId ?? null,
+                    'sender_name' => $this->sender_name,
+                    'sender_address' => $this->sender_address,
+                    'sender_phone' => $this->sender_phone,
+                    'receiver_code' => $receiverCustomerId ?? null,
+                    'receiver_name' => $this->receiver_name,
+                    'receiver_address' => $this->receiver_address,
+                    'receiver_phone' => $this->receiver_phone,
+                    'prefix_origin' => $this->prefix_origin,
+                    'prefix_destination' => $this->prefix_destination,
+                    'town_id' => $this->town_id,
+                    'product_id' => $productId,
+                    'product_description' => $productDescription,
+                    'pieces' => $this->totalPieces,
+                    'unit_price' => ($this->totalPieces == 1) ? $this->total : $this->productos[0]['unit_price'],
+                    'sender_total' => $this->sender_total ?? 0,
+                    'receiver_total' => $this->receiver_total ?? 0,
+                    'total' => $this->total,
+                    'date_guide' => $this->date_guide,
+                    'payment_method_id' => $this->payment_method_id,
+                    'shipment_manifest_id' => $shipment_manifest_id ?? null,
+                    'created_by' => $user->id, // Guarda el ID del usuario que crea la entrada
+                ]);
+                $this->record->logSnapshot(
+                    'created',
+                    'Guía creada sin guías hijas enlazadas por el usuario: ' . $user->custom_fields['user_name'] . '. Horario: ' . Carbon::now()->format('d/m/Y H:i:s'),
+                );
+            } else if ($this->link_child_later == false) {
+                $this->record = ShipmentEntry::create([
+                    'mother' => $this->no_guide_user,
+                    'sender_code' => $senderCustomerId ?? null,
+                    'sender_name' => $this->sender_name,
+                    'sender_address' => $this->sender_address,
+                    'sender_phone' => $this->sender_phone,
+                    'receiver_code' => $receiverCustomerId ?? null,
+                    'receiver_name' => $this->receiver_name,
+                    'receiver_address' => $this->receiver_address,
+                    'receiver_phone' => $this->receiver_phone,
+                    'prefix_origin' => $this->prefix_origin,
+                    'prefix_destination' => $this->prefix_destination,
+                    'town_id' => $this->town_id,
+                    'product_id' => $productId,
+                    'product_description' => $productDescription,
+                    'pieces' => $this->totalPieces,
+                    'unit_price' => ($this->totalPieces == 1) ? $this->total : $this->productos[0]['unit_price'],
+                    'sender_total' => $this->sender_total ?? 0,
+                    'receiver_total' => $this->receiver_total ?? 0,
+                    'total' => $this->total,
+                    'date_guide' => $this->date_guide,
+                    'payment_method_id' => $this->payment_method_id,
+                    'shipment_manifest_id' => $shipment_manifest_id ?? null,
+                    'created_by' => $user->id, // Guarda el ID del usuario que crea la entrada
+                ]);
+
+                $this->record->logSnapshot(
+                    'created',
+                    'Guía creada con guías hijas enlazadas por el usuario: ' . $user->custom_fields['user_name'] . 'Horario: ' . Carbon::now()->format('d/m/Y H:i:s'),
+                );
+
+                // Recorrer los productos del envío
+                $productEntries = [];
+
+                foreach ($this->productos as $product) {
+                    $pieces = (int) $product['pieces'];
+                    $unitPrice = (float) $product['unit_price'];
+                    $productId = $product['product_id'];
+
+                    for ($i = 0; $i < $pieces; $i++) {
+                        $productEntries[] = [
+                            'product_id' => $productId,
+                            'price' => $unitPrice,
+                        ];
+                    }
+                }
+
+                // Como la guía madre cuenta como una pieza, eliminamos la primera
+                array_shift($productEntries);
+                // Ahora creamos cada guía hija
+                foreach ($this->childGuides as $index => $childGuide) {
+                    $entry = $productEntries[$index] ?? null;
+
+                    if ($entry) {
+                        ShipmentEntryChild::create([
+                            'shipment_entry_id' => $this->record->id,
+                            'child_guide' => $childGuide,
+                            'product_id' => $entry['product_id'],
+                            'price' => $entry['price'],
+                        ]);
+                    }
+                }
+            }
+            Notification::make()
+                ->title('Envío creado exitosamente')
+                ->success()
+                ->send();
+
+            //Resetea todo
+
+            //Limpia variables
+            $this->childGuides = [];
+            $this->totalPieces = 0;
+
+            $this->no_guide_user = '';
+            $shipment_manifest_id = null;
+            $this->manifest_code = '';
+            $this->date_guide = now()->format('Y-m-d');
+            $this->payment_method_id = 1;
+
+            $this->sender_total = '0.00';
+            $this->receiver_total = '0.00';
+            $this->total = '0.00';
+
+            $this->sender_code = '';
+            $this->sender_name = '';
+            $this->sender_address = '';
+            $this->sender_phone = '';
+            $this->receiver_code = '';
+            $this->receiver_name = '';
+            $this->receiver_address = '';
+            $this->receiver_phone = '';
+
+            $this->prefix_destination = '';
+            $this->town_id = '';
+
+            $this->productos = [];
+
+            $this->dispatch('restartFocus');
+        } catch (\Throwable $th) {
+            Notification::make()
+                ->title('Hubo un error al guardar')
+                ->body($th->getMessage())
+                ->warning()
+                ->send();
+            return;
+        }
+    }
+
+    public function notificationJs($title, $message, $type)
+    {
+        Notification::make()
+            ->title($title)
+            ->body($message)
+            ->{$type}()
+            ->send();
+    }
+}

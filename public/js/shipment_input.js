@@ -9,15 +9,7 @@ $(window).on('load', function () {
 
     restartFocus();
 
-    $("#forma_pago").val(1); // Establecer el valor por defecto de forma_pago a 1
-    $("#forma_pago").blur(function () {
-        $("#sender_total").focus();
-        addingSubtotal();
-    });
-
-    $("#prefix_origen").focus(function () {
-        $("#prefix_destino").focus();
-    });
+    $("#forma_pago").val(1);
 
     $(document).on('keydown', 'input, select, textarea, button', function (e) {
         if (e.key === 'Enter') {
@@ -38,14 +30,6 @@ $(window).on('load', function () {
             if (idx > -1 && idx < focusables.length - 1) {
                 focusables.eq(idx + 1).focus();
             }
-        }
-    });
-
-    $(document).on('keydown', '.addProduct', function (e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-
-            $('#forma_pago').focus();
         }
     });
 
@@ -78,38 +62,6 @@ $(window).on('load', function () {
                 console.error("No se encontró el componente Livewire.");
             }
         }
-    })
-
-    document.addEventListener('print-guide', function (e) {
-        const datos = e.detail[0];
-
-        console.log('Datos a imprimir:', datos);
-
-        // Limpiar campos de destino
-        const select = document.getElementById('town_id');
-        select.innerHTML = '<option value="">Seleccione una opción</option>';
-        document.getElementById('route_destino').value = '';
-
-        fetch('http://localhost:9000/print', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(datos)
-        })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Respuesta de impresión:', data);
-                //{'status': 'printed'}
-                if (data.status == 'printed') {
-                    const component = document.querySelector('[wire\\:id]');
-                    const componentId = component?.getAttribute('wire:id');
-                    Livewire.find(componentId).set('statusPrinted', true);
-                }
-            })
-            .catch(error => {
-                console.error('Error al conectar con el servidor local:', error);
-            });
     });
 
     // Buscar destino al escribir en el campo destino
@@ -136,12 +88,30 @@ $(window).on('load', function () {
                 });
         }
     });
+
+    $(document).on('blur', '#guia_madre', function () {
+        if ($(this).val() != '') {
+            const guiaMadre = $(this).val();
+
+            fetch(`/shipment-entries/buscar-guia?guide=${guiaMadre}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.guide_data) {
+                        const component = document.querySelector('[wire\\:id]');
+                        const componentId = component?.getAttribute('wire:id');
+
+                        $('#guia_madre').val('');
+                        Livewire.find(componentId).call('notificationJs', 'Guía madre ya existe', `La guía madre ${guiaMadre} ya existe en el sistema. Por favor, ingrese una guía madre diferente.`, 'warning');
+                        restartFocus();
+                    }
+                })
+                .catch(err => {
+                    console.error('Error al buscar guía madre:', err);
+                });
+        }
+    });
+
 });
-
-
-function restartFocus() {
-    $("#codigo_remitente").focus();
-}
 
 $(document).on('blur', '#codigo_remitente', function () {
     if ($(this).val() != '') {
@@ -224,14 +194,14 @@ $(document).on('keydown', '#codigo_remitente', function (e) {
                 });
 
                 /* let code
-
+ 
                 tablaCustomers.on('key-focus', function (e, datatable, cell) {
                     // Obtener la fila correspondiente a la celda con foco
                     const rowIdx = cell.data();
                     code = rowIdx.split("-")[1];
-
+ 
                 });
-
+ 
                 $(document).on('keypress', '#tablaClientes', function (e) {
                     console.log(e.key)
                 }); */
@@ -298,14 +268,14 @@ $(document).on('keydown', '#codigo_destinatario', function (e) {
                 });
 
                 /* let code
-
+ 
                 tablaCustomers.on('key-focus', function (e, datatable, cell) {
                     // Obtener la fila correspondiente a la celda con foco
                     const rowIdx = cell.data();
                     code = rowIdx.split("-")[1];
-
+ 
                 });
-
+ 
                 $(document).on('keypress', '#tablaClientes', function (e) {
                     console.log(e.key)
                 }); */
@@ -372,83 +342,42 @@ $(document).on('change', '#town_id', function () {
         });
 })
 
-$(document).on('blur', '.product_index-input', function () {
+$(document).on('blur', '#product_id_input', function () {
     const codigoIngresado = $(this).val();
-    const indexInput = this.dataset.index;
 
     fetch(`/shipment-entries/buscar-producto?code=${codigoIngresado}`)
         .then(res => res.json())
         .then(data => {
-            $('#product_description_' + indexInput).val(data.description);
-            $('#unit_price_' + indexInput).val(data.price);
+            $('#product_description_input').val(data.description);
+            $('#unit_price').val(data.price);
 
-            // También actualizar en Livewire (clave)
             const component = document.querySelector('[wire\\:id]');
             const componentId = component?.getAttribute('wire:id');
 
-            Livewire.find(componentId).set(`productos.${indexInput}.product_id`, $(this).val());
-            Livewire.find(componentId).set(`productos.${indexInput}.pieces`, $('#pieces_' + indexInput).val());
-            Livewire.find(componentId).set(`productos.${indexInput}.product_description`, data.description);
-            Livewire.find(componentId).set(`productos.${indexInput}.unit_price`, data.price);
+            Livewire.find(componentId).set(`newProduct.product_id`, codigoIngresado);
+            Livewire.find(componentId).set(`newProduct.product_description`, data.description);
+            Livewire.find(componentId).set(`newProduct.unit_price`, data.price);
         })
         .catch(err => {
-            console.error('Error al buscar municipios:', err);
+            console.error('Error:', err);
         });
-})
+});
 
-$(document).on('change', '.pieces_index-input', function () {
-    const indexInput = this.dataset.index;
-    const pieces = parseFloat($(this).val());
-    const unitPrice = parseFloat($('#unit_price_' + indexInput).val());
+$(document).on('input', '#pieces_input, #unit_price', function () {
+    const pieces = parseFloat($('#pieces_input').val());
+    const unitPrice = parseFloat($('#unit_price').val());
 
     if (!isNaN(pieces) && !isNaN(unitPrice)) {
         const subtotal = pieces * unitPrice;
-        $('#subtotal_' + indexInput).val(subtotal.toFixed(2));
 
         const component = document.querySelector('[wire\\:id]');
         const componentId = component?.getAttribute('wire:id');
 
-        Livewire.find(componentId).set(`productos.${indexInput}.pieces`, pieces);
-        Livewire.find(componentId).set(`productos.${indexInput}.unit_price`, unitPrice);
-        Livewire.find(componentId).set(`productos.${indexInput}.subtotal`, $('#subtotal_' + indexInput).val());
-
-        addingSubtotal();
-
-    } else {
-        $('#subtotal_' + indexInput).val('');
+        Livewire.find(componentId).set(`newProduct.pieces`, pieces);
+        Livewire.find(componentId).set(`newProduct.unit_price`, unitPrice);
+        Livewire.find(componentId).set(`newProduct.subtotal`, subtotal.toFixed(2));
     }
-})
-
-$(document).on('change', '.unit_price_index-input', function () {
-    const indexInput = this.dataset.index;
-    const unitPrice = parseFloat($(this).val());
-    const pieces = parseFloat($('#pieces_' + indexInput).val());
-
-    if (!isNaN(unitPrice) && !isNaN(pieces)) {
-        const subtotal = pieces * unitPrice;
-        $('#subtotal_' + indexInput).val(subtotal.toFixed(2));
-
-        const component = document.querySelector('[wire\\:id]');
-        const componentId = component?.getAttribute('wire:id');
-
-        Livewire.find(componentId).set(`productos.${indexInput}.pieces`, pieces);
-        Livewire.find(componentId).set(`productos.${indexInput}.unit_price`, unitPrice);
-
-        addingSubtotal();
-
-    } else {
-        $('#subtotal_' + indexInput).val('');
-    }
-})
-
-$(document).on('blur', '.unit_price_index-input', function () {
-    const indexInput = this.dataset.index;
-    const component = document.querySelector('[wire\\:id]');
-    const componentId = component?.getAttribute('wire:id');
-    Livewire.find(componentId).set(`productos.${indexInput}.subtotal`, $('#subtotal_' + indexInput).val());
-
-    addingSubtotal();
-})
+});
 
 $(document).on('blur', '#total', function () {
     $('.saveShipment').focus();
@@ -476,6 +405,8 @@ $('.saveShipment').on('click', function () {
 
 
     // Agregar valor a variables en Livewir
+    Livewire.find(componentId).set(`no_guide_user`, $('#guia_madre').val());
+    Livewire.find(componentId).set(`manifest_code`, $('#manifest_code').val());
     Livewire.find(componentId).set(`date_guide`, $('#date_guide').val());
     Livewire.find(componentId).set(`payment_method_id`, $('#forma_pago').val());
     Livewire.find(componentId).set(`sender_total`, $('#sender_total').val());
@@ -498,44 +429,6 @@ $('.saveShipment').on('click', function () {
     // Livewire.find(componentId).call('verifyData');
 });
 
-function addingSubtotal() {
-    const codigo_remitente = document.getElementById('codigo_remitente');
-    const codigo_destinatario = document.getElementById('codigo_destinatario');
-
-    const sender_total = document.getElementById('sender_total');
-    const receiver_total = document.getElementById('receiver_total');
-    const totalMount = document.getElementById('total');
-
-    const subtotals = document.querySelectorAll('.subtotal_index-input');
-
-    const forma_pago = document.getElementById('forma_pago').value;
-
-    sender_total.value = '0.00';
-    receiver_total.value = '0.00';
-
-    let total = 0;
-
-    subtotals.forEach(subtotal => {
-        const value = parseFloat(subtotal.value);
-        if (!isNaN(value)) {
-            total += value;
-        }
-    });
-
-    if (forma_pago == 1) {
-        receiver_total.value = total.toFixed(2);
-    } else if (forma_pago == 2) {
-        sender_total.value = total.toFixed(2);
-    } else if (forma_pago == 3 || forma_pago == 4) {
-        if (codigo_remitente.value != null) {
-            sender_total.value = total.toFixed(2);
-        } else if (codigo_destinatario.value != null) {
-            receiver_total.value = total.toFixed(2);
-        }
-    }
-
-    totalMount.value = (parseFloat(sender_total.value) + parseFloat(receiver_total.value)).toFixed(2);
-}
 
 // Obtener información de guía en Consulta de Guías
 $(document).on('click', '#searchGuideBtn', function () {
@@ -546,6 +439,21 @@ $(document).on('click', '#searchGuideBtn', function () {
     fetch(`/shipment-entries/buscar-guia?guide=${guide}`)
         .then(res => res.json())
         .then(data => {
+            /* $('#sender_name_consult').text(data.sender_name);
+            $('#sender_address_consult').text(data.sender_address);
+            $('#sender_phone_consult').text(data.sender_phone);
+            $('#receiver_name_consult').text(data.receiver_name);
+            $('#receiver_address_consult').text(data.receiver_address);
+            $('#receiver_phone_consult').text(data.receiver_phone);
+            $('#product_consult').text(data.product_description);
+            $('#pieces_consult').text(data.pieces);
+            $('#unit_price_consult').text(data.unit_price);
+            $('#total_consult').text(data.total);
+            $('#date_guide_consult').text(data.date_guide);
+            $('#payment_method_consult').text(data.payment_method);
+            $('#manifest_no_consult').text(data.no_manifest); */
+
+            // Foreach para guide_data, guide_incomes y guide_outgos
             if (data.guide_data) {
                 const guide = data.guide_data;
                 const tbody = document.getElementById('tracking_table_body');
@@ -636,3 +544,65 @@ $(document).on('click', '#searchGuideBtn', function () {
             console.error('Error al buscar guía:', err);
         });
 })
+
+function addingSubtotal() {
+    const component = document.querySelector('[wire\\:id]');
+    const componentId = component?.getAttribute('wire:id');
+
+    const productos = Livewire.find(componentId).get('productos');
+
+    const codigo_remitente = document.getElementById('codigo_remitente');
+    const codigo_destinatario = document.getElementById('codigo_destinatario');
+
+    const sender_total = document.getElementById('sender_total');
+    const receiver_total = document.getElementById('receiver_total');
+    const totalMount = document.getElementById('total');
+
+    const forma_pago = document.getElementById('forma_pago').value;
+
+    sender_total.value = '0.00';
+    receiver_total.value = '0.00';
+
+    let total = 0;
+
+    productos.forEach(producto => {
+        const value = parseFloat(producto.subtotal);
+        if (!isNaN(value)) {
+            total += value;
+        }
+    });
+
+    if (forma_pago == 1) {
+        receiver_total.value = total.toFixed(2);
+    } else if (forma_pago == 2) {
+        sender_total.value = total.toFixed(2);
+    } else if (forma_pago == 3 || forma_pago == 4) {
+        if (codigo_remitente.value) {
+            sender_total.value = total.toFixed(2);
+        } else if (codigo_destinatario.value) {
+            receiver_total.value = total.toFixed(2);
+        }
+    }
+
+    totalMount.value = (parseFloat(sender_total.value) + parseFloat(receiver_total.value)).toFixed(2);
+}
+
+function restartFocus() {
+    $("#guia_madre").val('');
+    $("#guia_madre").focus();
+}
+
+document.addEventListener('livewire:initialized', () => {
+    Livewire.on('focus-product-input', () => {
+        setTimeout(() => {
+            document.getElementById('product_id_input')?.focus();
+            addingSubtotal();
+        }, 50);
+    });
+
+    Livewire.on('restartFocus', () => {
+        setTimeout(() => {
+            restartFocus();
+        }, 50);
+    });
+});

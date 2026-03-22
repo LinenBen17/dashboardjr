@@ -43,4 +43,11 @@ class Customer extends Model
     {
         return $this->hasMany(ShipmentEntry::class, 'customer_id');
     }
+
+    public function customerSpecialRates()
+    {
+        return $this->hasMany(CustomerSpecialRates::class, 'customer_id');
+    }
+
+    
 }

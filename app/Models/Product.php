@@ -24,4 +24,9 @@ class Product extends Model
     {
         return $this->hasMany(ShipmentEntryChild::class, 'product_id');
     }
+
+    public function customerSpecialRates()
+    {
+        return $this->hasMany(CustomerSpecialRates::class, 'product_id');
+    }
 }
