@@ -5,7 +5,94 @@
     <script src="https://cdn.datatables.net/keytable/2.11.0/js/dataTables.keyTable.min.js"></script>
     <link rel="stylesheet" href="https://cdn.datatables.net/keytable/2.11.0/css/keyTable.dataTables.min.css">
 
+    {{-- Tom Select --}}
+    <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
+
     <link rel="stylesheet" href="https://cdn.datatables.net/2.3.2/css/dataTables.dataTables.min.css">
+
+    <style>
+        /* Contenedor principal */
+        .ts-control {
+            border: none !important;
+            box-shadow: none !important;
+            /* padding: 0 !important; */
+            background: transparent !important;
+        }
+
+
+        .ts-control {
+            min-height: 2.3rem;
+            /* igual a Filament */
+        }
+
+        /* Input interno */
+        .ts-control input {
+            font-size: 0.875rem;
+            line-height: 1.5rem;
+        }
+
+        .ts-wrapper {
+            width: 100% !important;
+        }
+
+        .ts-control {
+            width: 100% !important;
+        }
+
+        /* Texto seleccionado (light mode) */
+        .ts-control .item {
+            color: rgb(17 24 39);
+            /* mismo que Filament */
+        }
+
+        /* Texto seleccionado (dark mode) */
+        .dark .ts-control .item {
+            color: rgb(255 255 255);
+        }
+
+        .fi-input-wrp-input .ts-wrapper {
+            flex: 1;
+        }
+
+        .dark .ts-control input {
+            color: rgb(255 255 255);
+        }
+
+        .dark .ts-control input::placeholder {
+            color: rgb(255 255 255) !important;
+        }
+
+        /* Dropdown */
+        .ts-dropdown {
+            border-radius: 0.75rem;
+            /* rounded-xl */
+            border: 1px solid rgb(229 231 235);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Opciones */
+        .ts-dropdown .option {
+            padding: 8px 12px;
+        }
+
+        .dark .ts-dropdown {
+            background-color: rgb(31 41 55);
+            border-color: rgb(75 85 99);
+        }
+
+        .dark .ts-dropdown .option {
+            color: white;
+        }
+
+        .dark .ts-dropdown .option:hover {
+            background-color: rgb(75 85 99);
+        }
+
+        .dark .ts-dropdown .option.active {
+            background-color: rgb(75 85 99);
+        }
+    </style>
 
     <x-filament::grid class="gap-4" style="--cols-default: repeat(1, minmax(0, 1fr));">
         {{-- Información por defecto --}}
@@ -65,9 +152,8 @@
                         class="fi-fo-field-wrp-label mb-2 inline-flex items-center gap-x-3 text-sm font-medium leading-6 text-gray-950 dark:text-white">
                         Codigo Remitente<span class="text-danger-600 dark:text-danger-400 font-medium">*</span>
                     </label>
-                    <x-filament::input.wrapper>
-                        <x-filament::input type="number" wire:model="sender_code" name="sender_code"
-                            id="codigo_remitente" />
+                    <x-filament::input.wrapper wire:ignore>
+                        <input type="text" id="codigo_remitente" name="sender_code" />
                     </x-filament::input.wrapper>
                 </div>
                 <div>
@@ -109,9 +195,8 @@
                         class="fi-fo-field-wrp-label mb-2 inline-flex items-center gap-x-3 text-sm font-medium leading-6 text-gray-950 dark:text-white">
                         Codigo Destinatario<span class="text-danger-600 dark:text-danger-400 font-medium">*</span>
                     </label>
-                    <x-filament::input.wrapper>
-                        <x-filament::input type="number" wire:model="receiver_code" name="receiver_code"
-                            id="codigo_destinatario" />
+                    <x-filament::input.wrapper wire:ignore>
+                        <input type="text" id="codigo_destinatario" name="receiver_code" />
                     </x-filament::input.wrapper>
                 </div>
                 <div>
@@ -325,8 +410,6 @@
                 </div>
             </x-filament::grid>
         </x-filament::section>
-
-
         {{-- FILA INFERIOR BOTONES --}}
         <x-filament::grid.column style="--col-span-default: span 1 / span 1;">
             <div class="flex justify-between items-center mb-4">
@@ -505,27 +588,105 @@
         </div>
     </x-filament::modal>
 
+    {{-- MODAL CLIENTES CON TARIFA ESPECIAL --}}
+    <x-filament::modal id="specialRatesModal" width="4xl" :close-button="true" :close-by-clicking-away="false" slide-over="true">
+        <div>
+            <x-slot name="heading">
+                Clientes con Tarifa Especial
+            </x-slot>
+            <x-slot name="description">
+                Selecciona los productos a agregar
+            </x-slot>
 
-    {{-- MODAL CLIENTES TABLE --}}
-    <x-filament::modal id="customersModal" width="4xl" :close-button="true" :close-by-escaping="false" :close-by-clicking-away="false">
-        <table id="tablaClientes">
-            <thead>
-                <tr>
-                    <th>Código</th>
-                    <th>Nombre</th>
-                    <th>Dirección</th>
-                    <th>Phone</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                </tr>
-            </tbody>
-        </table>
+            @foreach ($customer_data_prices as $customer)
+                <x-filament::section>
+
+                    {{-- Datos del cliente --}}
+                    <h3 class="font-bold text-lg">
+                        {{ $customer['customer_data']['name'] }}
+                    </h3>
+                    <p class="text-sm text-gray-500">
+                        {{ $customer['customer_data']['address'] }}
+                    </p>
+
+                    {{-- Condición --}}
+                    @if (!empty($customer['special_rates']))
+                        <div class="mt-3 space-y-2">
+                            @foreach ($customer['special_rates'] as $rate)
+                                @php $id = $rate['product_id']; @endphp
+                                <div wire:key="special-rate-{{ $rate['product_id'] }}" class="flex gap-4"
+                                    style="justify-content: space-evenly;">
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox"
+                                            wire:model.defer="newSpecialProducts.{{ $id }}.selected"
+                                            class="rounded border-gray-300">
+                                    </label>
+                                    <div class="flex gap-4 justify-between">
+                                        <div>
+                                            <label for="product_code_input"
+                                                class="fi-fo-field-wrp-label mb-2 inline-flex items-center gap-x-3 text-sm font-medium leading-6 text-gray-950 dark:text-white">
+                                                Código<span
+                                                    class="text-danger-600 dark:text-danger-400 font-medium">*</span>
+                                            </label>
+                                            <x-filament::input.wrapper disabled>
+                                                <x-filament::input type="text"
+                                                    wire:model.defer="newSpecialProducts.{{ $id }}.product_code"
+                                                    placeholder="{{ $rate['product_code'] }}" disabled readonly />
+                                            </x-filament::input.wrapper>
+                                        </div>
+                                        <div>
+                                            <label for="pieces_input"
+                                                class="fi-fo-field-wrp-label mb-2 inline-flex items-center gap-x-3 text-sm font-medium leading-6 text-gray-950 dark:text-white">
+                                                Piezas<span
+                                                    class="text-danger-600 dark:text-danger-400 font-medium">*</span>
+                                            </label>
+                                            <x-filament::input.wrapper>
+                                                <x-filament::input type="number"
+                                                    wire:model.defer="newSpecialProducts.{{ $id }}.pieces" />
+                                            </x-filament::input.wrapper>
+                                        </div>
+                                        <div>
+                                            <label for="product_description_input"
+                                                class="fi-fo-field-wrp-label mb-2 inline-flex items-center gap-x-3 text-sm font-medium leading-6 text-gray-950 dark:text-white">
+                                                Descripción
+                                            </label>
+                                            <x-filament::input.wrapper disabled>
+                                                <x-filament::input type="text"
+                                                    wire:model.defer="newSpecialProducts.product_description"
+                                                    id="product_description_input"
+                                                    placeholder="{{ $rate['product_name'] }}" disabled readonly />
+                                            </x-filament::input.wrapper>
+                                        </div>
+                                        <div>
+                                            <label for="unit_price_input"
+                                                class="fi-fo-field-wrp-label mb-2 inline-flex items-center gap-x-3 text-sm font-medium leading-6 text-gray-950 dark:text-white">
+                                                Precio Unitario<span
+                                                    class="text-danger-600 dark:text-danger-400 font-medium">*</span>
+                                            </label>
+                                            <x-filament::input.wrapper disabled>
+                                                <x-filament::input type="number"
+                                                    wire:model.defer="newSpecialProducts.{{ $id }}.unit_price"
+                                                    placeholder="{{ $rate['special_price'] }}" disabled readonly />
+                                            </x-filament::input.wrapper>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <p class="mt-3 text-sm text-gray-400">
+                            Este cliente no cuenta con tarifas especiales asignadas
+                        </p>
+                    @endif
+
+                </x-filament::section>
+            @endforeach
+        </div>
+        <div class="flex items-end">
+            <x-filament::button type="button" class="addProductSpecial" wire:click="addProductSpecial">
+                Agregar Producto
+            </x-filament::button>
+        </div>
     </x-filament::modal>
     <script src="{{ asset('js/shipment_input.js') }}"></script>
 

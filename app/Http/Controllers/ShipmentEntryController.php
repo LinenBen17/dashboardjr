@@ -88,11 +88,20 @@ class ShipmentEntryController extends Controller
         $customer_code = $request->get('code');
 
         $customer_data = DB::table('customers')
-            ->where('code', 'LIKE', '%-' . $customer_code)
-            ->select('name', 'address', 'phone')
+            ->where('code', '=', $customer_code)
+            ->select('name', 'address', 'phone', 'id')
             ->first();
 
-        return response()->json($customer_data);
+        $customer_special_rates = DB::table('customer_special_rates')
+            ->where('customer_id', '=', $customer_data->id)
+            ->join('products', 'customer_special_rates.product_id', '=', 'products.id')
+            ->select('products.name as product_name', 'customer_special_rates.special_price', 'products.code as product_code', 'products.id as product_id')
+            ->get();
+
+        return response()->json([
+            'customer_data' => $customer_data,
+            'special_rates' => $customer_special_rates
+        ]);
     }
 
     public function getCustomers(Request $request)
@@ -100,8 +109,6 @@ class ShipmentEntryController extends Controller
         $customers = DB::table('customers')
             ->select('code', 'name', 'address', 'phone')
             ->get();
-
-        Logger($customers);
 
         return response()->json($customers);
     }

@@ -3,12 +3,14 @@
 namespace App\Filament\Resources\ShipmentInputResource\Pages;
 
 use App\Filament\Resources\ShipmentInputResource;
+use App\Models\Customer;
 use App\Models\ShipmentEntry;
 use App\Models\ShipmentEntryChild;
 use Carbon\Carbon;
 use Filament\Facades\Filament;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Page;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -49,6 +51,10 @@ class ShipmentInput extends Page
         'subtotal' => '0.00',
     ];
 
+    public $newSpecialProducts = [];
+
+    public $customer_data_prices = [];
+
     public $payment_methods;
     public array $childGuides = [];
     public int $totalPieces = 0;
@@ -74,19 +80,47 @@ class ShipmentInput extends Page
             ->toArray();
     }
 
-    public function openCustomersModal()
+    public function openSpecialRatesModal()
     {
-        $this->dispatch('open-modal', id: 'customersModal');
+        logger($this->customer_data_prices);
+        $this->hydrateSpecialProducts();
+        $this->dispatch('open-modal', id: 'specialRatesModal');
+    }
+
+    public function closeSpecialRatesModal()
+    {
+        $this->dispatch('close-modal', id: 'specialRatesModal');
+    }
+
+    public function setClienteRemitente($code)
+    {
+        $this->sender_code = $code;
+
+        $cliente = Customer::where('code', $code)->first();
+
+        if ($cliente) {
+            $this->sender_name = $cliente->name;
+            $this->sender_address = $cliente->address;
+            $this->sender_phone = $cliente->phone;
+        }
+    }
+
+    public function setClienteDestinatario($code)
+    {
+        $this->receiver_code = $code;
+
+        $cliente = Customer::where('code', $code)->first();
+
+        if ($cliente) {
+            $this->receiver_name = $cliente->name;
+            $this->receiver_address = $cliente->address;
+            $this->receiver_phone = $cliente->phone;
+        }
     }
 
     public function openConsultGuides()
     {
         $this->dispatch('open-modal', id: 'consultGuides');
-    }
-
-    public function closeCustomersModal()
-    {
-        $this->dispatch('close-modal', id: 'customersModal');
     }
 
     public function getCustomerID($code)
@@ -118,17 +152,6 @@ class ShipmentInput extends Page
         $this->dispatch('focus-product-input');
     }
 
-    public function calculateTotals()
-    {
-        $this->totalPieces = 0;
-        $this->total = 0;
-
-        foreach ($this->productos as $product) {
-            $this->totalPieces += (int) $product['pieces'];
-            $this->total += (float) $product['subtotal'];
-        }
-    }
-
     public function removeProduct($index)
     {
         Logger("Eliminando producto en el índice: " . $index);
@@ -138,6 +161,63 @@ class ShipmentInput extends Page
         $this->calculateTotals();
 
         $this->dispatch('focus-product-input');
+    }
+
+    public function hydrateSpecialProducts()
+    {
+        $this->newSpecialProducts = [];
+
+        foreach ($this->customer_data_prices as $customer) {
+            foreach ($customer['special_rates'] as $rate) {
+                $id = $rate['product_id'];
+
+                $this->newSpecialProducts[$id] = [
+                    'selected' => false,
+                    'product_code' => $rate['product_code'],
+                    'product_description' => $rate['product_name'],
+                    'pieces' => 1,
+                    'unit_price' => $rate['special_price'],
+                ];
+            }
+        }
+    }
+
+    public function addProductSpecial()
+    {
+        foreach ($this->newSpecialProducts as $productId => $product) {
+
+            if (empty($product['selected'])) continue;
+
+            logger($product);
+            $subtotal = $product['pieces'] * $product['unit_price'];
+
+            $this->productos[] = [
+                'product_id' => $productId,
+                'pieces' => $product['pieces'],
+                'product_description' => $product['product_description'],
+                'unit_price' => $product['unit_price'],
+                'subtotal' => $subtotal,
+            ];
+        }
+
+        $this->calculateTotals();
+
+        $this->closeSpecialRatesModal();
+
+        $this->newSpecialProducts = [];
+
+        $this->dispatch('focus-product-input');
+    }
+
+    public function calculateTotals()
+    {
+        $this->totalPieces = 0;
+        $this->total = 0;
+
+        foreach ($this->productos as $product) {
+            $this->totalPieces += (int) $product['pieces'];
+            $this->total += (float) $product['subtotal'];
+        }
     }
 
     public function addChildGuide(string $guide)
