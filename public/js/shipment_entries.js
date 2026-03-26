@@ -1,3 +1,17 @@
+/*************************************************
+ * 1. VARIABLES GLOBALES
+ *************************************************/
+let tomClienteRemitente = null;
+let tomClienteDestinatario = null;
+
+/*************************************************
+ * 2. HELPERS GENERALES
+ *************************************************/
+function getLivewireComponent() {
+    const component = document.querySelector('[wire\\:id]');
+    return component ? Livewire.find(component.getAttribute('wire:id')) : null;
+}
+
 //focus guia madre cuando se carga la pagina
 $(window).on('load', function () {
     $("input").on("keypress", function () {
@@ -348,6 +362,13 @@ $(document).on('blur', '#codigo_destinatario', function () {
     }
 })
 
+$(document).on('focus', '#codigo_remitente, #codigo_destinatario', function () {
+    const ts = this.tomselect;
+    if (ts) {
+        setTimeout(() => ts.focus(), 0);
+    }
+});
+
 window.addEventListener('toggle-changed', (event) => {
     // También actualizar en Livewire (clave)
     const component = document.querySelector('[wire\\:id]');
@@ -372,74 +393,44 @@ $(document).on('change', '#town_id', function () {
         });
 })
 
-$(document).on('blur', '.product_index-input', function () {
+// INPUT PRODUCT_ID
+$(document).on('blur', '#product_id_input', function () {
     const codigoIngresado = $(this).val();
-    const indexInput = this.dataset.index;
 
     fetch(`/shipment-entries/buscar-producto?code=${codigoIngresado}`)
         .then(res => res.json())
         .then(data => {
-            $('#product_description_' + indexInput).val(data.description);
-            $('#unit_price_' + indexInput).val(data.price);
+            $('#product_description_input').val(data.description);
+            $('#unit_price').val(data.price);
 
-            // También actualizar en Livewire (clave)
             const component = document.querySelector('[wire\\:id]');
             const componentId = component?.getAttribute('wire:id');
 
-            Livewire.find(componentId).set(`productos.${indexInput}.product_id`, $(this).val());
-            Livewire.find(componentId).set(`productos.${indexInput}.pieces`, $('#pieces_' + indexInput).val());
-            Livewire.find(componentId).set(`productos.${indexInput}.product_description`, data.description);
-            Livewire.find(componentId).set(`productos.${indexInput}.unit_price`, data.price);
+            Livewire.find(componentId).set(`newProduct.product_id`, codigoIngresado);
+            Livewire.find(componentId).set(`newProduct.product_description`, data.description);
+            Livewire.find(componentId).set(`newProduct.unit_price`, data.price);
         })
         .catch(err => {
-            console.error('Error al buscar municipios:', err);
+            console.error('Error:', err);
         });
-})
+});
 
-$(document).on('change', '.pieces_index-input', function () {
-    const indexInput = this.dataset.index;
-    const pieces = parseFloat($(this).val());
-    const unitPrice = parseFloat($('#unit_price_' + indexInput).val());
+
+$(document).on('input', '#pieces_input, #unit_price', function () {
+    const pieces = parseFloat($('#pieces_input').val());
+    const unitPrice = parseFloat($('#unit_price').val());
 
     if (!isNaN(pieces) && !isNaN(unitPrice)) {
         const subtotal = pieces * unitPrice;
-        $('#subtotal_' + indexInput).val(subtotal.toFixed(2));
 
         const component = document.querySelector('[wire\\:id]');
         const componentId = component?.getAttribute('wire:id');
 
-        Livewire.find(componentId).set(`productos.${indexInput}.pieces`, pieces);
-        Livewire.find(componentId).set(`productos.${indexInput}.unit_price`, unitPrice);
-        Livewire.find(componentId).set(`productos.${indexInput}.subtotal`, $('#subtotal_' + indexInput).val());
-
-        addingSubtotal();
-
-    } else {
-        $('#subtotal_' + indexInput).val('');
+        Livewire.find(componentId).set(`newProduct.pieces`, pieces);
+        Livewire.find(componentId).set(`newProduct.unit_price`, unitPrice);
+        Livewire.find(componentId).set(`newProduct.subtotal`, subtotal.toFixed(2));
     }
-})
-
-$(document).on('change', '.unit_price_index-input', function () {
-    const indexInput = this.dataset.index;
-    const unitPrice = parseFloat($(this).val());
-    const pieces = parseFloat($('#pieces_' + indexInput).val());
-
-    if (!isNaN(unitPrice) && !isNaN(pieces)) {
-        const subtotal = pieces * unitPrice;
-        $('#subtotal_' + indexInput).val(subtotal.toFixed(2));
-
-        const component = document.querySelector('[wire\\:id]');
-        const componentId = component?.getAttribute('wire:id');
-
-        Livewire.find(componentId).set(`productos.${indexInput}.pieces`, pieces);
-        Livewire.find(componentId).set(`productos.${indexInput}.unit_price`, unitPrice);
-
-        addingSubtotal();
-
-    } else {
-        $('#subtotal_' + indexInput).val('');
-    }
-})
+});
 
 $(document).on('blur', '.unit_price_index-input', function () {
     const indexInput = this.dataset.index;
@@ -449,6 +440,43 @@ $(document).on('blur', '.unit_price_index-input', function () {
 
     addingSubtotal();
 })
+
+$(document).on('keydown', '#product_id_input', async function (e) {
+    if (e.keyCode == 112) {
+        e.preventDefault();
+
+        let codigos = {
+            codigo_remitente: $('#codigo_remitente').val(),
+            codigo_destinatario: $('#codigo_destinatario').val()
+        };
+
+        const component = getLivewireComponent();
+
+        let promises = Object.values(codigos)
+            .filter(codigo => codigo)
+            .map(async codigo => {
+                try {
+                    let res = await fetch(`/shipment-entries/buscar-cliente?code=${codigo}`);
+                    return await res.json();
+                } catch (e) {
+                    return null;
+                }
+            });
+
+        let customer_data_prices = (await Promise.all(promises)).filter(x => x);
+
+        component?.set('customer_data_prices', customer_data_prices);
+        component?.call('openSpecialRatesModal');
+    }
+});
+
+$(document).on('blur', '#product_id_input', function () {
+    if ($("#product_id_input").val() == "CE") {
+        const component = getLivewireComponent();
+
+        component?.call('openPCEModal');
+    }
+});
 
 $(document).on('blur', '#total', function () {
     $('.saveShipment').focus();
@@ -499,43 +527,198 @@ $('.saveShipment').on('click', function () {
 });
 
 function addingSubtotal() {
-    const codigo_remitente = document.getElementById('codigo_remitente');
-    const codigo_destinatario = document.getElementById('codigo_destinatario');
+    const component = getLivewireComponent();
+    const productos = component.get('productos');
 
     const sender_total = document.getElementById('sender_total');
     const receiver_total = document.getElementById('receiver_total');
     const totalMount = document.getElementById('total');
 
-    const subtotals = document.querySelectorAll('.subtotal_index-input');
-
     const forma_pago = document.getElementById('forma_pago').value;
+    const codigo_remitente = document.getElementById('codigo_remitente');
+    const codigo_destinatario = document.getElementById('codigo_destinatario');
 
     sender_total.value = '0.00';
     receiver_total.value = '0.00';
 
     let total = 0;
 
-    subtotals.forEach(subtotal => {
-        const value = parseFloat(subtotal.value);
-        if (!isNaN(value)) {
-            total += value;
-        }
+    productos.forEach(p => {
+        const val = parseFloat(p.subtotal);
+        if (!isNaN(val)) total += val;
     });
 
-    if (forma_pago == 1) {
-        receiver_total.value = total.toFixed(2);
-    } else if (forma_pago == 2) {
-        sender_total.value = total.toFixed(2);
-    } else if (forma_pago == 3 || forma_pago == 4) {
-        if (codigo_remitente.value != null) {
-            sender_total.value = total.toFixed(2);
-        } else if (codigo_destinatario.value != null) {
-            receiver_total.value = total.toFixed(2);
-        }
+    if (forma_pago == 1) receiver_total.value = total.toFixed(2);
+    else if (forma_pago == 2) sender_total.value = total.toFixed(2);
+    else if (forma_pago == 3 || forma_pago == 4) {
+        if (codigo_remitente.value) sender_total.value = total.toFixed(2);
+        else if (codigo_destinatario.value) receiver_total.value = total.toFixed(2);
     }
+    else if (forma_pago == 5) receiver_total.value = total.toFixed(2);
 
     totalMount.value = (parseFloat(sender_total.value) + parseFloat(receiver_total.value)).toFixed(2);
 }
+
+function calcularCE() {
+    console.log("dentro de funcion CE");
+
+    let producto = parseFloat(document.getElementById('pce_amount').value) || 0;
+    let piezas = parseInt(document.getElementById('pce_pieces').value) || 1;
+    let envio = parseFloat(document.getElementById('pce_shipment_price').value) || 0;
+    let envioPagoEl = document.querySelector('input[name="pce_shipment_pay"]:checked');
+    let envioPago = envioPagoEl ? envioPagoEl.value : 'receiver'; // fallback
+    let comisionCliente = document.getElementById('pce_customer_commission').checked;
+
+    if (piezas <= 0) piezas = 1;
+
+    let comision = producto * 0.05;
+
+    let totalDestinatario = producto;
+    let totalRemitente = producto;
+
+    // envío
+    if (envioPago === 'receiver') {
+        totalDestinatario += envio;
+    } else {
+        totalRemitente -= envio;
+    }
+
+    // comisión
+    if (comisionCliente) {
+        totalDestinatario += comision;
+    } else {
+        totalRemitente -= comision;
+    }
+
+    let porPiezaDestinatario = totalDestinatario / piezas;
+    let porPiezaRemitente = totalRemitente / piezas;
+
+    document.getElementById('ce_results').innerHTML = `
+        <div class="space-y-1">
+            <div><strong>Destinatario pagará:</strong> Q${totalDestinatario.toFixed(2)}</div>
+            <div><strong>Remitente recibirá:</strong> Q${totalRemitente.toFixed(2)}</div>
+        </div>
+            
+        <div class="border-t my-3"></div>
+            
+        <br>
+        <div class="space-y-1">
+            <strong>Por pieza:</strong>
+            <div>Destinatario paga: Q${porPiezaDestinatario.toFixed(2)}</div>
+            <div>Remitente recibe: Q${porPiezaRemitente.toFixed(2)}</div>
+        </div>
+            
+        <div class="border-t my-3"></div>
+        
+            <br>
+        <div class="text-gray-100">
+            Comisión: Q${comision.toFixed(2)}<br>
+            Envío: Q${envio.toFixed(2)}
+        </div>
+    `;
+}
+
+// eventos
+document.addEventListener('input', function (e) {
+    if (e.target.closest('.pceModal')) {
+        calcularCE();
+    }
+});
+
+// recalcularCE cuando se abre el modal
+document.addEventListener('DOMContentLoaded', calcularCE);
+
+/*************************************************
+ * 3. TOM SELECT (REUTILIZABLE)
+ *************************************************/
+function createTomSelect({
+    selector,
+    url,
+    valueField = "code",
+    labelField = "code",
+    searchField = ["code", "name"],
+    livewireMethod = null,
+    extraOnChange = null
+}) {
+    return new TomSelect(selector, {
+        valueField,
+        labelField,
+        searchField,
+        maxItems: 1,
+        maxOptions: 5,
+
+        load(query, callback) {
+            if (!query.length) return callback();
+
+            fetch(`${url}?code=${query}`)
+                .then(res => res.json())
+                .then(data => callback(data))
+                .catch(() => callback());
+        },
+        render: {
+            option(item) {
+                return `
+                    <div>
+                        <strong>${item.code}</strong> - ${item.name}<br>
+                        <small>${item.address ?? ''}</small>
+                    </div>
+                `;
+            }
+        },
+        onChange(value) {
+            const component = getLivewireComponent();
+
+            if (livewireMethod && component) {
+                component.call(livewireMethod, value);
+            }
+
+            if (extraOnChange) extraOnChange(value);
+
+
+
+        },
+        onBlur: function () {
+
+        }
+    });
+}
+
+function initTomSelects() {
+    if (!tomClienteRemitente) {
+        tomClienteRemitente = createTomSelect({
+            selector: "#codigo_remitente",
+            url: "/shipment-entries/listar-clientes",
+            livewireMethod: "setClienteRemitente",
+            extraOnChange: (value) => {
+                fetch(`/shipment-entries/buscar-cliente?code=${value}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.special_rates.length > 0) {
+                            getLivewireComponent()?.call('notificationJs', 'Tarifa Especial', 'Este cliente posee Tarifa Especial. Presione F1 en el campo "Código" para visualizarlas.', 'info');
+                        }
+                    });
+            }
+        });
+    }
+
+    if (!tomClienteDestinatario) {
+        tomClienteDestinatario = createTomSelect({
+            selector: "#codigo_destinatario",
+            url: "/shipment-entries/listar-clientes",
+            livewireMethod: "setClienteDestinatario",
+            extraOnChange: (value) => {
+                fetch(`/shipment-entries/buscar-cliente?code=${value}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.special_rates.length > 0) {
+                            getLivewireComponent()?.call('notificationJs', 'Tarifa Especial', 'Este cliente posee Tarifa Especial. Presione F1 en el campo "Código" para visualizarlas.', 'info');
+                        }
+                    });
+            }
+        });
+    }
+}
+
 
 // Obtener información de guía en Consulta de Guías
 $(document).on('click', '#searchGuideBtn', function () {
@@ -579,6 +762,35 @@ $(document).on('click', '#searchGuideBtn', function () {
                 `;
 
                 tbody.appendChild(row);
+            }
+
+            console.log(data);
+
+
+            if (data.guide_cod) {
+                const cod = data.guide_cod;
+
+                $('#cod_section').removeClass('hidden');
+
+                $('#pce_no_consult').text(cod.no_pce ?? '-');
+                $('#pce_amount_consult').text(cod.amount ?? '0.00');
+                $('#pce_pieces_consult').text(cod.pieces ?? '1');
+                $('#pce_shipment_price_consult').text(cod.shipment_price ?? '0.00');
+
+                $('#pce_shipment_paid_by_consult').text(
+                    cod.shipment_paid_by === 'receiver' ? 'Destinatario' : 'Remitente'
+                );
+
+                $('#pce_commission_consult').text(cod.commission_amount ?? '0.00');
+
+                $('#pce_commission_paid_by_consult').text(
+                    cod.commission_paid_by ? 'Destinatario' : 'Remitente'
+                );
+
+                $('#pce_total_receiver_consult').text(cod.total_receiver ?? '0.00');
+                $('#pce_total_sender_consult').text(cod.total_sender ?? '0.00');
+            } else {
+                $('#cod_section').addClass('hidden'); // 👈 ocultar si no hay COD
             }
 
             if (data.guide_incomes && data.guide_incomes.length > 0) {
@@ -636,3 +848,20 @@ $(document).on('click', '#searchGuideBtn', function () {
             console.error('Error al buscar guía:', err);
         });
 })
+
+
+document.addEventListener('livewire:initialized', () => {
+    Livewire.on('focus-product-input', () => {
+        setTimeout(() => {
+            $('#product_id_input').focus();
+            $('#product_id_input').val('');
+            addingSubtotal();
+        }, 50);
+    });
+
+    Livewire.on('restartFocus', () => {
+        setTimeout(restartFocus, 50);
+    });
+
+    initTomSelects();
+});

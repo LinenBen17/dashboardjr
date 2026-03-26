@@ -564,6 +564,59 @@
             </div>
         </div>
 
+        {{-- Infomracion COD --}}
+        <div class="p-4 border rounded-lg bg-gray-50 dark:bg-gray-800 hidden" id="cod_section">
+            <div class="p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
+                <h3 class="text-lg font-semibold mb-2">Pago Contra Entrega</h3>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
+                    <p>
+                        <span class="font-medium">No. CE:</span>
+                        <span id="pce_no_consult">-</span>
+                    </p>
+                    <p>
+                        <span class="font-medium">Valor a cobrar:</span>
+                        Q.<span id="pce_amount_consult">-</span>
+                    </p>
+                    <p>
+                        <span class="font-medium">Piezas:</span>
+                        <span id="pce_pieces_consult">-</span>
+                    </p>
+                    <p>
+                        <span class="font-medium">Costo de envío:</span>
+                        Q.<span id="pce_shipment_price_consult">-</span>
+                    </p>
+                    <p>
+                        <span class="font-medium">Envío pagado por:</span>
+                        <span id="pce_shipment_paid_by_consult">-</span>
+                    </p>
+                    <p>
+                        <span class="font-medium">Comisión (5%):</span>
+                        Q.<span id="pce_commission_consult">-</span>
+                    </p>
+                    <p>
+                        <span class="font-medium">Comisión paga:</span>
+                        <span id="pce_commission_paid_by_consult">-</span>
+                    </p>
+                </div>
+
+                <div class="border-t my-3"></div>
+
+                <div class="grid grid-cols-2 gap-2 text-sm">
+                    <p>
+                        <span class="font-medium text-green-600">Destinatario paga:</span>
+                        Q.<span id="pce_total_receiver_consult">-</span>
+                    </p>
+                    <p>
+                        <span class="font-medium text-blue-600">Remitente recibe:</span>
+                        Q.<span id="pce_total_sender_consult">-</span>
+                    </p>
+                </div>
+                <div class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                    Valores calculados automáticamente según configuración de envío y comisión.
+                </div>
+            </div>
+        </div>
+
         {{-- Tracking --}}
         <div class="p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
             <h3 class="text-lg font-semibold mb-2">Tracking</h3>
@@ -619,7 +672,7 @@
                                     <label class="flex items-center space-x-2">
                                         <input type="checkbox"
                                             wire:model.defer="newSpecialProducts.{{ $id }}.selected"
-                                            class="rounded border-gray-300">
+                                            class="rounded border-gray-300 text-primary-600 focus:ring-primary-500">
                                     </label>
                                     <div class="flex gap-4 justify-between">
                                         <div>
@@ -688,6 +741,106 @@
             </x-filament::button>
         </div>
     </x-filament::modal>
+
+    {{-- MODAL FORMULARIO PAGO CONTRA ENTREGA --}}
+    <x-filament::modal id="pceModal" width="2xl" :close-by-clicking-away="false">
+        <x-filament::section class="pceModal">
+            <h2 class="text-lg font-bold mb-4">Pago Contra Entrega</h2>
+            <x-filament::grid class="gap-4" style="--cols-default: repeat(3, minmax(0, 1fr));">
+                <x-filament::grid.column style="--col-span-default: span 1 / span 1;">
+                    <label for="no_pce"
+                        class="fi-fo-field-wrp-label mb-2 inline-flex items-center gap-x-3 text-sm font-medium leading-6 text-gray-950 dark:text-white">
+                        No. Contra Entrega<span class="text-danger-600 dark:text-danger-400 font-medium">*</span>
+                    </label>
+                    <x-filament::input.wrapper>
+                        <x-filament::input type="number" wire:model.defer="pce_data.no_pce" id="no_pce" />
+                    </x-filament::input.wrapper>
+                </x-filament::grid.column>
+            </x-filament::grid>
+            <br>
+
+            <div class="flex gap-4 justify-between">
+                {{-- Valor --}}
+                <div>
+                    <label for="pce_amount"
+                        class="fi-fo-field-wrp-label mb-2 inline-flex items-center gap-x-3 text-sm font-medium leading-6 text-gray-950 dark:text-white">
+                        Valor total a cobrar (Q)<span class="text-danger-600 dark:text-danger-400 font-medium">*</span>
+                    </label>
+                    <x-filament::input.wrapper>
+                        <x-filament::input type="number" wire:model.defer="pce_data.pce_amount" id="pce_amount" />
+                    </x-filament::input.wrapper>
+                </div>
+
+                {{-- Piezas --}}
+                <div>
+                    <label for="pce_pieces"
+                        class="fi-fo-field-wrp-label mb-2 inline-flex items-center gap-x-3 text-sm font-medium leading-6 text-gray-950 dark:text-white">
+                        Cantidad de piezas
+                        <span class="text-danger-600 dark:text-danger-400 font-medium">*</span>
+                    </label>
+                    <x-filament::input.wrapper>
+                        <x-filament::input type="number" wire:model.defer="pce_data.pce_pieces" id="pce_pieces"
+                            value="1" />
+                    </x-filament::input.wrapper>
+                </div>
+
+                {{-- Envío --}}
+                <div>
+                    <label for="pce_shipment_price"
+                        class="fi-fo-field-wrp-label mb-2 inline-flex items-center gap-x-3 text-sm font-medium leading-6 text-gray-950 dark:text-white">
+                        Costo de envío (Q)
+                        <span class="text-danger-600 dark:text-danger-400 font-medium">*</span>
+                    </label>
+                    <x-filament::input.wrapper>
+                        <x-filament::input type="number" wire:model.defer="pce_data.pce_shipment_price"
+                            id="pce_shipment_price" />
+                    </x-filament::input.wrapper>
+                </div>
+            </div>
+            <br>
+
+            {{-- Radios --}}
+            <div class="flex flex-col justify-end">
+                <label class="text-sm font-medium mb-1">¿Quién paga el envío?</label>
+                <label class="flex items-center gap-2 text-sm">
+                    <input type="radio" name="pce_shipment_pay" value="receiver"
+                        class="border-gray-300 text-primary-600 focus:ring-primary-500"
+                        wire:model.defer="pce_data.shipment_paid_by" checked>
+                    Destinatario
+                </label>
+                <label class="flex items-center gap-2 text-sm">
+                    <input type="radio" name="pce_shipment_pay" value="sender"
+                        class="border-gray-300 text-primary-600 focus:ring-primary-500"
+                        wire:model.defer="pce_data.shipment_paid_by">
+                    Remitente
+                </label>
+            </div>
+
+            {{-- Comisión --}}
+            <div class="mt-4">
+                <label class="flex items-center gap-2 text-sm">
+                    <input type="checkbox" id="pce_customer_commission"
+                        class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                        wire:model.defer="pce_data.commission_paid_by">
+                    Incluir comisión al destinatario (5%)
+                </label>
+            </div>
+
+            {{-- Resultado --}}
+            <div id="ce_results"
+                class="mt-6 p-4 rounded-xl bg-gray-50 dark:bg-gray-800 border dark:border-gray-600 text-sm leading-relaxed">
+            </div>
+            <br>
+
+            <div class="flex items-end">
+                <x-filament::button type="button" class="saveCOData" wire:click="addCODProduct">
+                    Guardar Información
+                </x-filament::button>
+            </div>
+        </x-filament::section>
+    </x-filament::modal>
+
+
     <script src="{{ asset('js/shipment_input.js') }}"></script>
 
 </x-filament-panels::page>

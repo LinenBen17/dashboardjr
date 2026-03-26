@@ -54,11 +54,11 @@ class ShipmentEntryController extends Controller
         $idProduct = $request->get('code');
 
         $productDescription = DB::table('products')
-            ->where('id', $idProduct)
+            ->where('code', $idProduct)
             ->value('name');
 
         $productPrice = DB::table('products')
-            ->where('id', $idProduct)
+            ->where('code', $idProduct)
             ->value('price');
 
         return response()->json([
@@ -177,10 +177,17 @@ class ShipmentEntryController extends Controller
         if ($guide_data) {
             $guide_data->date_guide = \Carbon\Carbon::parse($guide_data->date_guide)->format('d/m/Y');
         }
+
+        //obtener info COD
+        $guide_cod = DB::table('cash_on_deliveries')
+            ->where('shipment_entry_id', $guide_data->id)
+            ->first();
+
         return response()->json([
             'guide_data' => $guide_data,
             'guide_incomes' => $guide_incomes,
             'guide_outgos' => $guide_outgos,
+            'guide_cod' => $guide_cod,
         ]);
     }
 }

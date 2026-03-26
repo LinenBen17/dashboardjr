@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\ShipmentEntryResource\Pages;
 
 use App\Filament\Resources\ShipmentEntryResource;
+use App\Models\Customer;
 use App\Models\ShipmentEntry;
 use App\Models\ShipmentEntryChild;
 use App\Models\Town;
@@ -55,15 +56,20 @@ class CreateShipment extends Page
     public $prefix_destination;
     public $town_id;
 
-    public $productos = [
-        [
-            'product_id' => '',
-            'pieces' => '',
-            'product_description' => '',
-            'unit_price' => '',
-            'subtotal' => '',
-        ]
+    public $productos = [];
+    public $newProduct = [
+        'product_id' => '',
+        'pieces' => '1',
+        'product_description' => '',
+        'unit_price' => '40.00',
+        'subtotal' => '0.00',
     ];
+
+    public $newSpecialProducts = [];
+
+    public $customer_data_prices = [];
+
+    public $pce_data = [];
 
     public $payment_methods;
     public array $childGuides = [];
@@ -92,9 +98,106 @@ class CreateShipment extends Page
             ->toArray();
     }
 
+    public function openPCEModal()
+    {
+        $this->dispatch('open-modal', id: 'pceModal');
+    }
+
+    public function closePCEModal()
+    {
+
+        $this->dispatch('close-modal', id: 'pceModal');
+    }
+
+    public function addCODProduct()
+    {
+        if (empty($this->pce_data)) {
+            return;
+        }
+
+        $data = $this->pce_data;
+
+        // Validaciones básicas (opcional pero recomendado)
+        if (
+            empty($data['pce_amount']) ||
+            empty($data['pce_pieces'])
+        ) {
+            Notification::make()
+                ->title('Datos incompletos en Contra Entrega')
+                ->warning()
+                ->send();
+            return;
+        }
+
+        $calc = $this->calculateCE($data);
+
+        $pieces = (int) $data['pce_pieces'];
+
+        // 🔥 AQUÍ defines el precio del producto
+        // Lo que paga el destinatario normalmente
+        $total = $calc['commission_amount'] + $data['pce_shipment_price'];
+
+        $unitPrice = $pieces > 0 ? $total / $pieces : $total;
+
+        // 🔥 Crear producto tipo COD
+        $this->productos[] = [
+            'product_id' => 1, // fijo por ahora
+            'pieces' => $pieces,
+            'product_description' => 'PAGO CONTRA ENTREGA',
+            'unit_price' => $unitPrice,
+            'subtotal' => $total,
+        ];
+
+
+        // Cerrar modal
+        $this->closePCEModal();
+
+        // Recalcular totales del envío
+        $this->calculateTotals();
+        // UX
+        $this->dispatch('focus-product-input');
+    }
+
+    public function openSpecialRatesModal()
+    {
+        $this->hydrateSpecialProducts();
+        $this->dispatch('open-modal', id: 'specialRatesModal');
+    }
+
+    public function closeSpecialRatesModal()
+    {
+        $this->dispatch('close-modal', id: 'specialRatesModal');
+    }
+
     public function openCustomersModal()
     {
         $this->dispatch('open-modal', id: 'customersModal');
+    }
+
+    public function setClienteRemitente($code)
+    {
+        $this->sender_code = $code;
+
+        $cliente = Customer::where('code', $code)->first();
+
+        if ($cliente) {
+            $this->sender_name = $cliente->name;
+            $this->sender_address = $cliente->address;
+            $this->sender_phone = $cliente->phone;
+        }
+    }
+
+    public function setClienteDestinatario($code)
+    {
+        $this->receiver_code = $code;
+
+        $cliente = Customer::where('code', $code)->first();
+
+        if ($cliente) {
+            $this->receiver_name = $cliente->name;
+            $this->receiver_address = $cliente->address;
+            $this->receiver_phone = $cliente->phone;
+        }
     }
 
     public function openConsultGuides()
@@ -110,7 +213,7 @@ class CreateShipment extends Page
     public function getCustomerID($code)
     {
         $customer_id = DB::table('customers')
-            ->where('code', 'LIKE', '%-' . $code)
+            ->where('code', '=', $code)
             ->value('id');
 
         return $customer_id;
@@ -118,19 +221,156 @@ class CreateShipment extends Page
 
     public function addProduct()
     {
-        $this->productos[] = [
+        $this->newProduct['subtotal'] =
+            $this->newProduct['pieces'] * $this->newProduct['unit_price'];
+
+        $this->productos[] = $this->newProduct;
+
+        $this->calculateTotals();
+
+        $this->newProduct = [
             'product_id' => '',
-            'pieces' => '',
+            'pieces' => '1',
             'product_description' => '',
-            'unit_price' => '',
-            'subtotal' => '',
+            'unit_price' => '40.00',
+            'subtotal' => '0.00',
         ];
+
+        $this->dispatch('focus-product-input');
     }
 
     public function removeProduct($index)
     {
+        Logger("Eliminando producto en el índice: " . $index);
         unset($this->productos[$index]);
-        $this->productos = array_values($this->productos); // Reindexa el array
+        $this->productos = array_values($this->productos);
+
+        $this->calculateTotals();
+
+        $this->dispatch('focus-product-input');
+    }
+
+    public function hydrateSpecialProducts()
+    {
+        $this->newSpecialProducts = [];
+
+        foreach ($this->customer_data_prices as $customer) {
+            foreach ($customer['special_rates'] as $rate) {
+                $id = $rate['product_id'];
+
+                $this->newSpecialProducts[$id] = [
+                    'selected' => false,
+                    'product_code' => $rate['product_code'],
+                    'product_description' => $rate['product_name'],
+                    'pieces' => 1,
+                    'unit_price' => $rate['special_price'],
+                ];
+            }
+        }
+    }
+
+    public function addProductSpecial()
+    {
+        foreach ($this->newSpecialProducts as $productId => $product) {
+
+            if (empty($product['selected'])) continue;
+            $subtotal = $product['pieces'] * $product['unit_price'];
+
+            $this->productos[] = [
+                'product_id' => $productId,
+                'pieces' => $product['pieces'],
+                'product_description' => $product['product_description'],
+                'unit_price' => $product['unit_price'],
+                'subtotal' => $subtotal,
+            ];
+        }
+
+        $this->calculateTotals();
+
+        $this->closeSpecialRatesModal();
+
+        $this->newSpecialProducts = [];
+
+        $this->dispatch('focus-product-input');
+    }
+
+    public function calculateTotals()
+    {
+        Logger($this->productos);
+        $this->totalPieces = 0;
+        $this->total = 0;
+
+        foreach ($this->productos as $product) {
+            $this->totalPieces += (int) $product['pieces'];
+            $this->total += (float) $product['subtotal'];
+        }
+    }
+
+    public function saveCOData($shipmentId)
+    {
+        $data = $this->pce_data;
+
+        $calc = $this->calculateCE($data);
+
+        CashOnDelivery::create([
+            'shipment_entry_id' => $shipmentId,
+            'no_pce' => $data['no_pce'],
+            'amount' => $data['pce_amount'],
+            'pieces' => $data['pce_pieces'],
+            'shipment_price' => $data['pce_shipment_price'],
+
+            'shipment_paid_by' => $data['shipment_paid_by'],
+            'include_commission' => $data['commission_paid_by'] ?? false,
+
+            // resultados calculados
+            'commission_amount' => $calc['commission_amount'],
+            'commission_rate' => $calc['commission_rate'],
+            'total_receiver' => $calc['total_receiver'],
+            'total_sender' => $calc['total_sender'],
+            'per_piece_receiver' => $calc['per_piece_receiver'],
+            'per_piece_sender' => $calc['per_piece_sender'],
+        ]);
+    }
+
+    public function calculateCE($data)
+    {
+        $producto = (float) ($data['pce_amount'] ?? 0);
+        $piezas = (int) ($data['pce_pieces'] ?? 1);
+        $envio = (float) ($data['pce_shipment_price'] ?? 0);
+
+        $shipmentPaidBy = $data['shipment_paid_by'] ?? 'receiver';
+        $includeCommission = $data['commission_paid_by'] ?? false;
+
+        if ($piezas <= 0) $piezas = 1;
+
+        $commissionRate = 0.05;
+        $comision = $producto * $commissionRate;
+
+        $totalDestinatario = $producto;
+        $totalRemitente = $producto;
+
+        // envío
+        if ($shipmentPaidBy === 'receiver') {
+            $totalDestinatario += $envio;
+        } else {
+            $totalRemitente -= $envio;
+        }
+
+        // comisión
+        if ($includeCommission) {
+            $totalDestinatario += $comision;
+        } else {
+            $totalRemitente -= $comision;
+        }
+
+        return [
+            'commission_amount' => $comision,
+            'total_receiver' => $totalDestinatario,
+            'total_sender' => $totalRemitente,
+            'per_piece_receiver' => $totalDestinatario / $piezas,
+            'per_piece_sender' => $totalRemitente / $piezas,
+            'commission_rate' => $commissionRate,
+        ];
     }
 
     public function addChildGuide(string $guide)
@@ -451,5 +691,14 @@ class CreateShipment extends Page
                 ->send();
             return;
         }
+    }
+
+    public function notificationJs($title, $message, $type)
+    {
+        Notification::make()
+            ->title($title)
+            ->body($message)
+            ->{$type}()
+            ->send();
     }
 }

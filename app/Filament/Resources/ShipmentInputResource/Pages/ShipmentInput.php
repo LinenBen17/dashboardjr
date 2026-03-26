@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\ShipmentInputResource\Pages;
 
 use App\Filament\Resources\ShipmentInputResource;
+use App\Models\CashOnDelivery;
 use App\Models\Customer;
 use App\Models\ShipmentEntry;
 use App\Models\ShipmentEntryChild;
@@ -55,6 +56,8 @@ class ShipmentInput extends Page
 
     public $customer_data_prices = [];
 
+    public $pce_data = [];
+
     public $payment_methods;
     public array $childGuides = [];
     public int $totalPieces = 0;
@@ -80,9 +83,68 @@ class ShipmentInput extends Page
             ->toArray();
     }
 
+    public function openPCEModal()
+    {
+        $this->dispatch('open-modal', id: 'pceModal');
+    }
+
+    public function closePCEModal()
+    {
+
+        $this->dispatch('close-modal', id: 'pceModal');
+    }
+
+    public function addCODProduct()
+    {
+        if (empty($this->pce_data)) {
+            return;
+        }
+
+        $data = $this->pce_data;
+
+        // Validaciones básicas (opcional pero recomendado)
+        if (
+            empty($data['pce_amount']) ||
+            empty($data['pce_pieces'])
+        ) {
+            Notification::make()
+                ->title('Datos incompletos en Contra Entrega')
+                ->warning()
+                ->send();
+            return;
+        }
+
+        $calc = $this->calculateCE($data);
+
+        $pieces = (int) $data['pce_pieces'];
+
+        // 🔥 AQUÍ defines el precio del producto
+        // Lo que paga el destinatario normalmente
+        $total = $calc['commission_amount'] + $data['pce_shipment_price'];
+
+        $unitPrice = $pieces > 0 ? $total / $pieces : $total;
+
+        // 🔥 Crear producto tipo COD
+        $this->productos[] = [
+            'product_id' => 1, // fijo por ahora
+            'pieces' => $pieces,
+            'product_description' => 'PAGO CONTRA ENTREGA',
+            'unit_price' => $unitPrice,
+            'subtotal' => $total,
+        ];
+
+
+        // Cerrar modal
+        $this->closePCEModal();
+
+        // Recalcular totales del envío
+        $this->calculateTotals();
+        // UX
+        $this->dispatch('focus-product-input');
+    }
+
     public function openSpecialRatesModal()
     {
-        logger($this->customer_data_prices);
         $this->hydrateSpecialProducts();
         $this->dispatch('open-modal', id: 'specialRatesModal');
     }
@@ -126,7 +188,7 @@ class ShipmentInput extends Page
     public function getCustomerID($code)
     {
         $customer_id = DB::table('customers')
-            ->where('code', 'LIKE', '%-' . $code)
+            ->where('code', '=', $code)
             ->value('id');
 
         return $customer_id;
@@ -187,8 +249,6 @@ class ShipmentInput extends Page
         foreach ($this->newSpecialProducts as $productId => $product) {
 
             if (empty($product['selected'])) continue;
-
-            logger($product);
             $subtotal = $product['pieces'] * $product['unit_price'];
 
             $this->productos[] = [
@@ -211,6 +271,7 @@ class ShipmentInput extends Page
 
     public function calculateTotals()
     {
+        Logger($this->productos);
         $this->totalPieces = 0;
         $this->total = 0;
 
@@ -218,6 +279,73 @@ class ShipmentInput extends Page
             $this->totalPieces += (int) $product['pieces'];
             $this->total += (float) $product['subtotal'];
         }
+    }
+
+    public function saveCOData($shipmentId)
+    {
+        $data = $this->pce_data;
+
+        $calc = $this->calculateCE($data);
+
+        CashOnDelivery::create([
+            'shipment_entry_id' => $shipmentId,
+            'no_pce' => $data['no_pce'],
+            'amount' => $data['pce_amount'],
+            'pieces' => $data['pce_pieces'],
+            'shipment_price' => $data['pce_shipment_price'],
+
+            'shipment_paid_by' => $data['shipment_paid_by'],
+            'include_commission' => $data['commission_paid_by'] ?? false,
+
+            // resultados calculados
+            'commission_amount' => $calc['commission_amount'],
+            'commission_rate' => $calc['commission_rate'],
+            'total_receiver' => $calc['total_receiver'],
+            'total_sender' => $calc['total_sender'],
+            'per_piece_receiver' => $calc['per_piece_receiver'],
+            'per_piece_sender' => $calc['per_piece_sender'],
+        ]);
+    }
+
+    public function calculateCE($data)
+    {
+        $producto = (float) ($data['pce_amount'] ?? 0);
+        $piezas = (int) ($data['pce_pieces'] ?? 1);
+        $envio = (float) ($data['pce_shipment_price'] ?? 0);
+
+        $shipmentPaidBy = $data['shipment_paid_by'] ?? 'receiver';
+        $includeCommission = $data['commission_paid_by'] ?? false;
+
+        if ($piezas <= 0) $piezas = 1;
+
+        $commissionRate = 0.05;
+        $comision = $producto * $commissionRate;
+
+        $totalDestinatario = $producto;
+        $totalRemitente = $producto;
+
+        // envío
+        if ($shipmentPaidBy === 'receiver') {
+            $totalDestinatario += $envio;
+        } else {
+            $totalRemitente -= $envio;
+        }
+
+        // comisión
+        if ($includeCommission) {
+            $totalDestinatario += $comision;
+        } else {
+            $totalRemitente -= $comision;
+        }
+
+        return [
+            'commission_amount' => $comision,
+            'total_receiver' => $totalDestinatario,
+            'total_sender' => $totalRemitente,
+            'per_piece_receiver' => $totalDestinatario / $piezas,
+            'per_piece_sender' => $totalRemitente / $piezas,
+            'commission_rate' => $commissionRate,
+        ];
     }
 
     public function addChildGuide(string $guide)
@@ -286,6 +414,7 @@ class ShipmentInput extends Page
 
     public function save()
     {
+        Logger($this->pce_data);
         try {
             $this->validate([
                 'no_guide_user' => 'required|numeric',
@@ -458,6 +587,11 @@ class ShipmentInput extends Page
                     }
                 }
             }
+
+            if (!empty($this->pce_data)) {
+                $this->saveCOData($this->record->id);
+            }
+
             Notification::make()
                 ->title('Envío creado exitosamente')
                 ->success()
