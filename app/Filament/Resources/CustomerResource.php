@@ -63,24 +63,18 @@ class CustomerResource extends Resource
                     ->required()
                     ->reactive()
                     ->relationship(name: 'departaments', titleAttribute: 'name'),
-                Forms\Components\Select::make('town_id')
-                    ->label('Municipio')
-                    ->relationship('towns', 'name', fn($query, $get) =>
-                    $query->where('agency_id', $get('departament_id')))
-                    ->required(),
                 Forms\Components\TextInput::make('prefix_origin')
                     ->required()
                     ->maxLength(10),
-                Forms\Components\Select::make('employee_id')
+                Forms\Components\Select::make('seller_id')
                     ->label('Vendedor')
                     ->required()
                     ->options(function () {
-                        $employee = DB::table('employees')
-                            ->leftJoin('charges', 'employees.id_charge', '=', 'charges.id')
-                            ->select('charges.name', 'employees.id', DB::raw("CONCAT(employees.name, ' ', employees.last_name) AS name"))
-                            ->where('charges.name', 'LIKE', '%Vendedor%')
+                        $sellers = DB::table('sellers')
+                            ->leftJoin('employees', 'sellers.employee_id', '=', 'employees.id')
+                            ->select('sellers.id', DB::raw("CONCAT(employees.name, ' ', employees.last_name) AS name"))
                             ->pluck('name', 'id');
-                        return $employee;
+                        return $sellers;
                     }),
             ]);
     }
@@ -120,8 +114,14 @@ class CustomerResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('prefix_origin')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('employee_id')
-                    ->numeric()
+                Tables\Columns\TextColumn::make('seller_id')
+                    ->getStateUsing(function ($record) {
+                        $seller = $record->seller;
+                        if ($seller) {
+                            return $seller->employee ? $seller->employee->name . ' ' . $seller->employee->last_name : 'N/A';
+                        }
+                        return 'N/A';
+                    })
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()

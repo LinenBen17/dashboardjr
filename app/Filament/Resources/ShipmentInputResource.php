@@ -28,7 +28,7 @@ class ShipmentInputResource extends Resource
     protected static ?string $label = 'Digitación de Envío';
 
     //Sort in the cluster
-    protected static ?int $navigationSort = 50;
+    protected static ?int $navigationSort = 6;
 
     public static function form(Form $form): Form
     {

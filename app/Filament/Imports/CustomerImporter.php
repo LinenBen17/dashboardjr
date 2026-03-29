@@ -6,6 +6,7 @@ use App\Models\Customer;
 use Filament\Actions\Imports\ImportColumn;
 use Filament\Actions\Imports\Importer;
 use Filament\Actions\Imports\Models\Import;
+use Symfony\Component\HttpKernel\Log\Logger;
 
 class CustomerImporter extends Importer
 {
@@ -42,7 +43,7 @@ class CustomerImporter extends Importer
             ImportColumn::make('prefix_origin')
                 ->requiredMapping()
                 ->rules(['required', 'max:10']),
-            ImportColumn::make('employee_id')
+            ImportColumn::make('seller_id')
                 ->requiredMapping()
                 ->numeric()
                 ->rules(['required', 'integer']),
@@ -54,7 +55,8 @@ class CustomerImporter extends Importer
         // return Customer::firstOrNew([
         //     // Update existing records, matching them by `$this->data['column_name']`
         //     'email' => $this->data['email'],
-        // ]);
+        // ]); 
+        Logger($this->data);
 
         return new Customer();
     }

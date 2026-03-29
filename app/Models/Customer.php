@@ -20,7 +20,7 @@ class Customer extends Model
         'departament_id',
         'town_id',
         'prefix_origin',
-        'employee_id',
+        'seller_id',
     ];
 
     public function paymentMethods()
@@ -35,9 +35,9 @@ class Customer extends Model
     {
         return $this->belongsTo(Town::class, 'town_id');
     }
-    public function employees()
+    public function seller()
     {
-        return $this->belongsTo(Employee::class, 'employee_id');
+        return $this->belongsTo(Seller::class, 'seller_id');
     }
     public function shipment_entries()
     {
@@ -48,6 +48,4 @@ class Customer extends Model
     {
         return $this->hasMany(CustomerSpecialRates::class, 'customer_id');
     }
-
-    
 }
