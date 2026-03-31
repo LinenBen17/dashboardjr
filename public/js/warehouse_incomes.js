@@ -29,11 +29,11 @@ document.addEventListener("DOMContentLoaded", function () {
             const valor = input.value.trim();
             const warehouse_id = warehouse.value.trim();
 
-            console.log(warehouse_id);
-
             input.value = ''; // Limpiar
 
             if (!valor) return;
+
+            let no_guide = valor.replace(/^\D+/g, '').replace(/^0+/, '');
 
             // Encuentra el componente Livewire
             const component = document.querySelector('[wire\\:id]');
@@ -41,6 +41,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
             if (componentId) {
                 if (valor.startsWith('GU')) {
+                    fetch(`/shipment-entries/buscar-guia?guide=${no_guide}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data) {
+                                $('#codigo_remitente').val(data.guide_data.sender_code);
+                                $('#remitente').val(data.guide_data.sender_name);
+                                $('#dir_remitente').val(data.guide_data.sender_address);
+                            }
+                        })
+                        .catch(error => console.error('Error al buscar la guía:', error));
+
                     Livewire.find(componentId).call('addMotherGuide', valor, warehouse_id);
                     $('#last_mother_guide').val(valor);
                 } else if (valor.startsWith('H')) {

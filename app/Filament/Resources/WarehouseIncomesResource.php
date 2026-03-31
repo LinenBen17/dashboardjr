@@ -195,23 +195,26 @@ class WarehouseIncomesResource extends Resource
                             ->schema([
                                 Forms\Components\TextInput::make('codigo_remitente')
                                     ->label('Código Remitente')
+                                    ->id('codigo_remitente')
                                     ->readOnly(true)
                                     ->columnSpan(1),
-                                Forms\Components\TextInput::make('destinatario')
-                                    ->label('Destinatario')
+                                Forms\Components\TextInput::make('remitente')
+                                    ->label('Remitente')
+                                    ->id('remitente')
                                     ->readOnly(true)
                                     ->columnSpan(2),
                             ]),
                         Grid::make(3)
                             ->schema([
-                                Placeholder::make('total_piezas')
+                                Placeholder::make('empty')
                                     ->content('')
                                     ->label('')
                                     ->extraAttributes([
                                         'style' => 'font-size: 24pt;',
                                     ]),
-                                Forms\Components\TextInput::make('dir_destinatario')
-                                    ->label('Dirección Destinatario')
+                                Forms\Components\TextInput::make('dir_remitente')
+                                    ->label('Dirección Remitente')
+                                    ->id('dir_remitente')
                                     ->readOnly(true)
                                     ->columnSpan(2),
                             ]),

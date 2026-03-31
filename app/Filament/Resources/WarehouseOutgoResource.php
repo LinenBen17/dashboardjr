@@ -190,11 +190,13 @@ class WarehouseOutgoResource extends Resource
                     ->schema([
                         Grid::make(3)
                             ->schema([
-                                Forms\Components\TextInput::make('codigo_remitente')
-                                    ->label('Código Remitente')
+                                Forms\Components\TextInput::make('codigo_destinatario')
+                                    ->id('codigo_destinatario')
+                                    ->label('Código Destinatario')
                                     ->readOnly(true)
                                     ->columnSpan(1),
                                 Forms\Components\TextInput::make('destinatario')
+                                    ->id('destinatario')
                                     ->label('Destinatario')
                                     ->readOnly(true)
                                     ->columnSpan(2),
@@ -208,6 +210,7 @@ class WarehouseOutgoResource extends Resource
                                         'style' => 'font-size: 24pt;',
                                     ]),
                                 Forms\Components\TextInput::make('dir_destinatario')
+                                    ->id('dir_destinatario')
                                     ->label('Dirección Destinatario')
                                     ->readOnly(true)
                                     ->columnSpan(2),

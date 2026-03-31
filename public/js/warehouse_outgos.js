@@ -16,12 +16,26 @@ document.addEventListener("DOMContentLoaded", function () {
 
             if (!valor) return;
 
+            let no_guide = valor.replace(/^\D+/g, '').replace(/^0+/, '');
+
             // Encuentra el componente Livewire
             const component = document.querySelector('[wire\\:id]');
             const componentId = component?.getAttribute('wire:id');
 
             if (componentId) {
                 if (valor.startsWith('GU')) {
+                    fetch(`/shipment-entries/buscar-guia?guide=${no_guide}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data) {
+                                $('#codigo_destinatario').val(data.guide_data.receiver_code);
+                                $('#destinatario').val(data.guide_data.receiver_name);
+                                $('#dir_destinatario').val(data.guide_data.receiver_address);
+                            }
+                        })
+                        .catch(error => console.error('Error al buscar la guía:', error));
+
+
                     Livewire.find(componentId).call('addMotherGuide', valor);
                     $('#last_mother_guide').val(valor);
                 } else if (valor.startsWith('H')) {
