@@ -455,29 +455,33 @@ $(document).on('keydown', '.saveShipment', function (e) {
 $('.saveShipment').on('click', function () {
     const component = document.querySelector('[wire\\:id]');
     const componentId = component?.getAttribute('wire:id');
-    // Agregar valor a variables en Livewir
-    Livewire.find(componentId).set(`no_guide_user`, $('#guia_madre').val());
-    Livewire.find(componentId).set(`manifest_code`, $('#manifest_code').val());
-    Livewire.find(componentId).set(`date_guide`, $('#date_guide').val());
-    Livewire.find(componentId).set(`payment_method_id`, $('#forma_pago').val());
-    Livewire.find(componentId).set(`sender_total`, $('#sender_total').val());
-    Livewire.find(componentId).set(`receiver_total`, $('#receiver_total').val());
-    Livewire.find(componentId).set(`total`, $('#total').val());
 
-    Livewire.find(componentId).set(`sender_code`, $('#codigo_remitente').val());
-    Livewire.find(componentId).set(`sender_name`, $('#sender_name').val());
-    Livewire.find(componentId).set(`sender_address`, $('#sender_address').val());
-    Livewire.find(componentId).set(`sender_phone`, $('#sender_phone').val());
+    const lw = Livewire.find(componentId);
 
-    Livewire.find(componentId).set(`receiver_code`, $('#codigo_destinatario').val());
-    Livewire.find(componentId).set(`receiver_name`, $('#receiver_name').val());
-    Livewire.find(componentId).set(`receiver_address`, $('#receiver_address').val());
-    Livewire.find(componentId).set(`receiver_phone`, $('#receiver_phone').val());
+    // Setear TODO
+    lw.set('date_guide', $('#date_guide').val());
+    lw.set('payment_method_id', $('#forma_pago').val());
+    lw.set('sender_total', $('#sender_total').val());
+    lw.set('receiver_total', $('#receiver_total').val());
+    lw.set('total', $('#total').val());
 
-    Livewire.find(componentId).set(`prefix_destination`, $('#prefix_destino').val());
-    Livewire.find(componentId).set(`town_id`, $('#town_id').val());
+    lw.set('sender_code', $('#codigo_remitente').val());
+    lw.set('sender_name', $('#sender_name').val());
+    lw.set('sender_address', $('#sender_address').val());
+    lw.set('sender_phone', $('#sender_phone').val());
 
-    // Livewire.find(componentId).call('verifyData');
+    lw.set('receiver_code', $('#codigo_destinatario').val());
+    lw.set('receiver_name', $('#receiver_name').val());
+    lw.set('receiver_address', $('#receiver_address').val());
+    lw.set('receiver_phone', $('#receiver_phone').val());
+
+    lw.set('prefix_destination', $('#prefix_destino').val());
+    lw.set('town_id', $('#town_id').val());
+
+    // 🔥 IMPORTANTE: llamar después
+    setTimeout(() => {
+        lw.call('confirmSave');
+    }, 50);
 });
 
 $(document).on('keydown', '#product_id_input', async function (e) {

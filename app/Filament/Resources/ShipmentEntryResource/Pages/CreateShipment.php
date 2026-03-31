@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\ShipmentEntryResource\Pages;
 
 use App\Filament\Resources\ShipmentEntryResource;
+use App\Models\CashOnDelivery;
 use App\Models\Customer;
 use App\Models\ShipmentEntry;
 use App\Models\ShipmentEntryChild;
@@ -212,6 +213,8 @@ class CreateShipment extends Page
 
     public function getCustomerID($code)
     {
+        Logger("Obteniendo ID de cliente para el código: " . $code);
+
         $customer_id = DB::table('customers')
             ->where('code', '=', $code)
             ->value('id');
@@ -416,11 +419,6 @@ class CreateShipment extends Page
 
     public function confirmSave()
     {
-        if ($this->link_child_later) {
-            Logger("El valor de link_child_later es: true");
-        } else {
-            Logger("El valor de link_child_later es: false");
-        }
         $this->totalPieces = 0;
         // Get total pieces from products
         foreach ($this->productos as $product => $value) {
@@ -439,6 +437,8 @@ class CreateShipment extends Page
 
     public function save()
     {
+        Logger("Guardando envío...");
+        Logger($this->all());
         try {
             $this->validate([
                 'no_guide_user' => 'required|numeric',
@@ -456,6 +456,7 @@ class CreateShipment extends Page
             ]);
         } catch (ValidationException $e) {
             // Si prefieres mostrar errores como notificación (uno solo general)
+            logger($e->errors());
             Notification::make()
                 ->title('Faltan campos obligatorios')
                 ->body('Por favor completa todos los campos requeridos.')
@@ -464,7 +465,7 @@ class CreateShipment extends Page
 
             return;
         }
-
+        Logger("Validación exitosa, procediendo a guardar...");
         // Obtener usuario autenticado y sus custom fields
         $user = Filament::auth()->user();
         $custom = $user->custom_fields ?? [];
@@ -672,15 +673,7 @@ class CreateShipment extends Page
             $this->prefix_destination = '';
             $this->town_id = '';
 
-            $this->productos = [
-                [
-                    'product_id' => '',
-                    'pieces' => '',
-                    'product_description' => '',
-                    'unit_price' => '',
-                    'subtotal' => '',
-                ]
-            ];
+            $this->productos = [];
 
             $this->dispatch('restartFocus');
         } catch (\Throwable $th) {

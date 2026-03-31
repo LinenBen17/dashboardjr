@@ -502,28 +502,32 @@ $('.saveShipment').on('click', function () {
     const component = document.querySelector('[wire\\:id]');
     const componentId = component?.getAttribute('wire:id');
 
+    const lw = Livewire.find(componentId);
 
-    // Agregar valor a variables en Livewir
-    Livewire.find(componentId).set(`date_guide`, $('#date_guide').val());
-    Livewire.find(componentId).set(`payment_method_id`, $('#forma_pago').val());
-    Livewire.find(componentId).set(`sender_total`, $('#sender_total').val());
-    Livewire.find(componentId).set(`receiver_total`, $('#receiver_total').val());
-    Livewire.find(componentId).set(`total`, $('#total').val());
+    // Setear TODO
+    lw.set('date_guide', $('#date_guide').val());
+    lw.set('payment_method_id', $('#forma_pago').val());
+    lw.set('sender_total', $('#sender_total').val());
+    lw.set('receiver_total', $('#receiver_total').val());
+    lw.set('total', $('#total').val());
 
-    Livewire.find(componentId).set(`sender_code`, $('#codigo_remitente').val());
-    Livewire.find(componentId).set(`sender_name`, $('#sender_name').val());
-    Livewire.find(componentId).set(`sender_address`, $('#sender_address').val());
-    Livewire.find(componentId).set(`sender_phone`, $('#sender_phone').val());
+    lw.set('sender_code', $('#codigo_remitente').val());
+    lw.set('sender_name', $('#sender_name').val());
+    lw.set('sender_address', $('#sender_address').val());
+    lw.set('sender_phone', $('#sender_phone').val());
 
-    Livewire.find(componentId).set(`receiver_code`, $('#codigo_destinatario').val());
-    Livewire.find(componentId).set(`receiver_name`, $('#receiver_name').val());
-    Livewire.find(componentId).set(`receiver_address`, $('#receiver_address').val());
-    Livewire.find(componentId).set(`receiver_phone`, $('#receiver_phone').val());
+    lw.set('receiver_code', $('#codigo_destinatario').val());
+    lw.set('receiver_name', $('#receiver_name').val());
+    lw.set('receiver_address', $('#receiver_address').val());
+    lw.set('receiver_phone', $('#receiver_phone').val());
 
-    Livewire.find(componentId).set(`prefix_destination`, $('#prefix_destino').val());
-    Livewire.find(componentId).set(`town_id`, $('#town_id').val());
+    lw.set('prefix_destination', $('#prefix_destino').val());
+    lw.set('town_id', $('#town_id').val());
 
-    // Livewire.find(componentId).call('verifyData');
+    // 🔥 IMPORTANTE: llamar después
+    setTimeout(() => {
+        lw.call('confirmSave');
+    }, 50);
 });
 
 function addingSubtotal() {
@@ -647,16 +651,33 @@ function createTomSelect({
         maxItems: 1,
         maxOptions: 5,
 
+        sortField: [
+            { field: "$order" } // respeta orden original
+        ],
+
         load(query, callback) {
             if (!query.length) return callback();
 
+            console.log(callback);
+
             fetch(`${url}?code=${query}`)
                 .then(res => res.json())
-                .then(data => callback(data))
+                .then(data => {
+                    console.log(data);
+
+                    data.sort((a, b) => {
+                        const getNum = str => parseInt(str.split('-')[1]) || 0;
+                        return getNum(a.code) - getNum(b.code);
+                    });
+
+                    callback(data);
+                })
                 .catch(() => callback());
         },
         render: {
             option(item) {
+                console.log(item);
+
                 return `
                     <div>
                         <strong>${item.code}</strong> - ${item.name}<br>

@@ -45,13 +45,16 @@ class EmployeePayrollsResource extends Resource
                     ->getStateUsing(
                         fn(EmployeePayrolls $record) => $record->employee ? $record->employee->name . ' ' . $record->employee->last_name : 'N/A'
                     )
+                    ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('payroll_id')
                     ->getStateUsing(
                         fn(EmployeePayrolls $record) => $record->payroll ? $record->payroll->name : 'N/A'
                     )
+                    ->searchable()
                     ->sortable(),
                 Tables\Columns\IconColumn::make('active')
+                    ->searchable()
                     ->boolean(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()

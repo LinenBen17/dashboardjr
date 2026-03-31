@@ -189,7 +189,7 @@
                             Codigo Remitente<span class="text-danger-600 dark:text-danger-400 font-medium">*</span>
                         </label>
                         <x-filament::input.wrapper wire:ignore>
-                            <input type="text" id="codigo_remitente" name="sender_code" />
+                            <input type="text" id="codigo_remitente" name="sender_code" wire:model="sender_code" />
                         </x-filament::input.wrapper>
                     </div>
                     <div>
@@ -232,7 +232,8 @@
                             Codigo Destinatario<span class="text-danger-600 dark:text-danger-400 font-medium">*</span>
                         </label>
                         <x-filament::input.wrapper wire:ignore>
-                            <input type="text" id="codigo_destinatario" name="receiver_code" />
+                            <input type="text" id="codigo_destinatario" name="receiver_code"
+                                wire:model="receiver_code" />
                         </x-filament::input.wrapper>
                     </div>
                     <div>
@@ -423,8 +424,7 @@
             <div class="flex justify-between items-center mb-4">
                 {{-- Botón izquierdo --}}
                 <div>
-                    <x-filament::button type="button" class="saveShipment" wire:click="confirmSave"
-                        color="primary">
+                    <x-filament::button type="button" class="saveShipment" color="primary">
                         Guardar Envío
                     </x-filament::button>
                 </div>

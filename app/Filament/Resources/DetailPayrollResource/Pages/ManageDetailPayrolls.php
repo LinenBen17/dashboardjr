@@ -145,6 +145,14 @@ class ManageDetailPayrolls extends ManageRecords
                             foreach ($employee_payrolls as $employee_payroll) {
                                 $detail_payroll = DetailPayroll::where('employee_payroll_id', $employee_payroll->id)->first();
 
+                                if (!$detail_payroll) {
+                                    Notification::make()
+                                        ->title('No se encontró el detalle de planilla para el empleado con ID: ' . $employee_payroll->employee_id)
+                                        ->warning()
+                                        ->send();
+                                    return;
+                                }
+
                                 $salary_base = floatval($detail_payroll->regular_salaries) / 2;
                                 $bonus_of_law = floatval($detail_payroll->bonus_of_law) / 2;
                                 $incentive_bonus = floatval($detail_payroll->incentive_bonus) / 2;
