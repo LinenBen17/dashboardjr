@@ -31,6 +31,11 @@ class CreateWarehouseIncomes extends CreateRecord
 
     public string $bodegaGuiaAlojada = '';
 
+    private function normalizeGuide($guide): int
+    {
+        return (int) preg_replace('/\D/', '', $guide);
+    }
+
     public function validarGuiaParaIngreso(string $guide, int $currentWarehouseId): string
     {
         $ingresos = WarehouseIncomeGuide::where('guide_number', $guide)
@@ -86,7 +91,7 @@ class CreateWarehouseIncomes extends CreateRecord
         }
 
         // Validar reingreso
-        $estado = $this->validarGuiaParaIngreso(str_replace('GU0', '', $guide), $currentWarehouseId);
+        $estado = $this->validarGuiaParaIngreso($this->normalizeGuide($guide), $currentWarehouseId);
         Logger($estado);
 
         if ($estado === 'YA_INGRESO_NO_SALIO') {
@@ -139,7 +144,7 @@ class CreateWarehouseIncomes extends CreateRecord
         }
 
         // Validar reingreso
-        $estado = $this->validarGuiaParaIngreso(str_replace('GU0', '', $guide), $currentWarehouseId);
+        $estado = $this->validarGuiaParaIngreso($this->normalizeGuide($guide), $currentWarehouseId);
         Logger($estado);
 
         if ($estado === 'YA_INGRESO_NO_SALIO') {
@@ -204,11 +209,11 @@ class CreateWarehouseIncomes extends CreateRecord
         $this->scannedGuidesTimes = array_merge($this->motherGuidesTimes, $this->childGuidesTimes);
 
         foreach ($this->scannedGuides as $guide) {
-            $isReentry = $this->validarGuiaParaIngreso(str_replace('GU0', '', $guide), $this->record->warehouse_id) === 'REINGRESO' ? 1 : 0;
+            $isReentry = $this->validarGuiaParaIngreso($this->normalizeGuide($guide), $this->record->warehouse_id) === 'REINGRESO' ? 1 : 0;
             Logger("Guía: $guide es $isReentry");
 
             $this->record->guides()->create([
-                'guide_number' => str_replace('GU0', '', $guide),
+                'guide_number' =>  $this->normalizeGuide($guide),
                 'mother_guide' => in_array($guide, $this->motherGuides) ? $guide : null,
                 'child_guide' => in_array($guide, $this->childGuides) ? $guide : null,
                 'scanned_at' => $this->scannedGuidesTimes[$guide],

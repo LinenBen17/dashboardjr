@@ -740,7 +740,6 @@ function initTomSelects() {
     }
 }
 
-
 // Obtener información de guía en Consulta de Guías
 $(document).on('click', '#searchGuideBtn', function () {
     const guide = document.getElementById('search_guide').value.trim();
@@ -750,9 +749,11 @@ $(document).on('click', '#searchGuideBtn', function () {
     fetch(`/shipment-entries/buscar-guia?guide=${guide}`)
         .then(res => res.json())
         .then(data => {
+            const tbody = document.getElementById('tracking_table_body');
+            tbody.innerHTML = ''; // 🔥 limpiar una sola vez
+
             if (data.guide_data) {
                 const guide = data.guide_data;
-                const tbody = document.getElementById('tracking_table_body');
                 const row = document.createElement('tr');
 
                 $('#sender_name_consult').text(guide.sender_name);
@@ -784,10 +785,6 @@ $(document).on('click', '#searchGuideBtn', function () {
 
                 tbody.appendChild(row);
             }
-
-            console.log(data);
-
-
             if (data.guide_cod) {
                 const cod = data.guide_cod;
 
@@ -815,9 +812,6 @@ $(document).on('click', '#searchGuideBtn', function () {
             }
 
             if (data.guide_incomes && data.guide_incomes.length > 0) {
-                const tbody = document.getElementById('tracking_table_body');
-                tbody.innerHTML = '';
-
                 data.guide_incomes.forEach(income => {
                     const row = document.createElement('tr');
                     row.className = 'bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-50';
@@ -840,8 +834,6 @@ $(document).on('click', '#searchGuideBtn', function () {
             }
 
             if (data.guide_outgos && data.guide_outgos.length > 0) {
-                const tbody = document.getElementById('tracking_table_body');
-
                 data.guide_outgos.forEach(outgo => {
                     const row = document.createElement('tr');
                     row.className = 'bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-50';

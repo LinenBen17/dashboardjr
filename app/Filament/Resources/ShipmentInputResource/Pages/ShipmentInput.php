@@ -414,7 +414,8 @@ class ShipmentInput extends Page
 
     public function save()
     {
-        Logger($this->pce_data);
+        Logger("Guardando envío...");
+        Logger($this->all());
         try {
             $this->validate([
                 'no_guide_user' => 'required|numeric',
@@ -441,6 +442,7 @@ class ShipmentInput extends Page
 
             return;
         }
+        Logger("Validación exitosa, procediendo a guardar...");
 
         // Obtener usuario autenticado y sus custom fields
         $user = Filament::auth()->user();

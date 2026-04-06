@@ -459,24 +459,26 @@ $('.saveShipment').on('click', function () {
     const lw = Livewire.find(componentId);
 
     // Setear TODO
-    lw.set('date_guide', $('#date_guide').val());
-    lw.set('payment_method_id', $('#forma_pago').val());
-    lw.set('sender_total', $('#sender_total').val());
-    lw.set('receiver_total', $('#receiver_total').val());
-    lw.set('total', $('#total').val());
+    lw.set(`no_guide_user`, $('#guia_madre').val());
+    lw.set(`manifest_code`, $('#manifest_code').val());
+    lw.set(`date_guide`, $('#date_guide').val());
+    lw.set(`payment_method_id`, $('#forma_pago').val());
+    lw.set(`sender_total`, $('#sender_total').val());
+    lw.set(`receiver_total`, $('#receiver_total').val());
+    lw.set(`total`, $('#total').val());
 
-    lw.set('sender_code', $('#codigo_remitente').val());
-    lw.set('sender_name', $('#sender_name').val());
-    lw.set('sender_address', $('#sender_address').val());
-    lw.set('sender_phone', $('#sender_phone').val());
+    lw.set(`sender_code`, $('#codigo_remitente').val());
+    lw.set(`sender_name`, $('#sender_name').val());
+    lw.set(`sender_address`, $('#sender_address').val());
+    lw.set(`sender_phone`, $('#sender_phone').val());
 
-    lw.set('receiver_code', $('#codigo_destinatario').val());
-    lw.set('receiver_name', $('#receiver_name').val());
-    lw.set('receiver_address', $('#receiver_address').val());
-    lw.set('receiver_phone', $('#receiver_phone').val());
+    lw.set(`receiver_code`, $('#codigo_destinatario').val());
+    lw.set(`receiver_name`, $('#receiver_name').val());
+    lw.set(`receiver_address`, $('#receiver_address').val());
+    lw.set(`receiver_phone`, $('#receiver_phone').val());
 
-    lw.set('prefix_destination', $('#prefix_destino').val());
-    lw.set('town_id', $('#town_id').val());
+    lw.set(`prefix_destination`, $('#prefix_destino').val());
+    lw.set(`town_id`, $('#town_id').val());
 
     // 🔥 IMPORTANTE: llamar después
     setTimeout(() => {
@@ -530,9 +532,11 @@ $(document).on('click', '#searchGuideBtn', function () {
     fetch(`/shipment-entries/buscar-guia?guide=${guide}`)
         .then(res => res.json())
         .then(data => {
+            const tbody = document.getElementById('tracking_table_body');
+            tbody.innerHTML = ''; // 🔥 limpiar una sola vez
+
             if (data.guide_data) {
                 const guide = data.guide_data;
-                const tbody = document.getElementById('tracking_table_body');
                 const row = document.createElement('tr');
 
                 $('#sender_name_consult').text(guide.sender_name);
@@ -564,10 +568,6 @@ $(document).on('click', '#searchGuideBtn', function () {
 
                 tbody.appendChild(row);
             }
-
-            console.log(data);
-
-
             if (data.guide_cod) {
                 const cod = data.guide_cod;
 
@@ -595,9 +595,6 @@ $(document).on('click', '#searchGuideBtn', function () {
             }
 
             if (data.guide_incomes && data.guide_incomes.length > 0) {
-                const tbody = document.getElementById('tracking_table_body');
-                tbody.innerHTML = '';
-
                 data.guide_incomes.forEach(income => {
                     const row = document.createElement('tr');
                     row.className = 'bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-50';
@@ -620,8 +617,6 @@ $(document).on('click', '#searchGuideBtn', function () {
             }
 
             if (data.guide_outgos && data.guide_outgos.length > 0) {
-                const tbody = document.getElementById('tracking_table_body');
-
                 data.guide_outgos.forEach(outgo => {
                     const row = document.createElement('tr');
                     row.className = 'bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-50';
@@ -649,6 +644,7 @@ $(document).on('click', '#searchGuideBtn', function () {
             console.error('Error al buscar guía:', err);
         });
 })
+
 
 
 /*************************************************

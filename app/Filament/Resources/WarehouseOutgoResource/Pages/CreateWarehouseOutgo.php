@@ -22,11 +22,16 @@ class CreateWarehouseOutgo extends CreateRecord
     public array $motherGuidesTimes = [];
     public array $childGuidesTimes = [];
 
+    private function normalizeGuide($guide): int
+    {
+        return (int) preg_replace('/\D/', '', $guide);
+    }
+
     public function verifyIncomeGuide(string $guide)
     {
         $guide = trim($guide);
 
-        $incomeGuide = WarehouseIncomeGuide::where('guide_number', str_replace('GU0', '', $guide))
+        $incomeGuide = WarehouseIncomeGuide::where('guide_number',  $this->normalizeGuide($guide))
             ->first();
 
         if (!$incomeGuide) {
@@ -112,7 +117,7 @@ class CreateWarehouseOutgo extends CreateRecord
 
         foreach ($this->scannedGuides as $guide) {
             $this->record->guides()->create([
-                'guide_number' => str_replace('GU0', '', $guide),
+                'guide_number' =>  $this->normalizeGuide($guide),
                 'mother_guide' => in_array($guide, $this->motherGuides) ? $guide : null,
                 'child_guide' => in_array($guide, $this->childGuides) ? $guide : null,
                 'scanned_at' => $this->scannedGuidesTimes[$guide],

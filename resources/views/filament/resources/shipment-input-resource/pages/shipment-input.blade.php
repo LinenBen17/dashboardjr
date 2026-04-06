@@ -415,11 +415,11 @@
             <div class="flex justify-between items-center mb-4">
                 {{-- Botón izquierdo --}}
                 <div>
-                    <x-filament::button type="button" class="saveShipment" wire:click="confirmSave"
-                        color="primary">
+                    <x-filament::button type="button" class="saveShipment" color="primary">
                         Guardar Envío
                     </x-filament::button>
                 </div>
+
 
                 {{-- Botones derechos --}}
                 <div class="flex space-x-2">
