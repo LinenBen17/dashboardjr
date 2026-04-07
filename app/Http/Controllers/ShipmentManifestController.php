@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Agency;
+use Carbon\Carbon;
 use Filament\Notifications\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -23,6 +24,34 @@ class ShipmentManifestController extends Controller
             ->toArray();
 
         return response()->json($agency);
+    }
+
+    public function searchRouteByAgency(Request $request)
+    {
+        $agency_id = $request->get('agency_id');
+        $routes = DB::table('routes')
+            ->where('agency_id', $agency_id)
+            ->pluck('prefix', 'id')
+            ->toArray();
+        return response()->json($routes);
+    }
+
+    public function searchManifestByOriginAndRoute(Request $request)
+    {
+        $agency_origin_id = $request->get('agency_origin_id');
+        $agency_destination_id = $request->get('agency_destination_id');
+        $route_id = $request->get('route_id');
+        $manifest_date = Carbon::createFromFormat('d/m/Y', $request->manifest_date)
+            ->format('Y-m-d');
+
+        $manifests = DB::table('shipment_manifests')
+            ->where('agency_origin_id', $agency_origin_id)
+            ->where('agency_destination_id', $agency_destination_id)
+            ->where('route_id', $route_id)
+            ->whereDate('date', $manifest_date)
+            ->value('manifest_code');
+
+        return response()->json($manifests);
     }
 
     public function newManifestByRoute(Request $request)
@@ -64,18 +93,42 @@ class ShipmentManifestController extends Controller
 
     public function getManifestGuides(Request $request)
     {
+        $agency_origin_id = $request->get('agency_origin_id');
+        $agency_destination_id = $request->get('agency_destination_id');
         $route_id = $request->get('route_id');
-        $date = $request->get('date');
+        $rawDate = $request->get('manifest_date');
+
+        try {
+            if (str_contains($rawDate, '/')) {
+                // formato: 30/03/2026
+                $date = Carbon::createFromFormat('d/m/Y', $rawDate);
+            } else {
+                // formato: 2026-04-07
+                $date = Carbon::parse($rawDate);
+            }
+
+            $date = $date->format('Y-m-d');
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Formato de fecha inválido'
+            ], 400);
+        }
 
         // Obtener los IDs de towns que pertenecen a la ruta
         $town_ids = DB::table('towns')
             ->where('route_id', $route_id)
             ->pluck('id');
 
+        $departament_origin_prefix = DB::table('agencies as a')
+            ->join('departaments as d', 'a.departament_id', '=', 'd.id')
+            ->where('a.id', $agency_origin_id)
+            ->value('d.prefix');
+
         // Obtener las guías que corresponden a esos towns
         $guides = DB::table('shipment_entries')
             ->whereIn('town_id', $town_ids)
             ->whereDate('date_guide', $date)
+            ->where('prefix_origin', $departament_origin_prefix)
             ->join('payment_methods', 'shipment_entries.payment_method_id', '=', 'payment_methods.id')
             ->select('shipment_entries.*', 'payment_methods.name as payment_method_name')
             ->get();

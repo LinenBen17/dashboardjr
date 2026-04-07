@@ -7,10 +7,17 @@
 
     <link rel="stylesheet" href="https://cdn.datatables.net/2.3.2/css/dataTables.dataTables.min.css">
     {{-- Botones derechos --}}
-    <div class="flex space-x-2 justify-end">
-        <x-filament::button type="button" class="updateGuideButton" wire:click="openUpdateGuides" color="danger">
-            Modificar Guía
-        </x-filament::button>
+    <div class="flex space-x-2 justify-end gap-2">
+        <div>
+            <x-filament::button type="button" class="searchManifestButton" wire:click="openSearchManifest" color="info">
+                Buscar Manifiesto
+            </x-filament::button>
+        </div>
+        <div>
+            <x-filament::button type="button" class="updateGuideButton" wire:click="openUpdateGuides" color="danger">
+                Modificar Guía
+            </x-filament::button>
+        </div>
     </div>
     {{-- FORMULARIO DEL MANIFIESTO --}}
     <x-filament::section>
@@ -588,6 +595,106 @@
             </x-filament::button>
         </div>
     </x-filament::modal>
+
+    {{-- MODAL PARA BUSCAR MANIFIESTOS --}}
+    <x-filament::modal id="searchManifest" width="4xl">
+        <x-slot name="heading">
+            Búsqueda de Manifiestos
+        </x-slot>
+        <x-filament::grid class="gap-4" style="--cols-default: repeat(5, minmax(0, 1fr));">
+            <x-filament::grid.column style="--col-span-default: span 1 / span 1;">
+                <div>
+                    <label for="agency_origin_manifest_search"
+                        class="fi-fo-field-wrp-label mb-2 inline-flex items-center gap-x-3 text-sm font-medium leading-6 text-gray-950 dark:text-white">
+                        Agencia de Origen<span class="text-danger-600 dark:text-danger-400 font-medium">*</span>
+                    </label>
+                    <x-filament::input.wrapper>
+                        <x-filament::input.select wire:model="agency_origin_manifest_search"
+                            name="agency_origin_manifest_search" id="agency_origin_manifest_search"
+                            class="fi-fo-field-input block w-full rounded-lg border-gray-300">
+                            <option value="">Seleccione una opción</option>
+                            @foreach ($agencies as $id => $name)
+                                <option value="{{ $id }}">{{ $name }}</option>
+                            @endforeach
+                        </x-filament::input.select>
+                    </x-filament::input.wrapper>
+                </div>
+            </x-filament::grid.column>
+            <x-filament::grid.column style="--col-span-default: span 1 / span 1;">
+                <div>
+                    <label for="agency_destination_manifest_search"
+                        class="fi-fo-field-wrp-label mb-2 inline-flex items-center gap-x-3 text-sm font-medium leading-6 text-gray-950 dark:text-white">
+                        Agencia de Destino<span class="text-danger-600 dark:text-danger-400 font-medium">*</span>
+                    </label>
+                    <x-filament::input.wrapper>
+                        <x-filament::input.select wire:model="agency_destination_manifest_search"
+                            name="agency_destination_manifest_search" id="agency_destination_manifest_search"
+                            class="fi-fo-field-input block w-full rounded-lg border-gray-300">
+                            <option value="">Seleccione una opción</option>
+                            @foreach ($agencies as $id => $name)
+                                <option value="{{ $id }}">{{ $name }}</option>
+                            @endforeach
+                        </x-filament::input.select>
+                    </x-filament::input.wrapper>
+                </div>
+            </x-filament::grid.column>
+            <x-filament::grid.column style="--col-span-default: span 1 / span 1;">
+
+                <div>
+                    <label for="route_destination_manifest_search"
+                        class="fi-fo-field-wrp-label mb-2 inline-flex items-center gap-x-3 text-sm font-medium leading-6 text-gray-950 dark:text-white">
+                        Ruta de Destino<span class="text-danger-600 dark:text-danger-400 font-medium">*</span>
+                    </label>
+                    <x-filament::input.wrapper>
+                        <x-filament::input.select type="text" wire:model="route_destination_manifest_search"
+                            name="route_destination_manifest_search" id="route_destination_manifest_search"
+                            class="fi-fo-field-input block w-full rounded-lg border-gray-300" />
+                    </x-filament::input.wrapper>
+                </div>
+            </x-filament::grid.column>
+            <x-filament::grid.column style="--col-span-default: span 1 / span 1;">
+                <div>
+                    <label for="manifest_date_manifest_search"
+                        class="fi-fo-field-wrp-label mb-2 inline-flex items-center gap-x-3 text-sm font-medium leading-6 text-gray-950 dark:text-white">
+                        Fecha de Manifiesto<span class="text-danger-600 dark:text-danger-400 font-medium">*</span>
+                    </label>
+                    <x-filament::input.wrapper>
+                        <x-filament::input type="text" name="manifest_date_manifest_search"
+                            id="manifest_date_manifest_search" placeholder="dd/mm/aaaa" />
+                    </x-filament::input.wrapper>
+                </div>
+            </x-filament::grid.column>
+            <x-filament::grid.column style="--col-span-default: span 1 / span 1;">
+                <div class="flex items-end">
+                    <x-filament::button type="button" class="rePrintManifest" color="primary">
+                        <div class="flex items-center gap-2">
+                            Re-Imprimir
+                            <x-heroicon-o-printer class="w-5 h-5" />
+                        </div>
+                    </x-filament::button>
+                </div>
+            </x-filament::grid.column>
+        </x-filament::grid>
+    </x-filament::modal>
+    <script>
+        document.addEventListener('input', function(e) {
+            if (e.target.id === 'manifest_date_manifest_search') {
+                let value = e.target.value.replace(/\D/g, ''); // solo números
+
+                if (value.length > 8) value = value.slice(0, 8);
+
+                let formatted = value;
+
+                if (value.length > 4) {
+                    formatted = value.slice(0, 2) + '/' + value.slice(2, 4) + '/' + value.slice(4);
+                } else if (value.length > 2) {
+                    formatted = value.slice(0, 2) + '/' + value.slice(2);
+                }
+
+                e.target.value = formatted;
+            }
+        });
+    </script>
 
     <script src="{{ asset('js/shipment_manifest.js') }}"></script>
 </x-filament-panels::page>

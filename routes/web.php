@@ -32,6 +32,8 @@ Route::get('/shipment-entries/buscar-guia', [ShipmentEntryController::class, 'ge
 Route::put('/shipment-entries/modificar-guia/{id}', [ShipmentEntryController::class, 'modifyGuideData'])->name('modificar_guia');
 
 Route::get('/shipment-manifest/buscar-agencia', [ShipmentManifestController::class, 'searchAgencyByRoute'])->name('buscar_agencia');
+Route::get('/shipment_manifest/buscar-ruta-por-agencia', [ShipmentManifestController::class, 'searchRouteByAgency'])->name('buscar_ruta_por_agencia');
+Route::get('/shipment-manifest/buscar-manifiesto-por-origen-y-ruta', [ShipmentManifestController::class, 'searchManifestByOriginAndRoute'])->name('buscar_manifiesto_por_origen_y_ruta');
 Route::get('/shipment-manifest/crear-manifiesto', [ShipmentManifestController::class, 'newManifestByRoute'])->name('crear_manifiesto');
 Route::get('/shipment-manifest/obtener-guia-manifestadas', [ShipmentManifestController::class, 'getManifestGuides'])->name('obtener_guias_manifestadas');
 Route::get('/shipment_manifest/{manifest_code}/printManifestGuides', [ShipmentManifestController::class, 'printManifestGuides'])->name('imprimir_manifiesto_entrega');

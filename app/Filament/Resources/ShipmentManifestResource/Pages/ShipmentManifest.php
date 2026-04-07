@@ -64,6 +64,10 @@ class ShipmentManifest extends Page
     public $prefix_destination_update;
     public $town_id_update;
 
+    public $agencies;
+
+    public $manifest_date_manifest_search;
+
     public $updateData = [];
 
     public bool $guideIncomplete = false;
@@ -97,6 +101,12 @@ class ShipmentManifest extends Page
         $this->routes = DB::table('routes')
             ->orderBy('prefix', 'asc')
             ->pluck('prefix', 'id')
+            ->toArray();
+
+        $this->agencies = DB::table('agencies')
+            ->select('id', 'short', 'name')
+            ->orderBy('name')
+            ->pluck('name', 'id')
             ->toArray();
 
         $this->agencies_origin = Agency::where('id', Auth::user()->custom_fields['agency_id'])
@@ -720,6 +730,11 @@ class ShipmentManifest extends Page
     public function openUpdateGuides()
     {
         $this->dispatch('open-modal', id: 'updateGuides');
+    }
+
+    public function openSearchManifest()
+    {
+        $this->dispatch('open-modal', id: 'searchManifest');
     }
 
     public function getCustomerID($code)

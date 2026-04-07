@@ -14,10 +14,10 @@
         }
     </style>
     <script>
-        /* window.onload = function() {
-                    window.print();
-                    setTimeout(() => window.close(), 1000);
-                } */
+        window.onload = function() {
+            window.print();
+            setTimeout(() => window.close(), 1000);
+        }
     </script>
 
 </head>

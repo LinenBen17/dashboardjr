@@ -13,6 +13,7 @@ $(window).on('load', function () {
 
 $(document).on('change', '#route_id', function () {
     const route_id = $(this).val();
+    const agency_origin_id = $('#agency_origin_id').val();
     const date = $('#date').val();
     const tbody = document.getElementById('tbodyGuidesManifests');
     const tfoot = document.getElementById('tfootGuidesManifests');
@@ -52,7 +53,7 @@ $(document).on('change', '#route_id', function () {
             console.error('Error al crear el nuevo codigo de manifiesto:', err);
         });
 
-    fetch(`/shipment-manifest/obtener-guia-manifestadas?route_id=${route_id}&date=${date}`)
+    fetch(`/shipment-manifest/obtener-guia-manifestadas?route_id=${route_id}&manifest_date=${date}&agency_origin_id=${agency_origin_id}`)
         .then(res => res.json())
         .then(data => {
             let totalGuias = data.length;
@@ -402,6 +403,50 @@ $('#prefix_destino_update').keydown(function () {
             })
             .catch(err => {
                 console.error('Error al buscar municipios:', err);
+            });
+    }
+});
+
+$(document).on('change', '#agency_destination_manifest_search', function () {
+    const agency_id = $(this).val();
+
+    fetch(`/shipment_manifest/buscar-ruta-por-agencia?agency_id=${agency_id}`)
+        .then(res => res.json())
+        .then(data => {
+            const select = document.getElementById('route_destination_manifest_search');
+            select.innerHTML = '<option value="">Seleccione una opción</option>';
+            Object.entries(data).forEach(([id, prefix]) => {
+                const option = document.createElement('option');
+                option.value = id;
+                option.textContent = prefix;
+                select.appendChild(option);
+            })
+        })
+        .catch(err => {
+            console.error('Error al buscar ruta por agencia:', err);
+        });
+});
+
+$(document).on('click', '.rePrintManifest', function () {
+    const agency_origin_manifest_search = $('#agency_origin_manifest_search').val();
+    const agency_destination_manifest_search = $('#agency_destination_manifest_search').val();
+    const route_destination_manifest_search = $('#route_destination_manifest_search').val();
+    const manifest_date_manifest_search = $('#manifest_date_manifest_search').val();
+
+    let manifest_code;
+
+    if (!agency_origin_manifest_search || !agency_destination_manifest_search || !route_destination_manifest_search || !manifest_date_manifest_search) {
+        alert('Por favor, complete todos los campos de búsqueda para re-imprimir el manifiesto.');
+    }
+    else {
+        fetch(`/shipment-manifest/buscar-manifiesto-por-origen-y-ruta?agency_origin_id=${agency_origin_manifest_search}&agency_destination_id=${agency_destination_manifest_search}&route_id=${route_destination_manifest_search}&manifest_date=${manifest_date_manifest_search}`)
+            .then(res => res.json())
+            .then(data => {
+                manifest_code = data;
+                window.open(`/shipment_manifest/${manifest_code}/printManifestGuides`, '_blank');
+            })
+            .catch(err => {
+                console.error('Error al buscar manifiesto:', err);
             });
     }
 });
