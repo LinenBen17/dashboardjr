@@ -49,7 +49,7 @@ class AppServiceProvider extends ServiceProvider
         FilamentAsset::register([
             //agregar jquery
             Js::make('jquery', 'https://code.jquery.com/jquery-3.6.0.min.js')->loadedOnRequest(),
-            Js::make('custom-script', asset('js/globalCustom.js')),
+            Js::make('custom-script', asset('js/globalCustom.js'))->loadedOnRequest()
         ]);
     }
 }
