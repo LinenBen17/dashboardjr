@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Employee;
 use App\Models\Route;
+use App\Models\User;
 use App\Models\WarehouseOutgo;
 use App\Models\WarehouseOutgoGuide;
 use Carbon\Carbon;
@@ -14,7 +15,7 @@ class WarehouseOutgosController extends Controller
     public function __invoke($id)
     {
         $manifest_outgo = WarehouseOutgo::find($id);
-        $person_scans = Employee::where('id', $manifest_outgo->person_scans)->first();
+        $person_scans = User::where('id', $manifest_outgo->person_scans)->first();
         $route = Route::where('id', $manifest_outgo->route_id)->first();
         $guides = WarehouseOutgoGuide::where('warehouse_outgo_id', $id)
             ->orderBy('scanned_at', 'asc')

@@ -42,8 +42,7 @@ class CreateWarehouseOutgo extends CreateRecord
                 ->persistent()
                 ->send();
         }
-        // return $incomeGuide;
-        return true; // Solo para permitir cualquier guía, quitar esta validación si quieres que solo se permitan guías de ingreso existentes
+        return $incomeGuide;
     }
 
     public function addMotherGuide(string $guide)
