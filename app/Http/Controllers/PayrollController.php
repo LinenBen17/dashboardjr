@@ -14,6 +14,10 @@ class PayrollController extends Controller
             ->where('id', $payrollPeriodId)
             ->first();
 
+        $payroll = DB::table('payrolls')
+            ->where('id', $period->payroll_id)
+            ->first();
+
         $employees = DB::table('payroll_period_details as ppd')
             ->join('employees as e', 'ppd.employee_id', '=', 'e.id')
             ->join('employee_payrolls as ep', function ($join) use ($period) {
@@ -144,6 +148,8 @@ class PayrollController extends Controller
 
                 'totalDescuento' => $totalDescuento,
                 'liquido' => $row->total_pay,
+
+                'payroll_status' => $payroll->name,
             ];
         }
 

@@ -33,7 +33,13 @@
                     <tr>
                         <td>17888905</td>
                         <td>TRANSPORTES JR</td>
-                        <td>FUERA DE PLANILLA</td>
+                        <td>
+                            @if ($item['payroll_status'] != 'Fuera de Planilla')
+                                Dentro de Planilla
+                            @else
+                                Fuera de Planilla
+                            @endif
+                        </td>
                         <td>20 CALLE 2-43 ZONA 3 GUATEMALA</td>
                     </tr>
                 </tbody>

@@ -44,7 +44,7 @@ class RouteResource extends Resource
                     ->unique(Route::class, 'prefix', ignoreRecord: true),
                 Forms\Components\Select::make('employee_id')
                     ->required()
-                    ->relationship('employees', 'name', function (Builder $query) {
+                    ->relationship('employee', 'name', function (Builder $query) {
                         // Filter employees(name+last_name) by charge
                         $query->whereHas('charges', function (Builder $query) {
                             $query->where('name', 'Piloto Repartidor');
@@ -55,7 +55,7 @@ class RouteResource extends Resource
                     }),
                 Forms\Components\Select::make('agency_id')
                     ->required()
-                    ->relationship('agencies', 'name'),
+                    ->relationship('agency', 'name'),
                 Forms\Components\TextInput::make('plates')
                     ->required()
                     ->maxLength(191),
@@ -74,7 +74,7 @@ class RouteResource extends Resource
                 Tables\Columns\TextColumn::make('employee_id')
                     ->numeric()
                     ->getStateUsing(function (Route $record) {
-                        return $record->employees?->name . ' ' . $record->employees?->last_name;
+                        return $record->employee?->name . ' ' . $record->employee?->last_name;
                     })
                     ->sortable(),
                 Tables\Columns\TextColumn::make('agency_id')

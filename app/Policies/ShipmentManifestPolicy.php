@@ -3,10 +3,10 @@
 namespace App\Policies;
 
 use App\Models\User;
-use App\Models\ShipmentEntry;
+use App\Models\ShipmentManifest;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class ShipmentEntryPolicy
+class ShipmentManifestPolicy
 {
     use HandlesAuthorization;
 
@@ -15,15 +15,15 @@ class ShipmentEntryPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('view_any_shipment::input');
+        return $user->can('view_any_shipment::manifest');
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, ShipmentEntry $shipmentEntry): bool
+    public function view(User $user, ShipmentManifest $shipmentManifest): bool
     {
-        return $user->can('view_shipment::input');
+        return $user->can('view_shipment::manifest');
     }
 
     /**
@@ -31,23 +31,23 @@ class ShipmentEntryPolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('create_shipment::input');
+        return $user->can('create_shipment::manifest');
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, ShipmentEntry $shipmentEntry): bool
+    public function update(User $user, ShipmentManifest $shipmentManifest): bool
     {
-        return $user->can('update_shipment::input');
+        return $user->can('update_shipment::manifest');
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, ShipmentEntry $shipmentEntry): bool
+    public function delete(User $user, ShipmentManifest $shipmentManifest): bool
     {
-        return $user->can('delete_shipment::input');
+        return $user->can('delete_shipment::manifest');
     }
 
     /**
@@ -55,15 +55,15 @@ class ShipmentEntryPolicy
      */
     public function deleteAny(User $user): bool
     {
-        return $user->can('delete_any_shipment::input');
+        return $user->can('delete_any_shipment::manifest');
     }
 
     /**
      * Determine whether the user can permanently delete.
      */
-    public function forceDelete(User $user, ShipmentEntry $shipmentEntry): bool
+    public function forceDelete(User $user, ShipmentManifest $shipmentManifest): bool
     {
-        return $user->can('force_delete_shipment::input');
+        return $user->can('force_delete_shipment::manifest');
     }
 
     /**
@@ -71,15 +71,15 @@ class ShipmentEntryPolicy
      */
     public function forceDeleteAny(User $user): bool
     {
-        return $user->can('force_delete_any_shipment::input');
+        return $user->can('force_delete_any_shipment::manifest');
     }
 
     /**
      * Determine whether the user can restore.
      */
-    public function restore(User $user, ShipmentEntry $shipmentEntry): bool
+    public function restore(User $user, ShipmentManifest $shipmentManifest): bool
     {
-        return $user->can('restore_shipment::input');
+        return $user->can('restore_shipment::manifest');
     }
 
     /**
@@ -87,15 +87,15 @@ class ShipmentEntryPolicy
      */
     public function restoreAny(User $user): bool
     {
-        return $user->can('restore_any_shipment::input');
+        return $user->can('restore_any_shipment::manifest');
     }
 
     /**
      * Determine whether the user can replicate.
      */
-    public function replicate(User $user, ShipmentEntry $shipmentEntry): bool
+    public function replicate(User $user, ShipmentManifest $shipmentManifest): bool
     {
-        return $user->can('replicate_shipment::input');
+        return $user->can('replicate_shipment::manifest');
     }
 
     /**
@@ -103,6 +103,6 @@ class ShipmentEntryPolicy
      */
     public function reorder(User $user): bool
     {
-        return $user->can('reorder_shipment::input');
+        return $user->can('reorder_shipment::manifest');
     }
 }

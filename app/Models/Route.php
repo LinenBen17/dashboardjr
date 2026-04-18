@@ -10,13 +10,14 @@ class Route extends Model
 {
     use HasFactory;
     protected $fillable = ['name', 'prefix', 'employee_id', 'agency_id', 'plates'];
-    public function employees()
+
+    public function employee()
     {
-        return $this->belongsTo(Employee::class, 'employee_id');
+        return $this->belongsTo(Employee::class);
     }
     public function agency()
     {
-        return $this->belongsTo(Agency::class, 'agency_id');
+        return $this->belongsTo(Agency::class);
     }
     public function warehouseIncomes()
     {
