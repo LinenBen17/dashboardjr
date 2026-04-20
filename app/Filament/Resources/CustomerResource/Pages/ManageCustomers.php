@@ -33,7 +33,11 @@ class ManageCustomers extends ManageRecords
                                 ->label('Cliente')
                                 ->options(function () {
                                     return Customer::all()
-                                        ->pluck('name', 'id')
+                                        ->mapWithKeys(function ($customer) {
+                                            return [
+                                                $customer->id => $customer->name . ' - ' . $customer->code,
+                                            ];
+                                        })
                                         ->toArray();
                                 })
                                 ->required(),

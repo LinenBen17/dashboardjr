@@ -433,73 +433,7 @@
     </x-filament::grid>
 
     {{-- MODAL GUIAS HIJAS --}}
-    <x-filament::modal id="childGuides" width="4xl">
-        <x-slot name="heading">
-            Enlace de Guías Hijas
-        </x-slot>
-        {{-- INPUT Y CONTADOR --}}
-        <x-filament::grid class="gap-4" style="--cols-default: repeat(2, minmax(0, 1fr));">
-            <x-filament::grid.column style="--col-span-default: span 1 / span 1;">
-                <div>
-                    <label for="child"
-                        class="fi-fo-field-wrp-label mb-2 inline-flex items-center gap-x-3 text-sm font-medium leading-6 text-gray-950 dark:text-white">
-                        Guía Hija
-                    </label>
-                    <x-filament::input.wrapper>
-                        <x-filament::input type="text" id="child" name="child"
-                            placeholder="Escanee las guías hijas" />
-                    </x-filament::input.wrapper>
-                    <p class="fi-fo-field-wrp-helper-text mt-2 text-sm text-gray-500 dark:text-gray-400">
-                        Estas guías hijas estarán enlazadas al envío.
-                    </p>
-                </div>
-            </x-filament::grid.column>
-            <x-filament::grid.column style="--col-span-default: span 1 / span 1;">
-                <div class="flex flex-col">
-                    <span class="text-white text-sm font-medium">Guías Hijas Enlazadas</span>
-                    <span id="guia-hija-count" class="text-white"
-                        style="font-size: 24pt">{{ count($childGuides) }}</span>
-                </div>
-            </x-filament::grid.column>
-        </x-filament::grid>
-        <div>
-            <label class="fi-fo-field-wrp-label inline-flex items-center gap-x-3">
-                <button x-data="{
-                    state: false,
-                    toggle() {
-                        this.state = !this.state;
-                        window.dispatchEvent(new CustomEvent('toggle-changed', { detail: this.state }));
-                    }
-                }" x-bind:aria-checked="state.toString()" x-on:click="toggle()"
-                    x-bind:class="state
-                        ?
-                        'bg-custom-600 fi-color-success' :
-                        'bg-gray-200 dark:bg-gray-700 fi-color-gray'"
-                    x-bind:style="state
-                        ?
-                        '--c-600:var(--success-600)' :
-                        '--c-600:var(--gray-600)'"
-                    class="fi-fo-toggle relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent outline-none transition-colors duration-200 ease-in-out focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-1 disabled:pointer-events-none disabled:opacity-70 dark:focus-visible:ring-primary-500 dark:focus-visible:ring-offset-gray-900"
-                    role="switch" type="button">
-                    <span
-                        class="pointer-events-none relative inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
-                        x-bind:class="state ? 'translate-x-5 rtl:-translate-x-5' : 'translate-x-0'"></span>
-
-                    <!-- hidden input to send value -->
-                    <input type="hidden" name="linkLater" x-bind:value="state">
-                </button>
-
-                <span class="text-sm font-medium leading-6 text-gray-950 dark:text-white">
-                    Enlazar Después
-                </span>
-            </label>
-        </div>
-        <div class="">
-            <x-filament::button type="button" class="saveChilds" wire:click="confirmChilds" color="primary">
-                Enlazar
-            </x-filament::button>
-        </div>
-    </x-filament::modal>
+    <x-child-guides-modal :count="count($childGuides)" :childGuides="$childGuides" action="confirmChilds" />
 
     {{-- MODAL CONSULTA DE GUÍAS --}}
     <x-filament::modal id="consultGuides" width="4xl">
