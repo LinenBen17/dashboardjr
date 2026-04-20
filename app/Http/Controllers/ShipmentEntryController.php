@@ -208,6 +208,8 @@ class ShipmentEntryController extends Controller
     public function getLastGuideData(Request $request)
     {
         $lastGuide = DB::table('shipment_entries')
+            ->join('customers as sender', 'shipment_entries.sender_id', '=', 'sender.id')
+            ->join('customers as receiver', 'shipment_entries.receiver_id', '=', 'receiver.id')
             ->orderBy('id', 'desc')
             ->first();
 
