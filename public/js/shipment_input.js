@@ -517,6 +517,18 @@ $(document).on('keydown', '#product_id_input', async function (e) {
     }
 });
 
+//FUNCIONALIDADES CON F3 Y F4
+$(document).on('keydown', function (e) {
+    if (e.key === 'F3') {
+        e.preventDefault();
+        // obtener datos remitente ultima guía
+        fetch('/shipment-entries/ultima-guia-ingresada')
+    } else if (e.key === 'F4') {
+        e.preventDefault();
+        // Lógica para F4
+    }
+});
+
 $(document).on('blur', '#product_id_input', function () {
     if ($("#product_id_input").val() == "CE") {
         const component = getLivewireComponent();
@@ -665,5 +677,5 @@ document.addEventListener('livewire:initialized', () => {
         setTimeout(restartFocus, 50);
     });
 
-    initTomSelects();
+    // initTomSelects();
 });

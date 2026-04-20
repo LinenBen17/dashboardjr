@@ -11,7 +11,7 @@
 
     <link rel="stylesheet" href="https://cdn.datatables.net/2.3.2/css/dataTables.dataTables.min.css">
 
-    <style>
+    {{--     <style>
         /* Contenedor principal */
         .ts-control {
             border: none !important;
@@ -92,7 +92,7 @@
         .dark .ts-dropdown .option.active {
             background-color: rgb(75 85 99);
         }
-    </style>
+    </style> --}}
 
     <x-filament::grid class="gap-4" style="--cols-default: repeat(1, minmax(0, 1fr));">
         {{-- Información por defecto --}}
@@ -152,8 +152,12 @@
                         class="fi-fo-field-wrp-label mb-2 inline-flex items-center gap-x-3 text-sm font-medium leading-6 text-gray-950 dark:text-white">
                         Codigo Remitente<span class="text-danger-600 dark:text-danger-400 font-medium">*</span>
                     </label>
-                    <x-filament::input.wrapper wire:ignore>
+                    {{-- <x-filament::input.wrapper wire:ignore>
                         <input type="text" id="codigo_remitente" name="sender_code" />
+                    </x-filament::input.wrapper> --}}
+                    <x-filament::input.wrapper>
+                        <x-filament::input type="text" wire:model="sender_code" name="sender_code"
+                            id="codigo_remitente" />
                     </x-filament::input.wrapper>
                 </div>
                 <div>
@@ -195,8 +199,12 @@
                         class="fi-fo-field-wrp-label mb-2 inline-flex items-center gap-x-3 text-sm font-medium leading-6 text-gray-950 dark:text-white">
                         Codigo Destinatario<span class="text-danger-600 dark:text-danger-400 font-medium">*</span>
                     </label>
-                    <x-filament::input.wrapper wire:ignore>
+                    {{-- <x-filament::input.wrapper wire:ignore>
                         <input type="text" id="codigo_destinatario" name="receiver_code" />
+                    </x-filament::input.wrapper> --}}
+                    <x-filament::input.wrapper>
+                        <x-filament::input type="text" wire:model="receiver_code" name="receiver_code"
+                            id="codigo_destinatario" />
                     </x-filament::input.wrapper>
                 </div>
                 <div>

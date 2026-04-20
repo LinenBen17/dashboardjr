@@ -85,21 +85,35 @@ class ShipmentEntryController extends Controller
 
     public function getCustomerData(Request $request)
     {
-        $customer_code = $request->get('code');
+        $code = $request->get('code');
 
-        $customer_data = DB::table('customers')
-            ->where('code', '=', $customer_code)
+        $customer = DB::table('customers')
+            ->where(function ($query) use ($code) {
+                $query->where('code', $code) // caso: GUA-8570
+                    ->orWhere('code', 'like', '%-' . $code); // caso: 8570
+            })
             ->select('name', 'address', 'phone', 'id')
             ->first();
 
+        if (!$customer) {
+            return response()->json([
+                'message' => 'Cliente no encontrado'
+            ], 404);
+        }
+
         $customer_special_rates = DB::table('customer_special_rates')
-            ->where('customer_id', '=', $customer_data->id)
+            ->where('customer_id', $customer->id)
             ->join('products', 'customer_special_rates.product_id', '=', 'products.id')
-            ->select('products.name as product_name', 'customer_special_rates.special_price', 'products.code as product_code', 'products.id as product_id')
+            ->select(
+                'products.name as product_name',
+                'customer_special_rates.special_price',
+                'products.code as product_code',
+                'products.id as product_id'
+            )
             ->get();
 
         return response()->json([
-            'customer_data' => $customer_data,
+            'customer_data' => $customer,
             'special_rates' => $customer_special_rates
         ]);
     }
@@ -189,5 +203,14 @@ class ShipmentEntryController extends Controller
             'guide_outgos' => $guide_outgos,
             'guide_cod' => $guide_cod,
         ]);
+    }
+
+    public function getLastGuideData(Request $request)
+    {
+        $lastGuide = DB::table('shipment_entries')
+            ->orderBy('id', 'desc')
+            ->first();
+
+        return response()->json($lastGuide);
     }
 }
