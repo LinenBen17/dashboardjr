@@ -68,6 +68,13 @@ class ShipmentInput extends Page
 
     public $statusPrinted = false;
 
+    private function getProductIdByCode($code)
+    {
+        return DB::table('products')
+            ->where('code', $code)
+            ->value('id');
+    }
+
     public function mount()
     {
         $this->date_guide = now()->format('Y-m-d'); // o Carbon::now()->format('Y-m-d')
@@ -125,8 +132,10 @@ class ShipmentInput extends Page
         $unitPrice = $pieces > 0 ? $total / $pieces : $total;
 
         // 🔥 Crear producto tipo COD
+        $productId = $this->getProductIdByCode(1);
+
         $this->productos[] = [
-            'product_id' => 1, // fijo por ahora
+            'product_id' => $productId,
             'pieces' => $pieces,
             'product_description' => 'PAGO CONTRA ENTREGA',
             'unit_price' => $unitPrice,
@@ -198,6 +207,18 @@ class ShipmentInput extends Page
     {
         $this->newProduct['subtotal'] =
             $this->newProduct['pieces'] * $this->newProduct['unit_price'];
+
+        $productId = $this->getProductIdByCode($this->newProduct['product_id']);
+
+        if (!$productId) {
+            Notification::make()
+                ->title('Producto inválido')
+                ->danger()
+                ->send();
+            return;
+        }
+
+        $this->newProduct['product_id'] = $productId;
 
         $this->productos[] = $this->newProduct;
 
@@ -575,6 +596,19 @@ class ShipmentInput extends Page
 
                 // Como la guía madre cuenta como una pieza, eliminamos la primera
                 array_shift($productEntries);
+
+                // Validar que existan los productos antes de crear las guías hijas
+                foreach ($productEntries as $entry) {
+                    if (!DB::table('products')->where('id', $entry['product_id'])->exists()) {
+                        Notification::make()
+                            ->title('Error al guardar guías hijas')
+                            ->body('El producto con ID ' . $entry['product_id'] . ' no existe. Por favor revisa los productos antes de guardar.')
+                            ->danger()
+                            ->send();
+                        return;
+                    }
+                }
+
                 // Ahora creamos cada guía hija
                 foreach ($this->childGuides as $index => $childGuide) {
                     $entry = $productEntries[$index] ?? null;

@@ -441,7 +441,7 @@
     </x-filament::grid>
 
     {{-- MODAL GUIAS HIJAS --}}
-    <x-child-guides-modal :count="count($childGuides)" action="confirmChilds" />
+    <x-child-guides-modal :count="count($childGuides)" :childGuides="$childGuides" action="confirmChilds" />
 
     {{-- MODAL CONSULTA DE GUÍAS --}}
     <x-filament::modal id="consultGuides" width="4xl">

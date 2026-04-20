@@ -1,5 +1,5 @@
 {{-- MODAL GUIAS HIJAS --}}
-<x-filament::modal :id="$id" width="4xl">
+<x-filament::modal :id="$id" width="4xl" :visible="true">
     <x-slot name="heading">
         {{ $heading }}
     </x-slot>
@@ -35,6 +35,40 @@
             </div>
         </x-filament::grid.column>
     </x-filament::grid>
+
+    {{-- LISTA DE GUÍAS HIJAS --}}
+    <div class="mt-4">
+        <span class="text-sm font-medium text-gray-950 dark:text-white">
+            Guías agregadas
+        </span>
+
+        <div
+            class="mt-2 border rounded-lg p-3 bg-white dark:bg-gray-900 
+               max-h-40 overflow-y-auto space-y-2">
+
+            @forelse ($childGuides as $index => $guide)
+                <div
+                    class="flex items-center justify-between px-3 py-2 rounded-md 
+                       bg-gray-100 dark:bg-gray-800">
+
+                    <span class="text-sm font-medium text-gray-800 dark:text-gray-200">
+                        {{ $guide }}
+                    </span>
+
+                    {{-- botón eliminar (opcional pero recomendado) --}}
+                    <button type="button" wire:click="removeChildGuide({{ $index }})"
+                        class="text-red-500 hover:text-red-700 text-xs">
+                        ✕
+                    </button>
+                </div>
+            @empty
+                <div class="text-sm text-gray-500 text-center">
+                    No hay guías agregadas
+                </div>
+            @endforelse
+
+        </div>
+    </div>
 
     {{-- TOGGLE --}}
     <div>

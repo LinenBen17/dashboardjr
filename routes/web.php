@@ -8,6 +8,7 @@ use App\Http\Controllers\ShipmentManifestController;
 use App\Http\Controllers\VacationController;
 use App\Http\Controllers\WarehouseIncomesController;
 use App\Http\Controllers\WarehouseOutgosController;
+use App\Livewire\TestChildGuides;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -42,3 +43,6 @@ Route::get('/shipment-delivery/obtener-datos-entrega', [ShipmentDeliveryControll
 
 Route::get('/payrolls/{id}/printPayroll', [PayrollController::class, 'generatePayrollReport'])->name('payroll.printPayroll');
 Route::get('/payrolls/benefit-payslips', [PayrollController::class, 'generatePayslipsReport'])->name('payroll.generatePayslipsReport');
+
+// routes/web.php
+Route::get('/test-child-guides', TestChildGuides::class);

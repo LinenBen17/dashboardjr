@@ -20,6 +20,8 @@ class ChildGuidesModal extends Component
         public string $toggleLabel = 'Enlazar Después',
         public string $buttonText = 'Enlazar',
         public string $action = 'confirmChilds',
+
+        public array $childGuides = [],
     ) {}
 
     public function render()
