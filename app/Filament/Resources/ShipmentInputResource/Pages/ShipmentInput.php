@@ -196,11 +196,12 @@ class ShipmentInput extends Page
 
     public function getCustomerID($code)
     {
-        $customer_id = DB::table('customers')
-            ->where('code', '=', $code)
+        return DB::table('customers')
+            ->where(function ($query) use ($code) {
+                $query->where('code', $code)
+                    ->orWhere('code', 'like', '%-' . $code);
+            })
             ->value('id');
-
-        return $customer_id;
     }
 
     public function addProduct()
