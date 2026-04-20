@@ -520,12 +520,49 @@ $(document).on('keydown', '#product_id_input', async function (e) {
 //FUNCIONALIDADES CON F3 Y F4
 $(document).on('keydown', function (e) {
     if (e.key === 'F3') {
+        console.log("HOASIOSA");
+
         e.preventDefault();
         // obtener datos remitente ultima guía
-        fetch('/shipment-entries/ultima-guia-ingresada')
+        fetch('/shipment-entries/obtener-ultima-guia')
+            .then(res => res.json())
+            .then(data => {
+                console.log(data);
+
+                if (data) {
+                    console.log("lololo");
+
+                    $('#codigo_remitente').val(data.sender_code);
+                    $('#sender_name').val(data.sender_name);
+                    $('#sender_address').val(data.sender_address);
+                    $('#sender_phone').val(data.sender_phone);
+
+                    //Select
+                    $('#forma_pago').val(data.payment_method_id);
+                }
+            })
+            .catch(err => {
+                console.error('Error al obtener última guía:', err);
+            });
     } else if (e.key === 'F4') {
         e.preventDefault();
-        // Lógica para F4
+        //datos destinatario ultima guía
+        fetch('/shipment-entries/obtener-ultima-guia')
+            .then(res => res.json())
+            .then(data => {
+                if (data) {
+                    $('#codigo_destinatario').val(data.receiver_code);
+                    $('#receiver_name').val(data.receiver_name);
+                    $('#receiver_address').val(data.receiver_address);
+                    $('#receiver_phone').val(data.receiver_phone);
+
+                    //Select
+                    $('#forma_pago').val(data.payment_method_id);
+                }
+            })
+            .catch(err => {
+                console.error('Error al obtener última guía:', err);
+            });
     }
 });
 
@@ -658,8 +695,6 @@ $(document).on('click', '#searchGuideBtn', function () {
             console.error('Error al buscar guía:', err);
         });
 })
-
-
 
 /*************************************************
  * 8. LIVEWIRE EVENTS

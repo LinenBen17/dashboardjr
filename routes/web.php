@@ -31,6 +31,7 @@ Route::get('/shipment-entries/buscar-cliente', [ShipmentEntryController::class, 
 Route::get('/shipment-entries/listar-clientes', [ShipmentEntryController::class, 'getCustomers'])->name('listar_clientes');
 Route::get('/shipment-entries/buscar-guia', [ShipmentEntryController::class, 'getGuideData'])->name('buscar_guia');
 Route::put('/shipment-entries/modificar-guia/{id}', [ShipmentEntryController::class, 'modifyGuideData'])->name('modificar_guia');
+Route::get('/shipment-entries/obtener-ultima-guia', [ShipmentEntryController::class, 'getLastGuideData'])->name('obtener_ultima_guia');
 
 Route::get('/shipment-manifest/buscar-agencia', [ShipmentManifestController::class, 'searchAgencyByRoute'])->name('buscar_agencia');
 Route::get('/shipment_manifest/buscar-ruta-por-agencia', [ShipmentManifestController::class, 'searchRouteByAgency'])->name('buscar_ruta_por_agencia');
