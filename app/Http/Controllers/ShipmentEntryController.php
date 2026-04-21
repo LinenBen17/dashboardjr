@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Customer;
 use App\Models\ShipmentEntry;
 use App\Models\Town;
 use Illuminate\Http\Request;
@@ -208,10 +209,20 @@ class ShipmentEntryController extends Controller
     public function getLastGuideData(Request $request)
     {
         $lastGuide = DB::table('shipment_entries')
-            ->join('customers as sender', 'shipment_entries.sender_id', '=', 'sender.id')
-            ->join('customers as receiver', 'shipment_entries.receiver_id', '=', 'receiver.id')
             ->orderBy('id', 'desc')
             ->first();
+
+
+        $sender_code = DB::table('customers')
+            ->where('id', $lastGuide->sender_code)
+            ->value('code');
+
+        $receiver_code = DB::table('customers')
+            ->where('id', $lastGuide->receiver_code)
+            ->value('code');
+
+        $lastGuide->sender_code = $sender_code;
+        $lastGuide->receiver_code = $receiver_code;
 
         return response()->json($lastGuide);
     }

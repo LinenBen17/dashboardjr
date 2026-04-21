@@ -279,109 +279,6 @@ $(document).on('click', '#searchGuideBtnUpdate', function () {
         });
 });
 
-$(document).on('click', '#searchGuideBtnUpdate', function () {
-    const guide = document.getElementById('search_guide_update').value.trim();
-    let town_id_searched;
-    // También actualizar en Livewire (clave)
-    const component = document.querySelector('[wire\\:id]');
-    const componentId = component?.getAttribute('wire:id');
-
-    if (!guide) return;
-
-    // fetch para obtener datos de entrega
-    fetch(`/shipment-entries/buscar-guia?guide=${guide}`)
-        .then(res => res.json())
-        .then(data => {
-
-            // Foreach para guide_data, guide_incomes y guide_outgos
-            if (data.guide_data) {
-                console.log(data);
-
-                const guide = data.guide_data;
-
-                $('#manifest_code_update').val(guide.manifest_code);
-                $('#sender_name_update').val(guide.sender_name);
-                $('#sender_address_update').val(guide.sender_address);
-                $('#sender_phone_update').val(guide.sender_phone);
-                $('#receiver_name_update').val(guide.receiver_name);
-                $('#receiver_address_update').val(guide.receiver_address);
-                $('#receiver_phone_update').val(guide.receiver_phone);
-                $('#prefix_origen_update').val(guide.prefix_origin);
-                $('#prefix_destino_update').val(guide.prefix_destination);
-                town_id_searched = guide.town_id;
-                $('#product_update').val(guide.product_description);
-                $('#pieces_update').val(guide.pieces);
-                $('#unit_price_update').val(guide.unit_price);
-                $('#total_update').val(guide.total);
-                $('#sender_total_update').val(guide.sender_total);
-                $('#receiver_total_update').val(guide.receiver_total);
-                $('#date_guide_update').val(guide.date_guide.split('/').reverse().join('-'));
-                $('#manifest_code_update').val(guide.manifest_code);
-
-                $('#received_by_name').focus();
-
-                Livewire.find(componentId).call(`buscarGuia`, guide.id);
-
-                // Segundo fetch: obtener municipio (ahora tiene town_id_searched)
-                fetch(`/shipment-entries/buscar-unico-municipio?town_id=${town_id_searched}`)
-                    .then(res => res.json())
-                    .then(data => {
-                        const select = document.getElementById('town_id_update');
-                        select.innerHTML = '<option value="">Seleccione una opción</option>';
-
-                        Object.entries(data).forEach(([id, name]) => {
-                            const option = document.createElement('option');
-                            option.value = id;
-                            option.textContent = name;
-                            select.appendChild(option);
-                        });
-
-                        // Si solo hay un registro, seleccionarlo automáticamente
-                        if (Object.entries(data).length === 1) {
-                            const firstEntry = Object.entries(data)[0];
-                            select.value = firstEntry[0];
-                            // Disparar el evento change para ejecutar otros eventos asociados
-                            select.dispatchEvent(new Event('change'));
-                        }
-                    })
-                    .catch(err => {
-                        console.error('Error al buscar municipio:', err);
-                    });
-
-                fetch(`/shipment-entries/buscar-ruta?town_id=${town_id_searched}`)
-                    .then(res => res.json())
-                    .then(data => {
-                        const input = document.getElementById('route_destino_update');
-
-                        input.value = data;
-                    })
-                    .catch(err => {
-                        console.error('Error al buscar municipio:', err);
-                    });
-
-                $('#payment_method_id_update').val(guide.payment_method_id);
-            } else {
-                $('#sender_name_update').val('');
-                $('#sender_address_update').val('');
-                $('#sender_phone_update').val('');
-                $('#receiver_name_update').val('');
-                $('#receiver_address_update').val('');
-                $('#receiver_phone_update').val('');
-                $('#product_update').val('');
-                $('#pieces_update').val('');
-                $('#unit_price_update').val('');
-                $('#total_update').val('');
-                $('#date_guide_update').val('');
-                $('#payment_method_update').val('');
-                $('#manifest_code_update').val('');
-            }
-
-        })
-        .catch(err => {
-            console.error('Error al buscar guía:', err);
-        });
-});
-
 // Buscar destino al escribir en el campo destino
 $('#prefix_destino_update').keydown(function () {
     const valor = $(this).val();
@@ -468,35 +365,27 @@ $(document).on('change', '#town_id_update', function () {
         });
 })
 
-$(document).on('blur', '.product_index-input', function () {
+// INPUT PRODUCT_ID
+$(document).on('blur', '#product_id_input', function () {
     const codigoIngresado = $(this).val();
-    const indexInput = this.dataset.index;
 
     fetch(`/shipment-entries/buscar-producto?code=${codigoIngresado}`)
         .then(res => res.json())
         .then(data => {
-            $('#pieces_' + indexInput).val(1);
-            $('#product_description_' + indexInput).val(data.description);
-            $('#unit_price_' + indexInput).val(data.price);
+            $('#product_description_input').val(data.description);
+            $('#unit_price').val(data.price);
 
-            // También actualizar en Livewire (clave)
             const component = document.querySelector('[wire\\:id]');
             const componentId = component?.getAttribute('wire:id');
 
-            Livewire.find(componentId).set(`productos.${indexInput}.product_id`, $(this).val());
-            Livewire.find(componentId).set(`productos.${indexInput}.pieces`, $('#pieces_' + indexInput).val());
-            Livewire.find(componentId).set(`productos.${indexInput}.product_description`, data.description);
-            Livewire.find(componentId).set(`productos.${indexInput}.unit_price`, data.price);
-            Livewire.find(componentId).set(`productos.${indexInput}.subtotal`, data.price);
-
-            setTimeout(() => {
-                addingSubtotal();
-            }, 50);
+            Livewire.find(componentId).set(`newProduct.product_id`, codigoIngresado);
+            Livewire.find(componentId).set(`newProduct.product_description`, data.description);
+            Livewire.find(componentId).set(`newProduct.unit_price`, data.price);
         })
         .catch(err => {
-            console.error('Error al buscar municipios:', err);
+            console.error('Error:', err);
         });
-})
+});
 
 $(document).on('change', '.pieces_index-input', function () {
     const indexInput = this.dataset.index;
@@ -596,7 +485,44 @@ $('.saveShipment').on('click', function () {
             town_id_update: $('#town_id_update').val()
         };
 
+        console.log(updateData);
+
+
         Livewire.find(componentId).set('updateData', updateData);
+    }, 50);
+});
+
+$('.saveShipment').on('click', function () {
+    const component = document.querySelector('[wire\\:id]');
+    const componentId = component?.getAttribute('wire:id');
+
+    const lw = Livewire.find(componentId);
+
+    // Setear TODO
+    lw.set(`no_guide_user_update`, $('#search_guide_update').val());
+    lw.set(`manifest_code_update`, $('#manifest_code_update').val());
+    lw.set(`date_guide_update`, $('#date_guide_update').val());
+    lw.set(`payment_method_id_update`, $('#payment_method_id_update').val());
+    lw.set(`sender_total_update`, $('#sender_total_update').val());
+    lw.set(`receiver_total_update`, $('#receiver_total_update').val());
+    lw.set(`total_update`, $('#total_update').val());
+
+    lw.set(`sender_code_update`, $('#codigo_remitente_update').val());
+    lw.set(`sender_name_update`, $('#sender_name_update').val());
+    lw.set(`sender_address_update`, $('#sender_address_update').val());
+    lw.set(`sender_phone_update`, $('#sender_phone_update').val());
+
+    lw.set(`receiver_code_update`, $('#codigo_destinatario_update').val());
+    lw.set(`receiver_name_update`, $('#receiver_name_update').val());
+    lw.set(`receiver_address_update`, $('#receiver_address_update').val());
+    lw.set(`receiver_phone_update`, $('#receiver_phone').val());
+
+    lw.set(`prefix_destination_update`, $('#prefix_destino').val());
+    lw.set(`town_id_update`, $('#town_id').val());
+
+    // 🔥 IMPORTANTE: llamar después
+    setTimeout(() => {
+        lw.call('confirmSave');
     }, 50);
 });
 

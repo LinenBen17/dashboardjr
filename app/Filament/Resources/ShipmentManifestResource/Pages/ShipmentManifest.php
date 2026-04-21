@@ -73,14 +73,14 @@ class ShipmentManifest extends Page
     public bool $guideIncomplete = false;
     public bool $guidePartial = false;
 
-    public $productos = [
-        [
-            'product_id' => '',
-            'pieces' => '',
-            'product_description' => '',
-            'unit_price' => '',
-            'subtotal' => '',
-        ]
+    public $productos = [];
+
+    public $newProduct = [
+        'product_id' => '',
+        'pieces' => '1',
+        'product_description' => '',
+        'unit_price' => '0.00',
+        'subtotal' => '0.00',
     ];
 
     public array $childGuidesData = [];
@@ -244,6 +244,9 @@ class ShipmentManifest extends Page
 
         $shipment = ShipmentEntry::find($shipment_entry_id);
 
+        // VARIABLE DE FORMA TEMPORAL PARA ELIMINAR UNA GUÍA
+        $this->no_guide_user_update = $shipment->mother ?? '';
+
         if (!$shipment) {
             return;
         }
@@ -385,6 +388,9 @@ class ShipmentManifest extends Page
     public function confirmSaveUpdateGuide()
     {
         $this->setValuesUpdateGuide();
+
+        Logger("INICIANDO PROCESO DE ACTUALIZACIÓN DE GUÍA...");
+        Logger($this->updateData);
 
         $this->totalPieces = 0;
         // Get total pieces from products
@@ -676,12 +682,38 @@ class ShipmentManifest extends Page
 
     public function addProduct()
     {
-        $this->productos[] = [
+        $this->newProduct['subtotal'] =
+            $this->newProduct['pieces'] * $this->newProduct['unit_price'];
+
+        $productId = DB::table('products')
+            ->where('code', $this->newProduct['product_id'])
+            ->value('id');
+
+        if (!$productId) {
+            Notification::make()
+                ->title('Producto inválido')
+                ->danger()
+                ->send();
+            return;
+        }
+
+        $this->newProduct['product_id'] = $productId;
+
+        $this->productos[] = $this->newProduct;
+
+        // recalcular totales
+        $this->total_update = 0;
+        foreach ($this->productos as $product) {
+            $this->total_update += $product['subtotal'] ?? 0;
+        }
+
+        // reset
+        $this->newProduct = [
             'product_id' => '',
-            'pieces' => '',
+            'pieces' => '1',
             'product_description' => '',
-            'unit_price' => '',
-            'subtotal' => '',
+            'unit_price' => '0.00',
+            'subtotal' => '0.00',
         ];
     }
 
@@ -744,5 +776,47 @@ class ShipmentManifest extends Page
             ->value('id');
 
         return $customer_id;
+    }
+
+    public function confirmDeleteShipment()
+    {
+        $shipment = ShipmentEntry::where('mother', $this->no_guide_user_update)->first();
+
+        if (!$shipment) {
+            Notification::make()
+                ->title('Error: No se encontró la guía para eliminar.')
+                ->danger()
+                ->send();
+            return;
+        }
+
+        $shipment->delete();
+
+        Notification::make()
+            ->title('Envío eliminado exitosamente')
+            ->success()
+            ->send();
+
+        //limpia variables
+        $this->no_guide_user_update = '';
+        $this->manifest_code_update = '';
+        $this->date_guide_update = '';
+        $this->payment_method_id_update = '';
+        $this->sender_total_update = '';
+        $this->receiver_total_update = '';
+        $this->total_update = '';
+        $this->sender_code_update = '';
+        $this->sender_name_update = '';
+        $this->sender_address_update = '';
+        $this->sender_phone_update = '';
+        $this->receiver_code_update = '';
+        $this->receiver_name_update = '';
+        $this->receiver_address_update = '';
+        $this->receiver_phone_update = '';
+        $this->prefix_origin_update = '';
+        $this->prefix_destination_update = '';
+        $this->town_id_update = '';
+
+        $this->dispatch('close-modal', id: 'updateGuides');
     }
 }
