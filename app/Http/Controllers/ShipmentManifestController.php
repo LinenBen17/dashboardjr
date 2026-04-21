@@ -131,7 +131,7 @@ class ShipmentManifestController extends Controller
             ->where('prefix_origin', $departament_origin_prefix)
             ->join('payment_methods', 'shipment_entries.payment_method_id', '=', 'payment_methods.id')
             ->select('shipment_entries.*', 'payment_methods.name as payment_method_name')
-            ->orderBy('shipment_entries.id', 'asc')
+            ->orderBy('shipment_entries.mother', 'asc')
             ->get();
 
         return response()->json($guides);
