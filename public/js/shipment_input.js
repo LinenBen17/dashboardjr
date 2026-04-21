@@ -152,54 +152,14 @@ function calcularCE() {
 
     let producto = parseFloat(document.getElementById('pce_amount').value) || 0;
     let piezas = parseInt(document.getElementById('pce_pieces').value) || 1;
-    let envio = parseFloat(document.getElementById('pce_shipment_price').value) || 0;
-    let envioPagoEl = document.querySelector('input[name="pce_shipment_pay"]:checked');
-    let envioPago = envioPagoEl ? envioPagoEl.value : 'receiver'; // fallback
-    let comisionCliente = document.getElementById('pce_customer_commission').checked;
 
     if (piezas <= 0) piezas = 1;
 
-    let comision = producto * 0.05;
-
-    let totalDestinatario = producto;
-    let totalRemitente = producto;
-
-    // envío
-    if (envioPago === 'receiver') {
-        totalDestinatario += envio;
-    } else {
-        totalRemitente -= envio;
-    }
-
-    // comisión
-    if (comisionCliente) {
-        totalDestinatario += comision;
-    } else {
-        totalRemitente -= comision;
-    }
-
-    let porPiezaDestinatario = totalDestinatario / piezas;
-    let porPiezaRemitente = totalRemitente / piezas;
+    let comision = producto * 0.05 * piezas || 0;
+    let envio = parseFloat(document.getElementById('pce_shipment_price').value) * piezas || 0;
 
     document.getElementById('ce_results').innerHTML = `
-        <div class="space-y-1">
-            <div><strong>Destinatario pagará:</strong> Q${totalDestinatario.toFixed(2)}</div>
-            <div><strong>Remitente recibirá:</strong> Q${totalRemitente.toFixed(2)}</div>
-        </div>
-            
-        <div class="border-t my-3"></div>
-            
-        <br>
-        <div class="space-y-1">
-            <strong>Por pieza:</strong>
-            <div>Destinatario paga: Q${porPiezaDestinatario.toFixed(2)}</div>
-            <div>Remitente recibe: Q${porPiezaRemitente.toFixed(2)}</div>
-        </div>
-            
-        <div class="border-t my-3"></div>
-        
-            <br>
-        <div class="text-gray-100">
+        <div class="dark:text-gray-100">
             Comisión: Q${comision.toFixed(2)}<br>
             Envío: Q${envio.toFixed(2)}
         </div>
@@ -235,6 +195,10 @@ $(window).on('load', function () {
     $(document).on('keydown', '#child', function (e) {
         const input = document.getElementById('child');
 
+        // Encuentra el componente Livewire
+        const component = document.querySelector('[wire\\:id]');
+        const componentId = component?.getAttribute('wire:id');
+
         if (e.key === 'Enter') {
             console.log("enter child")
             e.preventDefault();
@@ -245,26 +209,25 @@ $(window).on('load', function () {
 
             if (!valor) return;
 
-            // Encuentra el componente Livewire
-            const component = document.querySelector('[wire\\:id]');
-            const componentId = component?.getAttribute('wire:id');
-
             if (componentId) {
-                /* if (valor.startsWith('H')) {
+                if (valor.startsWith('H')) {
                     Livewire.find(componentId).call('addChildGuide', valor);
                 }
                 else {
-                    console.error("El valor ingresado no es válido. Debe comenzar con 'H'.");
-                    return;
-                } */
+                    let numero = valor.toString().padStart(10, '0');
+                    let guia = 'H' + numero;
 
-                let numero = valor.toString().padStart(10, '0');
-                let guia = 'H' + numero;
-
-                Livewire.find(componentId).call('addChildGuide', guia);
+                    Livewire.find(componentId).call('addChildGuide', guia);
+                }
             } else {
                 console.error("No se encontró el componente Livewire.");
             }
+        }
+
+        if (e.key === 'F1') {
+            e.preventDefault();
+
+            Livewire.find(componentId).call('confirmChilds');
         }
     })
 

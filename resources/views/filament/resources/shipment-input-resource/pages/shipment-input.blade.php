@@ -706,23 +706,10 @@
                 <div>
                     <label for="pce_amount"
                         class="fi-fo-field-wrp-label mb-2 inline-flex items-center gap-x-3 text-sm font-medium leading-6 text-gray-950 dark:text-white">
-                        Valor total a cobrar (Q)<span class="text-danger-600 dark:text-danger-400 font-medium">*</span>
+                        Valor de la Mercaderia<span class="text-danger-600 dark:text-danger-400 font-medium">*</span>
                     </label>
                     <x-filament::input.wrapper>
                         <x-filament::input type="number" wire:model.defer="pce_data.pce_amount" id="pce_amount" />
-                    </x-filament::input.wrapper>
-                </div>
-
-                {{-- Piezas --}}
-                <div>
-                    <label for="pce_pieces"
-                        class="fi-fo-field-wrp-label mb-2 inline-flex items-center gap-x-3 text-sm font-medium leading-6 text-gray-950 dark:text-white">
-                        Cantidad de piezas
-                        <span class="text-danger-600 dark:text-danger-400 font-medium">*</span>
-                    </label>
-                    <x-filament::input.wrapper>
-                        <x-filament::input type="number" wire:model.defer="pce_data.pce_pieces" id="pce_pieces"
-                            value="1" />
                     </x-filament::input.wrapper>
                 </div>
 
@@ -738,35 +725,21 @@
                             id="pce_shipment_price" />
                     </x-filament::input.wrapper>
                 </div>
+
+                {{-- Piezas --}}
+                <div>
+                    <label for="pce_pieces"
+                        class="fi-fo-field-wrp-label mb-2 inline-flex items-center gap-x-3 text-sm font-medium leading-6 text-gray-950 dark:text-white">
+                        Cantidad de piezas
+                        <span class="text-danger-600 dark:text-danger-400 font-medium">*</span>
+                    </label>
+                    <x-filament::input.wrapper>
+                        <x-filament::input type="number" wire:model.defer="pce_data.pce_pieces" id="pce_pieces"
+                            value="1" />
+                    </x-filament::input.wrapper>
+                </div>
             </div>
             <br>
-
-            {{-- Radios --}}
-            <div class="flex flex-col justify-end">
-                <label class="text-sm font-medium mb-1">¿Quién paga el envío?</label>
-                <label class="flex items-center gap-2 text-sm">
-                    <input type="radio" name="pce_shipment_pay" value="receiver"
-                        class="border-gray-300 text-primary-600 focus:ring-primary-500"
-                        wire:model.defer="pce_data.shipment_paid_by" checked>
-                    Destinatario
-                </label>
-                <label class="flex items-center gap-2 text-sm">
-                    <input type="radio" name="pce_shipment_pay" value="sender"
-                        class="border-gray-300 text-primary-600 focus:ring-primary-500"
-                        wire:model.defer="pce_data.shipment_paid_by">
-                    Remitente
-                </label>
-            </div>
-
-            {{-- Comisión --}}
-            <div class="mt-4">
-                <label class="flex items-center gap-2 text-sm">
-                    <input type="checkbox" id="pce_customer_commission"
-                        class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-                        wire:model.defer="pce_data.commission_paid_by">
-                    Incluir comisión al destinatario (5%)
-                </label>
-            </div>
 
             {{-- Resultado --}}
             <div id="ce_results"
@@ -781,7 +754,6 @@
             </div>
         </x-filament::section>
     </x-filament::modal>
-
 
     <script src="{{ asset('js/shipment_input.js') }}"></script>
 

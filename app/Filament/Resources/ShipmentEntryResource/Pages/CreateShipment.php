@@ -123,6 +123,8 @@ class CreateShipment extends Page
             return;
         }
 
+        Logger($this->pce_data);
+
         $data = $this->pce_data;
 
         // Validaciones básicas (opcional pero recomendado)
@@ -143,9 +145,9 @@ class CreateShipment extends Page
 
         // 🔥 AQUÍ defines el precio del producto
         // Lo que paga el destinatario normalmente
-        $total = $calc['commission_amount'] + $data['pce_shipment_price'];
+        $total = $calc['total_receiver'] + $calc['commission_amount'];
 
-        $unitPrice = $pieces > 0 ? $total / $pieces : $total;
+        $unitPrice = $total / $pieces;
 
         // 🔥 Crear producto tipo COD
         $productId = $this->getProductIdByCode(1);
@@ -154,10 +156,9 @@ class CreateShipment extends Page
             'product_id' => $productId,
             'pieces' => $pieces,
             'product_description' => 'PAGO CONTRA ENTREGA',
-            'unit_price' => $unitPrice,
+            'unit_price' => $data['pce_amount'],
             'subtotal' => $total,
         ];
-
 
         // Cerrar modal
         $this->closePCEModal();
@@ -338,6 +339,7 @@ class CreateShipment extends Page
 
     public function saveCOData($shipmentId)
     {
+        logger($this->pce_data);
         $data = $this->pce_data;
 
         $calc = $this->calculateCE($data);
@@ -345,11 +347,11 @@ class CreateShipment extends Page
         CashOnDelivery::create([
             'shipment_entry_id' => $shipmentId,
             'no_pce' => $data['no_pce'],
-            'amount' => $data['pce_amount'],
+            'amount' => $data['pce_amount'] * $data['pce_pieces'],
             'pieces' => $data['pce_pieces'],
-            'shipment_price' => $data['pce_shipment_price'],
+            'shipment_price' => $data['pce_shipment_price'] * $data['pce_pieces'],
 
-            'shipment_paid_by' => $data['shipment_paid_by'],
+            'shipment_paid_by' => 'receiver',
             'include_commission' => $data['commission_paid_by'] ?? false,
 
             // resultados calculados
@@ -366,7 +368,7 @@ class CreateShipment extends Page
     {
         $producto = (float) ($data['pce_amount'] ?? 0);
         $piezas = (int) ($data['pce_pieces'] ?? 1);
-        $envio = (float) ($data['pce_shipment_price'] ?? 0);
+        $envio = (float) ($data['pce_shipment_price'] ?? 0) * $piezas;
 
         $shipmentPaidBy = $data['shipment_paid_by'] ?? 'receiver';
         $includeCommission = $data['commission_paid_by'] ?? false;
@@ -374,29 +376,15 @@ class CreateShipment extends Page
         if ($piezas <= 0) $piezas = 1;
 
         $commissionRate = 0.05;
-        $comision = $producto * $commissionRate;
+        $comision = $producto * $commissionRate * $piezas;
 
         $totalDestinatario = $producto;
         $totalRemitente = $producto;
 
-        // envío
-        if ($shipmentPaidBy === 'receiver') {
-            $totalDestinatario += $envio;
-        } else {
-            $totalRemitente -= $envio;
-        }
-
-        // comisión
-        if ($includeCommission) {
-            $totalDestinatario += $comision;
-        } else {
-            $totalRemitente -= $comision;
-        }
-
         return [
             'commission_amount' => $comision,
-            'total_receiver' => $totalDestinatario,
-            'total_sender' => $totalRemitente,
+            'total_receiver' => $envio,
+            'total_sender' => 0,
             'per_piece_receiver' => $totalDestinatario / $piezas,
             'per_piece_sender' => $totalRemitente / $piezas,
             'commission_rate' => $commissionRate,
@@ -681,6 +669,10 @@ class CreateShipment extends Page
                 'mes' => $mes,
                 'anio' => $anio,
             ]);
+
+            if (!empty($this->pce_data)) {
+                $this->saveCOData($this->record->id);
+            }
 
             if ($this->statusPrinted) {
                 $this->record->logSnapshot(
