@@ -276,11 +276,20 @@ $(document).on('keydown', 'input, select, textarea, button', function (e) {
     );
 
     let idx = focusables.index(this);
+
     if (idx > -1 && idx < focusables.length - 1) {
-        focusables.eq(idx + 1).focus();
+        let next = focusables.eq(idx + 1);
+
+        next.focus();
+
+        // 🔥 esto hace que se comporte como TAB
+        setTimeout(() => {
+            if (next.is('input, textarea')) {
+                next.select();
+            }
+        }, 0);
     }
 });
-
 
 /*************************************************
  * 7. EVENTOS DE INPUTS (AGRUPADOS)
