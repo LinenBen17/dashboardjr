@@ -25,11 +25,11 @@
 
         <x-filament::grid.column style="--col-span-default: span 1 / span 1;">
             <div class="flex flex-col">
-                <span class="text-white text-sm font-medium">
+                <span class="dark:text-white text-sm font-medium">
                     {{ $counterLabel }}
                 </span>
 
-                <span id="guia-hija-count" class="text-white" style="font-size: 24pt">
+                <span id="guia-hija-count" class="dark:text-white" style="font-size: 24pt">
                     {{ $count }}
                 </span>
             </div>

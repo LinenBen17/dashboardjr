@@ -258,7 +258,10 @@ $(window).on('load', function () {
                     return;
                 } */
 
-                Livewire.find(componentId).call('addChildGuide', valor);
+                let numero = valor.toString().padStart(10, '0');
+                let guia = 'H' + numero;
+
+                Livewire.find(componentId).call('addChildGuide', guia);
             } else {
                 console.error("No se encontró el componente Livewire.");
             }

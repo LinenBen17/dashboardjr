@@ -81,14 +81,15 @@ $(window).on('load', function () {
             const componentId = component?.getAttribute('wire:id');
 
             if (componentId) {
-                /* if (valor.startsWith('H')) {
+                if (valor.startsWith('H')) {
                     Livewire.find(componentId).call('addChildGuide', valor);
                 }
                 else {
-                    console.error("El valor ingresado no es válido. Debe comenzar con 'H'.");
-                    return;
-                } */
-                Livewire.find(componentId).call('addChildGuide', valor);
+                    let numero = valor.toString().padStart(10, '0');
+                    let guia = 'H' + numero;
+
+                    Livewire.find(componentId).call('addChildGuide', guia);
+                }
             } else {
                 console.error("No se encontró el componente Livewire.");
             }

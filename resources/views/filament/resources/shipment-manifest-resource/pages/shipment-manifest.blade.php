@@ -531,8 +531,8 @@
             </x-filament::grid.column>
             <x-filament::grid.column style="--col-span-default: span 1 / span 1;">
                 <div class="flex flex-col">
-                    <span class="text-white text-sm font-medium">Guías Hijas Enlazadas</span>
-                    <span id="guia-hija-count" class="text-white"
+                    <span class="dark:text-white text-sm font-medium">Guías Hijas Enlazadas</span>
+                    <span id="guia-hija-count" class="dark:text-white"
                         style="font-size: 24pt">{{ count($childGuides) }}</span>
                 </div>
             </x-filament::grid.column>
