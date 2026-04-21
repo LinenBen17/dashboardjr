@@ -66,6 +66,10 @@ $(window).on('load', function () {
     $(document).on('keydown', '#child', function (e) {
         const input = document.getElementById('child');
 
+        // Encuentra el componente Livewire
+        const component = document.querySelector('[wire\\:id]');
+        const componentId = component?.getAttribute('wire:id');
+
         if (e.key === 'Enter') {
             console.log("enter child")
             e.preventDefault();
@@ -75,10 +79,6 @@ $(window).on('load', function () {
             input.value = ''; // Limpiar
 
             if (!valor) return;
-
-            // Encuentra el componente Livewire
-            const component = document.querySelector('[wire\\:id]');
-            const componentId = component?.getAttribute('wire:id');
 
             if (componentId) {
                 if (valor.startsWith('H')) {
@@ -93,6 +93,12 @@ $(window).on('load', function () {
             } else {
                 console.error("No se encontró el componente Livewire.");
             }
+        }
+
+        if (e.key === 'F1') {
+            e.preventDefault();
+
+            Livewire.find(componentId).call('confirmChilds');
         }
     })
 
