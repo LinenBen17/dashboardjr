@@ -709,7 +709,7 @@
                         Valor de la Mercaderia<span class="text-danger-600 dark:text-danger-400 font-medium">*</span>
                     </label>
                     <x-filament::input.wrapper>
-                        <x-filament::input type="number" wire:model.defer="pce_data.pce_amount" id="pce_amount" />
+                        <x-filament::input type="text" wire:model.defer="pce_data.pce_amount" id="pce_amount" />
                     </x-filament::input.wrapper>
                 </div>
 
@@ -721,7 +721,7 @@
                         <span class="text-danger-600 dark:text-danger-400 font-medium">*</span>
                     </label>
                     <x-filament::input.wrapper>
-                        <x-filament::input type="number" wire:model.defer="pce_data.pce_shipment_price"
+                        <x-filament::input type="text" wire:model.defer="pce_data.pce_shipment_price"
                             id="pce_shipment_price" />
                     </x-filament::input.wrapper>
                 </div>
