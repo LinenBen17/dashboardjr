@@ -30,7 +30,7 @@ class ShipmentEntryController extends Controller
                 ->join('agencies', 'routes.agency_id', '=', 'agencies.id')
                 ->join('departaments', 'agencies.departament_id', '=', 'departaments.id')
                 ->where('departaments.prefix', $prefix)
-                ->orderBy('towns.id', 'asc')
+                ->orderBy('towns.name', 'asc')
                 ->pluck('towns.name', 'towns.id');
         });
 
@@ -44,7 +44,7 @@ class ShipmentEntryController extends Controller
 
         $towns = Town::query()
             ->where('id', $town_id)
-            ->orderBy('id', 'asc')
+            ->orderBy('name', 'asc')
             ->pluck('name', 'id');
 
         return response()->json($towns);
