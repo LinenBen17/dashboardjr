@@ -317,20 +317,6 @@ $(document).on('change', '#town_id', function () {
         });
 })
 
-// CHILD
-$(document).on('keydown', '#child', function (e) {
-    if (e.key !== 'Enter') return;
-
-    e.preventDefault();
-
-    const valor = this.value.trim();
-    this.value = '';
-
-    if (!valor || !valor.startsWith('H')) return;
-
-    getLivewireComponent()?.call('addChildGuide', valor);
-});
-
 window.addEventListener('toggle-changed', (event) => {
     // También actualizar en Livewire (clave)
     const component = document.querySelector('[wire\\:id]');

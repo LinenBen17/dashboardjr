@@ -1,0 +1,131 @@
+<x-filament::page>
+    <div class="space-y-6">
+        {{-- 🔹 FILTROS --}}
+        <x-filament::section heading="Filtros">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+                <x-filament::input.wrapper>
+                    <x-filament::input type="date" wire:model="from" />
+                </x-filament::input.wrapper>
+
+                <x-filament::input.wrapper>
+                    <x-filament::input type="date" wire:model="to" />
+                </x-filament::input.wrapper>
+
+                <x-filament::input.wrapper>
+                    <x-filament::input placeholder="Buscar cliente..." wire:model.defer="cliente" />
+                </x-filament::input.wrapper>
+
+            </div>
+        </x-filament::section>
+
+        {{-- 🔹 OPCIONES --}}
+        <x-filament::section heading="Opciones">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                {{-- Agrupación --}}
+                <div>
+                    <label class="text-sm font-medium">Agrupación</label>
+                    <div class="flex gap-4 mt-2">
+                        <label class="flex items-center gap-2">
+                            <input type="radio" wire:model="agrupacion" value="destino">
+                            Destino
+                        </label>
+
+                        <label class="flex items-center gap-2">
+                            <input type="radio" wire:model="agrupacion" value="origen">
+                            Origen
+                        </label>
+                    </div>
+                </div>
+
+                {{-- Tipo --}}
+                {{-- <div>
+                    <label class="text-sm font-medium">Tipo</label>
+                    <div class="flex gap-4 mt-2">
+                        <label class="flex items-center gap-2">
+                            <input type="radio" wire:model="tipo" value="detallado">
+                            Detallado
+                        </label>
+
+                        <label class="flex items-center gap-2">
+                            <input type="radio" wire:model="tipo" value="consolidado">
+                            Consolidado
+                        </label>
+                    </div>
+                </div> --}}
+
+                {{-- Localidad --}}
+                <div>
+                    <label class="text-sm font-medium">Localidad</label>
+                    <div class="flex gap-4 mt-2">
+                        <label class="flex items-center gap-2">
+                            <input type="radio" wire:model="localidad" value="Guatemala">
+                            Guatemala
+                        </label>
+
+                        <label class="flex items-center gap-2">
+                            <input type="radio" wire:model="localidad" value="Departamental">
+                            Departamental
+                        </label>
+                    </div>
+                </div>
+
+                {{-- Contra entrega --}}
+                {{-- <div class="md:col-span-2">
+                    <label class="flex items-center gap-2">
+                        <input type="checkbox" wire:model="contraEntrega">
+                        Solo contra entrega
+                    </label>
+                </div> --}}
+
+            </div>
+        </x-filament::section>
+
+        {{-- 🔹 ACCIONES --}}
+        <div class="flex gap-4">
+
+            <x-filament::button icon="heroicon-o-printer" wire:click="verEnPantalla">
+                Ver en Pantalla
+            </x-filament::button>
+
+            <x-filament::button color="success" icon="heroicon-o-document-arrow-down" wire:click="exportarExcel">
+                Exportar Excel
+            </x-filament::button>
+
+        </div>
+
+    </div>
+
+    {{-- MODAL PARA VISUALIZAR REPORTE EN PANTALLA --}}
+    <x-filament::modal id="reporte-modal" width="sm">
+        <div class="space-y-6">
+            <h2 class="font-semibold text-center">RESUMEN DE ENVÍOS</h2>
+            <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 space-y-3">
+                {{-- fila --}}
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-600">Contado</span>
+                    <span class="font-semibold">Q 5,030.00</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-600">Por cobrar</span>
+                    <span class="font-semibold">Q 6,535.25</span>
+                </div>
+                <div class="flex justify-between text-sm pl-4">
+                    <span class="text-gray-500">Crédito</span>
+                    <span>Q 199.00</span>
+                </div>
+                <div class="flex justify-between text-sm pl-4">
+                    <span class="text-gray-500">Prepago</span>
+                    <span>Q 210.00</span>
+                </div>
+                {{-- divisor --}}
+                <div class="border-t pt-3 flex justify-between text-base font-bold">
+                    <span>Total</span>
+                    <span>Q 11,974.25</span>
+                </div>
+
+            </div>
+        </div>
+    </x-filament::modal>
+</x-filament::page>
