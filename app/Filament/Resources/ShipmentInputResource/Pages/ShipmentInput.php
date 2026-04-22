@@ -243,6 +243,12 @@ class ShipmentInput extends Page
         $this->dispatch('focus-product-input');
     }
 
+    public function removeChildGuide($index)
+    {
+        unset($this->childGuides[$index]);
+        $this->childGuides = array_values($this->childGuides);
+    }
+
     public function removeProduct($index)
     {
         Logger("Eliminando producto en el índice: " . $index);
@@ -638,7 +644,7 @@ class ShipmentInput extends Page
             $shipment_manifest_id = null;
             $this->manifest_code = '';
             $this->date_guide = now()->format('Y-m-d');
-            $this->payment_method_id = 1;
+            // $this->payment_method_id = 1;
 
             $this->sender_total = '0.00';
             $this->receiver_total = '0.00';
@@ -676,155 +682,5 @@ class ShipmentInput extends Page
             ->body($message)
             ->{$type}()
             ->send();
-    }
-
-    //funciones para modificiar
-    public function buscarGuia($shipment_entry_id)
-    {
-        // Reset
-        $this->childGuidesData = [];
-        $this->childGuides = [];
-        $this->productos = [];
-        $this->totalPieces = 0;
-        $this->guideIncomplete = false;
-        $this->guidePartial = false;
-
-        if (!$shipment_entry_id) {
-            return;
-        }
-
-        $shipment = ShipmentEntry::find($shipment_entry_id);
-
-        // VARIABLE DE FORMA TEMPORAL PARA ELIMINAR UNA GUÍA
-        $this->no_guide_user_update = $shipment->mother ?? '';
-
-        if (!$shipment) {
-            return;
-        }
-
-        $children = ShipmentEntryChild::where('shipment_entry_id', $shipment_entry_id)->get();
-
-        $expectedPieces   = (int) $shipment->pieces;       // total piezas (madre + hijas)
-        $expectedChildren = max(0, $expectedPieces - 1);   // hijas esperadas
-        $childrenCount    = $children->count();
-
-        /*
-    |--------------------------------------------------------------------------
-    | CASO 1: Guía simple (solo madre)
-    |--------------------------------------------------------------------------
-    */
-        if ($expectedPieces === 1 && $childrenCount === 0) {
-            $this->productos[] = [
-                'product_id' => $shipment->product_id,
-                'pieces' => 1,
-                'product_description' => Product::find($shipment->product_id)->name ?? 'N/A',
-                'unit_price' => $shipment->unit_price,
-                'subtotal' => $shipment->unit_price,
-                'is_placeholder' => false,
-            ];
-
-            $this->totalPieces = 1;
-            return;
-        }
-
-        /*
-    |--------------------------------------------------------------------------
-    | CASO 2: Guía multipieza SIN hijas (INCOMPLETA)
-    |--------------------------------------------------------------------------
-    */
-        if ($expectedPieces > 1 && $childrenCount === 0) {
-            $this->guideIncomplete = true;
-
-            // Placeholder global
-            $this->productos[] = [
-                'product_id' => null,
-                'pieces' => $expectedPieces,
-                'product_description' => 'Desglose pendiente (guías hijas no enlazadas)',
-                'unit_price' => null,
-                'subtotal' => $shipment->total,
-                'is_placeholder' => true,
-            ];
-
-            $this->totalPieces = $expectedPieces;
-
-            Notification::make()
-                ->title('Guías Hijas No Enlazadas')
-                ->body("Esta guía tiene {$expectedPieces} piezas, pero no se ha enlazado ninguna guía hija.")
-                ->warning()
-                ->send();
-
-            return;
-        }
-
-        /*
-    |--------------------------------------------------------------------------
-    | CASO 3: Guía multipieza PARCIAL
-    |--------------------------------------------------------------------------
-    */
-        if ($childrenCount < $expectedChildren) {
-            $this->guidePartial = true;
-
-            Notification::make()
-                ->title('Guías Hijas Faltantes')
-                ->body(
-                    "Esta guía tiene {$expectedPieces}, pero solo se han enlazado {$childrenCount} guías hijas."
-                )
-                ->warning()
-                ->send();
-        }
-
-        /*
-    |--------------------------------------------------------------------------
-    | CASO 4: Procesar guías hijas
-    |--------------------------------------------------------------------------
-    */
-        foreach ($children as $child) {
-            $this->childGuidesData[] = [
-                'id' => $child->id,
-                'child_guide' => $child->child_guide,
-                'product_id' => $child->product_id,
-                'price' => $child->price,
-                'updated_at' => $child->updated_at,
-            ];
-
-            $this->childGuides[] = $child->child_guide;
-        }
-
-        // Agrupar productos de HIJAS
-        $grouped = [];
-
-        foreach ($this->childGuidesData as $childGuide) {
-            $key = $childGuide['product_id'] . '_' . $childGuide['price'];
-
-            if (!isset($grouped[$key])) {
-                $grouped[$key] = [
-                    'product_id' => $childGuide['product_id'],
-                    'pieces' => 1,
-                    'product_description' => Product::find($childGuide['product_id'])->name ?? 'N/A',
-                    'unit_price' => $childGuide['price'],
-                    'subtotal' => $childGuide['price'],
-                    'is_placeholder' => false,
-                ];
-            } else {
-                $grouped[$key]['pieces']++;
-                $grouped[$key]['subtotal'] += $childGuide['price'];
-            }
-        }
-
-        // HIJAS primero
-        $this->productos = array_values($grouped);
-
-        // AGREGAR SIEMPRE LA MADRE (como en tu código original)
-        $this->productos[] = [
-            'product_id' => $shipment->product_id,
-            'pieces' => 1,
-            'product_description' => Product::find($shipment->product_id)->name ?? 'N/A',
-            'unit_price' => $shipment->unit_price,
-            'subtotal' => $shipment->unit_price,
-            'is_placeholder' => false,
-        ];
-
-        // Total real de piezas
-        $this->totalPieces = 1 + $childrenCount;
     }
 }

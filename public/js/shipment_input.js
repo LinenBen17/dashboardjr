@@ -516,6 +516,7 @@ $(document).on('keydown', '#product_id_input', async function (e) {
         });
 });
  */
+
 //FUNCIONALIDADES CON F3 Y F4
 $(document).on('keydown', function (e) {
     if (e.key === 'F3') {
