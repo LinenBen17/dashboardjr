@@ -599,6 +599,8 @@ function calcularCE() {
     `;
 }
 
+$(document).on('blur', '#pce_amount, #pce_pieces, #pce_shipment_price', calcularCE);
+
 // eventos
 document.addEventListener('input', function (e) {
     if (e.target.closest('.pceModal')) {

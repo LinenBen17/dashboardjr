@@ -166,6 +166,8 @@ function calcularCE() {
     `;
 }
 
+$(document).on('blur', '#pce_amount, #pce_pieces, #pce_shipment_price', calcularCE);
+
 // eventos
 document.addEventListener('input', function (e) {
     if (e.target.closest('.pceModal')) {
@@ -478,6 +480,42 @@ $(document).on('keydown', '#product_id_input', async function (e) {
     }
 });
 
+/* $(document).on('keydown', '#guia_madre', function () {
+    const guide = $(this).val().trim();
+
+    if (!guide) return;
+
+    fetch(`/shipment-entries/buscar-guia?guide=${guide}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.guide_data) {
+                $('#date_guide').val(data.guide_data.date_guide);
+                $('#forma_pago').val(data.guide_data.payment_method_id);
+                $('#manifest_code').val(data.guide_data.manifest_code);
+
+                $('#codigo_remitente').val(data.guide_data.sender_code);
+                $('#sender_name').val(data.guide_data.sender_name);
+                $('#sender_address').val(data.guide_data.sender_address);
+                $('#sender_phone').val(data.guide_data.sender_phone);
+
+                $('#codigo_destinatario').val(data.guide_data.receiver_code);
+                $('#receiver_name').val(data.guide_data.receiver_name);
+                $('#receiver_address').val(data.guide_data.receiver_address);
+                $('#receiver_phone').val(data.guide_data.receiver_phone);
+
+                $('#prefix_origin').val(data.guide_data.prefix_origin);
+                $('#prefix_destino').val(data.guide_data.prefix_destination);
+
+                $('#town_id').val(data.guide_data.town_id).trigger('change');
+
+                getLivewireComponent()?.call('buscarGuiaMadre', guide);
+            }
+        })
+        .catch(err => {
+            console.error('Error al buscar guía:', err);
+        });
+});
+ */
 //FUNCIONALIDADES CON F3 Y F4
 $(document).on('keydown', function (e) {
     if (e.key === 'F3') {
