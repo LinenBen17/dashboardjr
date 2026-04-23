@@ -24,7 +24,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                 {{-- Agrupación --}}
-                <div>
+                {{-- <div>
                     <label class="text-sm font-medium">Agrupación</label>
                     <div class="flex gap-4 mt-2">
                         <label class="flex items-center gap-2">
@@ -37,23 +37,22 @@
                             Origen
                         </label>
                     </div>
-                </div>
+                </div> --}}
 
                 {{-- Tipo --}}
-                {{-- <div>
+                <div>
                     <label class="text-sm font-medium">Tipo</label>
                     <div class="flex gap-4 mt-2">
                         <label class="flex items-center gap-2">
                             <input type="radio" wire:model="tipo" value="detallado">
                             Detallado
                         </label>
-
                         <label class="flex items-center gap-2">
                             <input type="radio" wire:model="tipo" value="consolidado">
                             Consolidado
                         </label>
                     </div>
-                </div> --}}
+                </div>
 
                 {{-- Localidad --}}
                 <div>
@@ -67,6 +66,10 @@
                         <label class="flex items-center gap-2">
                             <input type="radio" wire:model="localidad" value="Departamental">
                             Departamental
+                        </label>
+                        <label class="flex items-center gap-2">
+                            <input type="radio" wire:model="localidad" value="Todo">
+                            Todo
                         </label>
                     </div>
                 </div>
@@ -105,24 +108,25 @@
                 {{-- fila --}}
                 <div class="flex justify-between text-sm">
                     <span class="text-gray-600">Contado</span>
-                    <span class="font-semibold">Q 5,030.00</span>
+                    <span class="font-semibold">{{ $this->data->contado ?? 0 }}</span>
                 </div>
                 <div class="flex justify-between text-sm">
                     <span class="text-gray-600">Por cobrar</span>
-                    <span class="font-semibold">Q 6,535.25</span>
+                    <span class="font-semibold">{{ $this->data->por_cobrar ?? 0 }}</span>
                 </div>
                 <div class="flex justify-between text-sm pl-4">
                     <span class="text-gray-500">Crédito</span>
-                    <span>Q 199.00</span>
+                    <span class="font-semibold">{{ $this->data->credito ?? 0 }}</span>
                 </div>
                 <div class="flex justify-between text-sm pl-4">
                     <span class="text-gray-500">Prepago</span>
-                    <span>Q 210.00</span>
+                    <span class="font-semibold">{{ $this->data->prepago ?? 0 }}</span>
                 </div>
                 {{-- divisor --}}
                 <div class="border-t pt-3 flex justify-between text-base font-bold">
                     <span>Total</span>
-                    <span>Q 11,974.25</span>
+                    <span
+                        class="font-bold">{{ ($this->data->contado ?? 0) + ($this->data->por_cobrar ?? 0) + ($this->data->credito ?? 0) + ($this->data->prepago ?? 0) }}</span>
                 </div>
 
             </div>
