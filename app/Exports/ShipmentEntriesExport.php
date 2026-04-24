@@ -4,9 +4,12 @@ namespace App\Exports;
 
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithStyles;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class ShipmentEntriesExport implements FromCollection, WithHeadings
+class ShipmentEntriesExport implements FromCollection, WithHeadings, ShouldAutoSize, WithStyles
 {
     protected $data;
 
@@ -26,13 +29,18 @@ class ShipmentEntriesExport implements FromCollection, WithHeadings
                 'Dirección Remitente' => $item->sender_address,
                 'Teléfono Remitente' => $item->sender_phone,
 
+                'Origen' => $item->prefix_origin,
+                'Destino' => $item->prefix_destination,
+
                 'Código Destinatario' => $item->receiver_code,
                 'Nombre Destinatario' => $item->receiver_name,
                 'Dirección Destinatario' => $item->receiver_address,
                 'Teléfono Destinatario' => $item->receiver_phone,
 
-                'Origen' => $item->prefix_origin,
-                'Destino' => $item->prefix_destination,
+                'Nombre Recibido' => $item->received_by,
+                'DPI Recibido' => (string) $item->received_by_document,
+                'Firmado' => $item->signed ? 'Sí' : 'No',
+                'Observaciones Entrega' => $item->delivery_observations,
 
                 'Descripción Producto' => $item->product_description,
                 'Piezas' => (float) $item->pieces,
@@ -60,13 +68,18 @@ class ShipmentEntriesExport implements FromCollection, WithHeadings
             'Dirección Remitente',
             'Teléfono Remitente',
 
+            'Origen',
+            'Destino',
+
             'Código Destinatario',
             'Nombre Destinatario',
             'Dirección Destinatario',
             'Teléfono Destinatario',
 
-            'Origen',
-            'Destino',
+            'Nombre Recibido',
+            'DPI Recibido',
+            'Firmado',
+            'Observaciones Entrega',
 
             'Descripción Producto',
             'Piezas',
@@ -80,6 +93,22 @@ class ShipmentEntriesExport implements FromCollection, WithHeadings
             'Forma de Pago',
             'Manifiesto',
             'Usuario',
+        ];
+    }
+
+    public function styles(Worksheet $sheet)
+    {
+        return [
+            1 => [ // fila 1 = encabezados
+                'font' => [
+                    'bold' => true,
+                    'color' => ['rgb' => '000000'], // texto color negro
+                ],
+                'fill' => [
+                    'fillType' => 'solid',
+                    'startColor' => ['rgb' => '00FFEF'], // color turquesa fondo
+                ],
+            ],
         ];
     }
 }

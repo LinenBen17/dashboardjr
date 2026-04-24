@@ -45,6 +45,7 @@ class ShipmentReports extends Page
             ->leftJoin('towns', 'shipment_entries.town_id', '=', 'towns.id')
             ->leftJoin('payment_methods', 'shipment_entries.payment_method_id', '=', 'payment_methods.id')
             ->leftJoin('shipment_manifests', 'shipment_entries.shipment_manifest_id', '=', 'shipment_manifests.id')
+            ->leftJoin('shipment_deliveries', 'shipment_entries.id', '=', 'shipment_deliveries.shipment_entry_id')
             ->leftJoin('users', 'shipment_entries.created_by', '=', 'users.id')
             ->whereBetween('shipment_entries.date_guide', [$fromFormatted, $toFormatted])
             ->select(
@@ -58,6 +59,10 @@ class ShipmentReports extends Page
                 'receiver_name',
                 'receiver_address',
                 'receiver_phone',
+                'shipment_deliveries.received_by_name as received_by',
+                'shipment_deliveries.received_by_document as received_by_document',
+                'shipment_deliveries.signed as signed',
+                'shipment_deliveries.observations as delivery_observations',
                 'prefix_origin',
                 'prefix_destination',
                 'towns.name as town_destination',
@@ -323,6 +328,7 @@ class ShipmentReports extends Page
                 $data = DB::table('shipment_entries')
                     ->leftJoin('payment_methods', 'shipment_entries.payment_method_id', '=', 'payment_methods.id')
                     ->leftJoin('shipment_manifests', 'shipment_entries.shipment_manifest_id', '=', 'shipment_manifests.id')
+                    ->leftJoin('shipment_deliveries', 'shipment_entries.id', '=', 'shipment_deliveries.shipment_entry_id')
                     ->whereBetween('shipment_entries.date_guide', [$fromFormatted, $toFormatted])
                     ->where('prefix_origin', 'CAP')
                     ->selectRaw("
@@ -411,6 +417,7 @@ class ShipmentReports extends Page
                 $data = DB::table('shipment_entries')
                     ->leftJoin('payment_methods', 'shipment_entries.payment_method_id', '=', 'payment_methods.id')
                     ->leftJoin('shipment_manifests', 'shipment_entries.shipment_manifest_id', '=', 'shipment_manifests.id')
+                    ->leftJoin('shipment_deliveries', 'shipment_entries.id', '=', 'shipment_deliveries.shipment_entry_id')
                     ->whereBetween('shipment_entries.date_guide', [$fromFormatted, $toFormatted])
                     ->where('prefix_origin', '!=', 'CAP')
                     ->selectRaw("
