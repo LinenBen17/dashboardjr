@@ -36,6 +36,8 @@ class ShipmentReports extends Page
 
     public $data;
 
+    public $totalRegistros = 0;
+
     public function getAllData()
     {
         $fromFormatted = date('Y-m-d H:i:s', strtotime($this->from));
@@ -131,6 +133,10 @@ class ShipmentReports extends Page
                 ) as prepago
             ");
 
+            $this->totalRegistros = DB::table('shipment_entries')
+                ->whereBetween('date_guide', [$fromFormatted, $toFormatted])
+                ->count();
+
             $this->data = $query->first();
         } elseif ($this->localidad === 'Guatemala') {
             $query = DB::table('shipment_entries')
@@ -170,6 +176,11 @@ class ShipmentReports extends Page
                 ) as prepago
             ");
 
+            $this->totalRegistros = DB::table('shipment_entries')
+                ->whereBetween('date_guide', [$fromFormatted, $toFormatted])
+                ->where('prefix_origin', 'CAP')
+                ->count();
+
             $this->data = $query->first();
         } elseif ($this->localidad === 'Departamental') {
             $query = DB::table('shipment_entries')
@@ -208,6 +219,11 @@ class ShipmentReports extends Page
                     END
                 ) as prepago
             ");
+
+            $this->totalRegistros = DB::table('shipment_entries')
+                ->whereBetween('date_guide', [$fromFormatted, $toFormatted])
+                ->where('prefix_origin', '!=', 'CAP')
+                ->count();
 
             $this->data = $query->first();
         }
@@ -470,8 +486,6 @@ class ShipmentReports extends Page
         } else {
             $data = collect();
         }
-
-        Logger($data);
 
         if ($this->tipoReporte === 'guias') {
             return Excel::download(

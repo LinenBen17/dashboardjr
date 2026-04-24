@@ -141,6 +141,7 @@
                 </div>
 
             </div>
+            <p class="text-sm text-gray-500">Total de envíos: {{ $this->totalRegistros }}</p>
         </div>
     </x-filament::modal>
 </x-filament::page>
