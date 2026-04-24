@@ -74,6 +74,17 @@
                     </div>
                 </div>
 
+                {{-- Manifiestos auditable --}}
+                <div>
+                    <label class="text-sm font-medium">Manifiestos auditable</label>
+                    <div class="flex gap-4 mt-2">
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" wire:model="manifest_auditable" value="manifest_auditable">
+                            Manifiestos Auditables
+                        </label>
+                    </div>
+                </div>
+
                 {{-- Contra entrega --}}
                 {{-- <div class="md:col-span-2">
                     <label class="flex items-center gap-2">

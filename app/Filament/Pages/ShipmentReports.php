@@ -7,6 +7,8 @@ use Filament\Pages\Page;
 use Illuminate\Support\Facades\DB;
 
 use App\Exports\ShipmentEntriesExport;
+use App\Exports\ShipmentManifestsExport;
+use App\Filament\Clusters\Shipping;
 use Maatwebsite\Excel\Facades\Excel;
 
 class ShipmentReports extends Page
@@ -15,6 +17,11 @@ class ShipmentReports extends Page
 
     protected static string $view = 'filament.pages.shipment-reports';
 
+    protected static ?string $cluster = Shipping::class;
+
+    protected static ?string $navigationLabel = 'Reporte de Envíos';
+    protected static ?string $modelLabel = 'Reporte de Envíos';
+
     public $from;
     public $to;
     public $cliente;
@@ -22,6 +29,10 @@ class ShipmentReports extends Page
     public $tipo = 'detallado';
     public $localidad = 'Todo';
     // public $contraEntrega = false;
+
+    public $manifest_auditable = '';
+
+    public $tipoReporte = 'guias';
 
     public $data;
 
@@ -210,88 +221,263 @@ class ShipmentReports extends Page
             return;
         }
 
+        $this->tipoReporte = 'guias';
+
+        $data = collect();
+
         $fromFormatted = date('Y-m-d H:i:s', strtotime($this->from));
         $toFormatted = date('Y-m-d H:i:s', strtotime($this->to));
 
         if ($this->localidad === 'Todo') {
-            $data = $this->getAllData();
+            if (!$this->manifest_auditable) {
+                $data = $this->getAllData();
+            } else {
+                $data = DB::table('shipment_entries')
+                    ->leftJoin('payment_methods', 'shipment_entries.payment_method_id', '=', 'payment_methods.id')
+                    ->leftJoin('shipment_manifests', 'shipment_entries.shipment_manifest_id', '=', 'shipment_manifests.id')
+                    ->whereBetween('shipment_entries.date_guide', [$fromFormatted, $toFormatted])
+                    ->selectRaw("
+                        shipment_manifests.manifest_code as manifest_code,
+                        shipment_manifests.date as manifest_date,
+                        shipment_entries.prefix_origin,
+                        shipment_entries.prefix_destination,
+
+                        SUM(COALESCE(shipment_entries.total,0)) as total_manifesto,
+
+                        SUM(
+                            CASE 
+                                WHEN payment_methods.name = 'Contado' THEN COALESCE(shipment_entries.total,0)
+                                WHEN payment_methods.name NOT IN ('Contado','Por Cobrar','Crédito','Prepago') THEN COALESCE(shipment_entries.sender_total,0)
+                                ELSE 0
+                            END
+                        ) as contado_total,
+
+                        SUM(
+                            CASE 
+                                WHEN payment_methods.name = 'Por Cobrar' THEN COALESCE(shipment_entries.total,0)
+                                WHEN payment_methods.name NOT IN ('Contado','Por Cobrar','Crédito','Prepago') THEN COALESCE(shipment_entries.receiver_total,0)
+                                ELSE 0
+                            END
+                        ) as por_cobrar_total,
+
+                        SUM(
+                            CASE 
+                                WHEN payment_methods.name = 'Crédito' THEN COALESCE(shipment_entries.total,0)
+                                ELSE 0
+                            END
+                        ) as credito_total,
+
+                        SUM(
+                            CASE 
+                                WHEN payment_methods.name = 'Prepago' THEN COALESCE(shipment_entries.total,0)
+                                ELSE 0
+                            END
+                        ) as prepago_total
+                    ")
+                    ->groupBy(
+                        'shipment_manifests.manifest_code',
+                        'shipment_manifests.date',
+                        'shipment_entries.prefix_origin',
+                        'shipment_entries.prefix_destination'
+                    )
+                    ->get();
+
+                $this->tipoReporte = 'manifiestos';
+            }
         } elseif ($this->localidad === 'Guatemala') {
-            $data = DB::table('shipment_entries')
-                ->leftJoin('towns', 'shipment_entries.town_id', '=', 'towns.id')
-                ->leftJoin('payment_methods', 'shipment_entries.payment_method_id', '=', 'payment_methods.id')
-                ->leftJoin('shipment_manifests', 'shipment_entries.shipment_manifest_id', '=', 'shipment_manifests.id')
-                ->leftJoin('users', 'shipment_entries.created_by', '=', 'users.id')
-                ->whereBetween('shipment_entries.date_guide', [$fromFormatted, $toFormatted])
-                ->where('prefix_origin', 'CAP')
-                ->select(
-                    'shipment_entries.id',
-                    'mother',
-                    'sender_code',
-                    'sender_name',
-                    'sender_address',
-                    'sender_phone',
-                    'receiver_code',
-                    'receiver_name',
-                    'receiver_address',
-                    'receiver_phone',
-                    'prefix_origin',
-                    'prefix_destination',
-                    'towns.name as town_destination',
-                    'product_description',
-                    'pieces',
-                    'unit_price',
-                    'sender_total',
-                    'receiver_total',
-                    'total',
-                    'date_guide',
-                    'payment_methods.name as payment_method',
-                    'shipment_manifests.manifest_code as manifest_code',
-                    'users.username as created_by',
-                )
-                ->get();
+            if (!$this->manifest_auditable) {
+                $data = DB::table('shipment_entries')
+                    ->leftJoin('towns', 'shipment_entries.town_id', '=', 'towns.id')
+                    ->leftJoin('payment_methods', 'shipment_entries.payment_method_id', '=', 'payment_methods.id')
+                    ->leftJoin('shipment_manifests', 'shipment_entries.shipment_manifest_id', '=', 'shipment_manifests.id')
+                    ->leftJoin('users', 'shipment_entries.created_by', '=', 'users.id')
+                    ->whereBetween('shipment_entries.date_guide', [$fromFormatted, $toFormatted])
+                    ->where('prefix_origin', 'CAP')
+                    ->select(
+                        'shipment_entries.id',
+                        'mother',
+                        'sender_code',
+                        'sender_name',
+                        'sender_address',
+                        'sender_phone',
+                        'receiver_code',
+                        'receiver_name',
+                        'receiver_address',
+                        'receiver_phone',
+                        'prefix_origin',
+                        'prefix_destination',
+                        'towns.name as town_destination',
+                        'product_description',
+                        'pieces',
+                        'unit_price',
+                        'sender_total',
+                        'receiver_total',
+                        'total',
+                        'date_guide',
+                        'payment_methods.name as payment_method',
+                        'shipment_manifests.manifest_code as manifest_code',
+                        'users.username as created_by',
+                    )
+                    ->get();
+            } else {
+                $data = DB::table('shipment_entries')
+                    ->leftJoin('payment_methods', 'shipment_entries.payment_method_id', '=', 'payment_methods.id')
+                    ->leftJoin('shipment_manifests', 'shipment_entries.shipment_manifest_id', '=', 'shipment_manifests.id')
+                    ->whereBetween('shipment_entries.date_guide', [$fromFormatted, $toFormatted])
+                    ->where('prefix_origin', 'CAP')
+                    ->selectRaw("
+                        shipment_manifests.manifest_code as manifest_code,
+                        shipment_manifests.date as manifest_date,
+                        shipment_entries.prefix_origin,
+                        shipment_entries.prefix_destination,
+
+                        SUM(COALESCE(shipment_entries.total,0)) as total_manifesto,
+
+                        SUM(
+                            CASE 
+                                WHEN payment_methods.name = 'Contado' THEN COALESCE(shipment_entries.total,0)
+                                WHEN payment_methods.name NOT IN ('Contado','Por Cobrar','Crédito','Prepago') THEN COALESCE(shipment_entries.sender_total,0)
+                                ELSE 0
+                            END
+                        ) as contado_total,
+
+                        SUM(
+                            CASE 
+                                WHEN payment_methods.name = 'Por Cobrar' THEN COALESCE(shipment_entries.total,0)
+                                WHEN payment_methods.name NOT IN ('Contado','Por Cobrar','Crédito','Prepago') THEN COALESCE(shipment_entries.receiver_total,0)
+                                ELSE 0
+                            END
+                        ) as por_cobrar_total,
+
+                        SUM(
+                            CASE 
+                                WHEN payment_methods.name = 'Crédito' THEN COALESCE(shipment_entries.total,0)
+                                ELSE 0
+                            END
+                        ) as credito_total,
+
+                        SUM(
+                            CASE 
+                                WHEN payment_methods.name = 'Prepago' THEN COALESCE(shipment_entries.total,0)
+                                ELSE 0
+                            END
+                        ) as prepago_total
+                    ")
+                    ->groupBy(
+                        'shipment_manifests.manifest_code',
+                        'shipment_manifests.date',
+                        'shipment_entries.prefix_origin',
+                        'shipment_entries.prefix_destination'
+                    )
+                    ->get();
+                $this->tipoReporte = 'manifiestos';
+            }
         } elseif ($this->localidad === 'Departamental') {
-            $data = DB::table('shipment_entries')
-                ->leftJoin('towns', 'shipment_entries.town_id', '=', 'towns.id')
-                ->leftJoin('payment_methods', 'shipment_entries.payment_method_id', '=', 'payment_methods.id')
-                ->leftJoin('shipment_manifests', 'shipment_entries.shipment_manifest_id', '=', 'shipment_manifests.id')
-                ->leftJoin('users', 'shipment_entries.created_by', '=', 'users.id')
-                ->whereBetween('shipment_entries.date_guide', [$fromFormatted, $toFormatted])
-                ->where('prefix_origin', '!=', 'CAP')
-                ->select(
-                    'shipment_entries.id',
-                    'mother',
-                    'sender_code',
-                    'sender_name',
-                    'sender_address',
-                    'sender_phone',
-                    'receiver_code',
-                    'receiver_name',
-                    'receiver_address',
-                    'receiver_phone',
-                    'prefix_origin',
-                    'prefix_destination',
-                    'towns.name as town_destination',
-                    'product_description',
-                    'pieces',
-                    'unit_price',
-                    'sender_total',
-                    'receiver_total',
-                    'total',
-                    'date_guide',
-                    'payment_methods.name as payment_method',
-                    'shipment_manifests.manifest_code as manifest_code',
-                    'users.username as created_by',
-                )
-                ->get();
+            if (!$this->manifest_auditable) {
+                $data = DB::table('shipment_entries')
+                    ->leftJoin('towns', 'shipment_entries.town_id', '=', 'towns.id')
+                    ->leftJoin('payment_methods', 'shipment_entries.payment_method_id', '=', 'payment_methods.id')
+                    ->leftJoin('shipment_manifests', 'shipment_entries.shipment_manifest_id', '=', 'shipment_manifests.id')
+                    ->leftJoin('users', 'shipment_entries.created_by', '=', 'users.id')
+                    ->whereBetween('shipment_entries.date_guide', [$fromFormatted, $toFormatted])
+                    ->where('prefix_origin', '!=', 'CAP')
+                    ->select(
+                        'shipment_entries.id',
+                        'mother',
+                        'sender_code',
+                        'sender_name',
+                        'sender_address',
+                        'sender_phone',
+                        'receiver_code',
+                        'receiver_name',
+                        'receiver_address',
+                        'receiver_phone',
+                        'prefix_origin',
+                        'prefix_destination',
+                        'towns.name as town_destination',
+                        'product_description',
+                        'pieces',
+                        'unit_price',
+                        'sender_total',
+                        'receiver_total',
+                        'total',
+                        'date_guide',
+                        'payment_methods.name as payment_method',
+                        'shipment_manifests.manifest_code as manifest_code',
+                        'users.username as created_by',
+                    )
+                    ->get();
+            } else {
+                $data = DB::table('shipment_entries')
+                    ->leftJoin('payment_methods', 'shipment_entries.payment_method_id', '=', 'payment_methods.id')
+                    ->leftJoin('shipment_manifests', 'shipment_entries.shipment_manifest_id', '=', 'shipment_manifests.id')
+                    ->whereBetween('shipment_entries.date_guide', [$fromFormatted, $toFormatted])
+                    ->where('prefix_origin', '!=', 'CAP')
+                    ->selectRaw("
+                        shipment_manifests.manifest_code as manifest_code,
+                        shipment_manifests.date as manifest_date,
+                        shipment_entries.prefix_origin,
+                        shipment_entries.prefix_destination,
+
+                        SUM(COALESCE(shipment_entries.total,0)) as total_manifesto,
+
+                        SUM(
+                            CASE 
+                                WHEN payment_methods.name = 'Contado' THEN COALESCE(shipment_entries.total,0)
+                                WHEN payment_methods.name NOT IN ('Contado','Por Cobrar','Crédito','Prepago') THEN COALESCE(shipment_entries.sender_total,0)
+                                ELSE 0
+                            END
+                        ) as contado_total,
+
+                        SUM(
+                            CASE 
+                                WHEN payment_methods.name = 'Por Cobrar' THEN COALESCE(shipment_entries.total,0)
+                                WHEN payment_methods.name NOT IN ('Contado','Por Cobrar','Crédito','Prepago') THEN COALESCE(shipment_entries.receiver_total,0)
+                                ELSE 0
+                            END
+                        ) as por_cobrar_total,
+
+                        SUM(
+                            CASE 
+                                WHEN payment_methods.name = 'Crédito' THEN COALESCE(shipment_entries.total,0)
+                                ELSE 0
+                            END
+                        ) as credito_total,
+
+                        SUM(
+                            CASE 
+                                WHEN payment_methods.name = 'Prepago' THEN COALESCE(shipment_entries.total,0)
+                                ELSE 0
+                            END
+                        ) as prepago_total
+                    ")
+                    ->groupBy(
+                        'shipment_manifests.manifest_code',
+                        'shipment_manifests.date',
+                        'shipment_entries.prefix_origin',
+                        'shipment_entries.prefix_destination'
+                    )
+                    ->get();
+                $this->tipoReporte = 'manifiestos';
+            }
         } else {
             $data = collect();
         }
 
         Logger($data);
 
-        return Excel::download(
-            new ShipmentEntriesExport($data),
-            'reporte_envios.xlsx'
-        );
+        if ($this->tipoReporte === 'guias') {
+            return Excel::download(
+                new ShipmentEntriesExport($data),
+                'reporte_guias.xlsx'
+            );
+        }
+
+        if ($this->tipoReporte === 'manifiestos') {
+            return Excel::download(
+                new ShipmentManifestsExport($data),
+                'reporte_manifiestos.xlsx'
+            );
+        }
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Clusters;
 
+use App\Filament\Pages\ShipmentReports;
 use Filament\Clusters\Cluster;
 
 class Shipping extends Cluster
