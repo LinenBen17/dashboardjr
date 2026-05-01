@@ -1,14 +1,13 @@
 {
     "$schema": "https://schema.railpack.com",
+    "builder": "php",
+    "phpVersion": "8.2",
     "phpExtensions": [
         "intl",
         "zip",
         "gd",
         "pdo_mysql"
     ],
-    "cmds": {
-        "install": "composer install --optimize-autoloader --no-scripts --no-interaction --ignore-platform-reqs"
-    },
     "deploy": {
         "startCommand": "php artisan serve --host=0.0.0.0 --port=$PORT"
     }
