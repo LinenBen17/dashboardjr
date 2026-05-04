@@ -45,6 +45,8 @@ class ShipmentReports extends Page
 
         $query = DB::table('shipment_entries')
             ->leftJoin('towns', 'shipment_entries.town_id', '=', 'towns.id')
+            ->leftJoin('customers as sender', 'shipment_entries.sender_code', '=', 'sender.id')
+            ->leftJoin('customers as receiver', 'shipment_entries.receiver_code', '=', 'receiver.id')
             ->leftJoin('payment_methods', 'shipment_entries.payment_method_id', '=', 'payment_methods.id')
             ->leftJoin('shipment_manifests', 'shipment_entries.shipment_manifest_id', '=', 'shipment_manifests.id')
             ->leftJoin('shipment_deliveries', 'shipment_entries.id', '=', 'shipment_deliveries.shipment_entry_id')
@@ -53,11 +55,11 @@ class ShipmentReports extends Page
             ->select(
                 'shipment_entries.id',
                 'mother',
-                'sender_code',
+                'sender.code as sender_code',
                 'sender_name',
                 'sender_address',
                 'sender_phone',
-                'receiver_code',
+                'receiver.code as receiver_code',
                 'receiver_name',
                 'receiver_address',
                 'receiver_phone',
@@ -65,8 +67,8 @@ class ShipmentReports extends Page
                 'shipment_deliveries.received_by_document as received_by_document',
                 'shipment_deliveries.signed as signed',
                 'shipment_deliveries.observations as delivery_observations',
-                'prefix_origin',
-                'prefix_destination',
+                'shipment_entries.prefix_origin as prefix_origin',
+                'shipment_entries.prefix_destination as     prefix_destination',
                 'towns.name as town_destination',
                 'product_description',
                 'pieces',
@@ -309,6 +311,8 @@ class ShipmentReports extends Page
             if (!$this->manifest_auditable) {
                 $data = DB::table('shipment_entries')
                     ->leftJoin('towns', 'shipment_entries.town_id', '=', 'towns.id')
+                    ->leftJoin('customers as sender', 'shipment_entries.sender_code', '=', 'sender.id')
+                    ->leftJoin('customers as receiver', 'shipment_entries.receiver_code', '=', 'receiver.id')
                     ->leftJoin('payment_methods', 'shipment_entries.payment_method_id', '=', 'payment_methods.id')
                     ->leftJoin('shipment_manifests', 'shipment_entries.shipment_manifest_id', '=', 'shipment_manifests.id')
                     ->leftJoin('users', 'shipment_entries.created_by', '=', 'users.id')
@@ -317,16 +321,16 @@ class ShipmentReports extends Page
                     ->select(
                         'shipment_entries.id',
                         'mother',
-                        'sender_code',
+                        'sender.code as sender_code',
                         'sender_name',
                         'sender_address',
                         'sender_phone',
-                        'receiver_code',
+                        'receiver.code as receiver_code',
                         'receiver_name',
                         'receiver_address',
                         'receiver_phone',
-                        'prefix_origin',
-                        'prefix_destination',
+                        'shipment_entries.prefix_origin as prefix_origin',
+                        'shipment_entries.prefix_destination as prefix_destination',
                         'towns.name as town_destination',
                         'product_description',
                         'pieces',
