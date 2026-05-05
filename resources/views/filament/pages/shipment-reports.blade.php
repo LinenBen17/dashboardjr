@@ -85,6 +85,21 @@
                     </div>
                 </div>
 
+                {{-- Select FOrmas de PAgo --}}
+                <div>
+                    <label class="text-sm font-medium">Formas de pago</label>
+                    <div class="flex gap-4 mt-2">
+                        <x-filament::input.wrapper>
+                            <x-filament::input.select wire:model="payment_method_id" name="payment_method_id"
+                                id="forma_pago" class="fi-fo-field-input block w-full rounded-lg border-gray-300">
+                                <option value="">Seleccione una opción</option>
+                                @foreach ($payment_methods as $id => $name)
+                                    <option value="{{ $id }}">{{ $name }}</option>
+                                @endforeach
+                            </x-filament::input.select>
+                        </x-filament::input.wrapper>
+                    </div>
+                </div>
                 {{-- Contra entrega --}}
                 {{-- <div class="md:col-span-2">
                     <label class="flex items-center gap-2">

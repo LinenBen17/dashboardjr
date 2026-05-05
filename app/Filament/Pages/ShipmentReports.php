@@ -38,6 +38,15 @@ class ShipmentReports extends Page
 
     public $totalRegistros = 0;
 
+    public $payment_methods = [];
+
+    public $payment_method_id = '';
+
+    public function mount()
+    {
+        $this->payment_methods = DB::table('payment_methods')->pluck('name', 'id')->toArray();
+    }
+
     public function getAllData()
     {
         $fromFormatted = date('Y-m-d H:i:s', strtotime($this->from));
@@ -99,11 +108,17 @@ class ShipmentReports extends Page
         $fromFormatted = date('Y-m-d H:i:s', strtotime($this->from));
         $toFormatted = date('Y-m-d H:i:s', strtotime($this->to));
 
-        if ($this->localidad === 'Todo') {
-            $query = DB::table('shipment_entries')
-                ->leftJoin('payment_methods', 'shipment_entries.payment_method_id', '=', 'payment_methods.id')
-                ->whereBetween('shipment_entries.date_guide', [$fromFormatted, $toFormatted])
-                ->selectRaw("
+        if ($this->tipo === 'consolidado') {
+            if ($this->localidad === 'Todo') {
+                $query = DB::table('shipment_entries')
+                    ->leftJoin('payment_methods', 'shipment_entries.payment_method_id', '=', 'payment_methods.id')
+                    ->whereBetween('shipment_entries.date_guide', [$fromFormatted, $toFormatted])
+                    ->where(function ($q) {
+                        if ($this->payment_method_id) {
+                            $q->where('payment_methods.id', $this->payment_method_id);
+                        }
+                    })
+                    ->selectRaw("
                 SUM(
                     CASE 
                         WHEN payment_methods.name = 'Por Cobrar' THEN COALESCE(total,0)
@@ -135,18 +150,23 @@ class ShipmentReports extends Page
                 ) as prepago
             ");
 
-            $this->totalRegistros = DB::table('shipment_entries')
-                ->whereBetween('date_guide', [$fromFormatted, $toFormatted])
-                ->count();
+                $this->totalRegistros = DB::table('shipment_entries')
+                    ->whereBetween('date_guide', [$fromFormatted, $toFormatted])
+                    ->count();
 
-            $this->data = $query->first();
-        } elseif ($this->localidad === 'Guatemala') {
-            $query = DB::table('shipment_entries')
-                ->leftJoin('towns', 'shipment_entries.town_id', '=', 'towns.id')
-                ->leftJoin('payment_methods', 'shipment_entries.payment_method_id', '=', 'payment_methods.id')
-                ->whereBetween('shipment_entries.date_guide', [$fromFormatted, $toFormatted])
-                ->where('prefix_origin', 'CAP')
-                ->selectRaw("
+                $this->data = $query->first();
+            } elseif ($this->localidad === 'Guatemala') {
+                $query = DB::table('shipment_entries')
+                    ->leftJoin('towns', 'shipment_entries.town_id', '=', 'towns.id')
+                    ->leftJoin('payment_methods', 'shipment_entries.payment_method_id', '=', 'payment_methods.id')
+                    ->where(function ($q) {
+                        if ($this->payment_method_id) {
+                            $q->where('payment_methods.id', $this->payment_method_id);
+                        }
+                    })
+                    ->whereBetween('shipment_entries.date_guide', [$fromFormatted, $toFormatted])
+                    ->where('prefix_origin', 'CAP')
+                    ->selectRaw("
                 SUM(
                     CASE 
                         WHEN payment_methods.name = 'Por Cobrar' THEN COALESCE(total,0)
@@ -178,19 +198,24 @@ class ShipmentReports extends Page
                 ) as prepago
             ");
 
-            $this->totalRegistros = DB::table('shipment_entries')
-                ->whereBetween('date_guide', [$fromFormatted, $toFormatted])
-                ->where('prefix_origin', 'CAP')
-                ->count();
+                $this->totalRegistros = DB::table('shipment_entries')
+                    ->whereBetween('date_guide', [$fromFormatted, $toFormatted])
+                    ->where('prefix_origin', 'CAP')
+                    ->count();
 
-            $this->data = $query->first();
-        } elseif ($this->localidad === 'Departamental') {
-            $query = DB::table('shipment_entries')
-                ->leftJoin('towns', 'shipment_entries.town_id', '=', 'towns.id')
-                ->leftJoin('payment_methods', 'shipment_entries.payment_method_id', '=', 'payment_methods.id')
-                ->whereBetween('shipment_entries.date_guide', [$fromFormatted, $toFormatted])
-                ->where('prefix_origin', '!=', 'CAP')
-                ->selectRaw("
+                $this->data = $query->first();
+            } elseif ($this->localidad === 'Departamental') {
+                $query = DB::table('shipment_entries')
+                    ->leftJoin('towns', 'shipment_entries.town_id', '=', 'towns.id')
+                    ->leftJoin('payment_methods', 'shipment_entries.payment_method_id', '=', 'payment_methods.id')
+                    ->whereBetween('shipment_entries.date_guide', [$fromFormatted, $toFormatted])
+                    ->where('prefix_origin', '!=', 'CAP')
+                    ->where(function ($q) {
+                        if ($this->payment_method_id) {
+                            $q->where('payment_methods.id', $this->payment_method_id);
+                        }
+                    })
+                    ->selectRaw("
                 SUM(
                     CASE 
                         WHEN payment_methods.name = 'Por Cobrar' THEN COALESCE(total,0)
@@ -222,13 +247,16 @@ class ShipmentReports extends Page
                 ) as prepago
             ");
 
-            $this->totalRegistros = DB::table('shipment_entries')
-                ->whereBetween('date_guide', [$fromFormatted, $toFormatted])
-                ->where('prefix_origin', '!=', 'CAP')
-                ->count();
+                $this->totalRegistros = DB::table('shipment_entries')
+                    ->whereBetween('date_guide', [$fromFormatted, $toFormatted])
+                    ->where('prefix_origin', '!=', 'CAP')
+                    ->count();
 
-            $this->data = $query->first();
+                $this->data = $query->first();
+            }
         }
+
+
 
         $this->dispatch('open-modal', id: 'reporte-modal');
     }
